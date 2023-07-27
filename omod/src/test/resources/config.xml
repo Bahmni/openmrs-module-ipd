@@ -15,7 +15,7 @@
         <require_module>org.bahmni.module.bahmnicore</require_module>
     </require_modules>
 
-    <activator>org.bahmni.module.ipd.IPDActivator</activator>
+    <activator>org.openmrs.module.ipd.api.IPDActivator</activator>
 
     <require_version>1.11.6</require_version>
 </module>
