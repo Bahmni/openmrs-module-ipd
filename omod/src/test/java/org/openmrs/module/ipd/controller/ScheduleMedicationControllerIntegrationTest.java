@@ -24,11 +24,6 @@ public class ScheduleMedicationControllerIntegrationTest extends BaseIntegration
     @Autowired
     private SessionFactory sessionFactory;
 
-    @BeforeEach
-    public void setUp() {
-
-    }
-
     @Test
     public void shouldSaveMedicationSchedule() throws Exception {
 
@@ -41,7 +36,7 @@ public class ScheduleMedicationControllerIntegrationTest extends BaseIntegration
                 "\"firstDaySlotsStartTime\": [\"2107-07-15T17:30:00.0\"]," +
                 "\"dayWiseSlotsStartTime\": [\"2107-07-15T17:30:00.0\"]," +
                 "\"comments\":\"changes the schedule\"," +
-                "\"scheduleStrategy\":\"SCHEDULE_BY_HOUR\"" +
+                "\"medicationFrequency\":\"START_TIME_DURATION_FREQUENCY\"" +
                 "}";
 
         MockHttpServletResponse response = handle(newPostRequest("/rest/" + RestConstants.VERSION_1 + "/ipd/schedule/medication", content));

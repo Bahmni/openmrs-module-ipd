@@ -21,9 +21,10 @@ public class ScheduleMedicationRequest {
     private Date slotStartTime;
     private List<Date> firstDaySlotsStartTime;
     private List<Date> dayWiseSlotsStartTime;
-    private ScheduleStrategy scheduleStrategy;
+    private MedicationFrequency medicationFrequency;
 
-    public enum ScheduleStrategy {
-        SCHEDULE_BY_HOUR, SCHEDULE_BY_DAY
+    public enum MedicationFrequency {
+        START_TIME_DURATION_FREQUENCY,
+        FIXED_SCHEDULE_FREQUENCY
     }
 }
