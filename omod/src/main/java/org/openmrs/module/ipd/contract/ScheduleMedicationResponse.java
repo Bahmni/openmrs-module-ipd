@@ -6,9 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.openmrs.module.ipd.api.model.Schedule;
-import org.openmrs.Concept;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Builder
 @Getter
@@ -19,8 +18,9 @@ public class ScheduleMedicationResponse {
     private Integer id;
     private String patientUuid;
     private String comments;
-    private Date startDate;
-    private Date endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    // Add list of default Slot response.
 
     public static ScheduleMedicationResponse constructFrom(Schedule schedule) {
         return ScheduleMedicationResponse.builder()

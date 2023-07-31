@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface SlotService extends OpenmrsService {
 
-//	@Authorized({ PrivilegeConstants.EDIT_IPD_SCHEDULES })
+//	@Authorized({ PrivilegeConstants.EDIT_IPD_SLOTS })
 	Slot getSlot(Integer slotId) throws APIException;
 
 //	@Authorized({ PrivilegeConstants.EDIT_IPD_SLOTS })

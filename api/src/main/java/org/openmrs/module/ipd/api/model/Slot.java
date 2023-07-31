@@ -6,10 +6,9 @@ import lombok.NoArgsConstructor;
 import org.openmrs.BaseChangeableOpenmrsData;
 import org.openmrs.Concept;
 import org.openmrs.Location;
-import org.openmrs.Order;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -36,76 +35,72 @@ public class Slot extends BaseChangeableOpenmrsData {
 	/**
 	 * The location Where schedule occurs
 	 */
-	@ManyToOne(optional = false)
-	@JoinColumn(referencedColumnName = "location_id")
-	private Location location;
+	@ManyToOne
+	@JoinColumn(name = "location_id", referencedColumnName = "location_id")
+	private Location location; // bed location for patient
 	
 	/**
 	 * The Service Category of the Schedule
 	 */
 	@OneToOne
 	@JoinColumn(name = "service_category_id", referencedColumnName = "concept_id")
-	private Concept serviceCategoryId;
+	private Concept serviceCategory; // null not in use
 	
 	/**
 	 * The Service Type of the Schedule
 	 */
 	@OneToOne
 	@JoinColumn(name = "service_type_id", referencedColumnName = "concept_id")
-	private Concept serviceTypeId;
+	private Concept serviceType; // as per schedule service type
 	
 	/**
 	 * The Speciality of the Schedule
 	 */
 	@OneToOne
 	@JoinColumn(name = "speciality_id", referencedColumnName = "concept_id")
-	private Concept specialityId;
+	private Concept speciality; // null not in sue
 	
 	/**
 	 * The Appointment Type of the Schedule
 	 */
 	@OneToOne
 	@JoinColumn(name = "appointment_type_id", referencedColumnName = "concept_id")
-	private Concept appointmentTypeId;
+	private Concept appointmentType; // null not in use
 	
 	/**
 	 * The entity that belongs to a Schedule
 	 */
 	@ManyToOne
-	@JoinColumn(name = "schedule_reference_id", referencedColumnName = "schedule_id")
+	@JoinColumn(name = "schedule_id", referencedColumnName = "schedule_id")
 	private Schedule schedule;
 	
 	/**
 	 * The Start Date the Slot
 	 */
-	@Column(name = "start_date", nullable = false)
-	private Date startDate;
+	@Column(name = "start_date_time", nullable = false)
+	private LocalDateTime startDateTime; // slot start time
 	
 	/**
 	 * The End Date the Slot
 	 */
-	@Column(name = "end_date", nullable = false)
-	private Date endDate;
+	@Column(name = "end_date_time")
+	private LocalDateTime endDateTime; // can be null for now
 	
 	/**
 	 * Any Comment for the Slot
 	 */
-	@Column(name = "comment")
-	private String comment;
+	@Column(name = "comments")
+	private String comments; // null not is use
 	
 	/**
 	 * The current status of the slot.
 	 */
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
-	private SlotStatus status;
-	
-	/**
-	 * Order of the Slot
-	 */
-	@OneToOne
-	@JoinColumn(name = "order_id", referencedColumnName = "order_id")
-	private Order orderId;
+	private SlotStatus status = SlotStatus.SCHEDULED;
+
+	@Column(name = "overbooked")
+	private Boolean overbooked = false; // not is use
 }
 
 

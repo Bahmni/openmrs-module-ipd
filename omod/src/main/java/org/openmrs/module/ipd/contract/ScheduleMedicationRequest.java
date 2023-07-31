@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -18,9 +19,9 @@ public class ScheduleMedicationRequest {
     private String orderUuid;
     private String providerUuid;
     private String comments;
-    private Date slotStartTime;
-    private List<Date> firstDaySlotsStartTime;
-    private List<Date> dayWiseSlotsStartTime;
+    private LocalDateTime slotStartTime;
+    private List<LocalDateTime> firstDaySlotsStartTime;
+    private List<LocalDateTime> dayWiseSlotsStartTime;
     private MedicationFrequency medicationFrequency;
 
     public enum MedicationFrequency {

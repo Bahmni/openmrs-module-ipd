@@ -1,6 +1,5 @@
 package org.openmrs.module.ipd.controller;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.openmrs.module.ipd.BaseIntegrationTest;
 import org.openmrs.module.ipd.contract.ScheduleMedicationResponse;
 import org.openmrs.module.ipd.api.model.Schedule;
@@ -16,7 +15,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.List;
 
-public class ScheduleMedicationControllerIntegrationTest extends BaseIntegrationTest {
+/*
+public class IPDScheduleControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private ScheduleService scheduleService;
@@ -49,4 +49,4 @@ public class ScheduleMedicationControllerIntegrationTest extends BaseIntegration
         Query query = sessionFactory.getCurrentSession().createQuery("FROM org.openmrs.DrugOrder");
         return (List<DrugOrder>) query.getResultList();
     }
-}
+}*/

@@ -16,7 +16,10 @@
             <column name="uuid" type="varchar(38)" />
             <column name="for_reference_id" type="int"> <constraints nullable="false"/> </column>
             <column name="by_reference_id" type="int"> <constraints nullable="false"/> </column>
-            <column name="service_type_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="service_category_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="service_type_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="speciality_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="order_id" type="int"> <constraints nullable="true"/> </column>
             <column defaultValueBoolean="true" name="active" type="BOOLEAN"><constraints nullable="false" /></column>
             <column name="start_date" type="DATETIME"> <constraints nullable="false"/> </column>
             <column name="end_date" type="DATETIME"> <constraints nullable="false"/> </column>
@@ -42,6 +45,75 @@
         <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="service_type_id"
                                  constraintName="ipd_schedule_service_type_fk"
                                  referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="service_category_id"
+                                 constraintName="ipd_schedule_service_category_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="speciality_id"
+                                 constraintName="ipd_schedule_speciality_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="order_id"
+                                 constraintName="ipd_schedule_order_fk"
+                                 referencedTableName="orders" referencedColumnNames="order_id"/>
+    </changeSet>
+
+    <changeSet id="ipd_slot_202307311600" author="tw">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ipd_slot"/>
+            </not>
+        </preConditions>
+        <createTable tableName="ipd_slot">
+            <column autoIncrement="true" name="slot_id" type="int"> <constraints nullable="false" primaryKey="true"/> </column>
+            <column name="uuid" type="varchar(38)" />
+
+            <column name="location_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="appointment_type_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="service_category_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="service_type_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="speciality_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="schedule_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="status" type="varchar(30)"><constraints nullable="false" /></column>
+            <column name="start_date_time" type="DATETIME"> <constraints nullable="false"/> </column>
+            <column name="end_date_time" type="DATETIME"> <constraints nullable="true"/> </column>
+            <column name="comments" type="varchar(255)" ><constraints nullable="true"/> </column>
+            <column defaultValueBoolean="false" name="overbooked" type="BOOLEAN"><constraints nullable="false" /></column>
+
+            <column name="creator" type="int"> <constraints nullable="false"/> </column>
+            <column name="date_created" type="DATETIME"> <constraints nullable="false"/> </column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="DATETIME"/>
+            <column defaultValueBoolean="false" name="voided" type="BOOLEAN"><constraints nullable="false" /></column>
+            <column name="date_voided" type="datetime" />
+            <column name="voided_by" type="int" />
+            <column name="void_reason" type="varchar(255)" />
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="creator"
+                                 constraintName="ipd_slot_creator_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="changed_by"
+                                 constraintName="ipd_slot_changed_by_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="voided_by"
+                                 constraintName="ipd_slot_voided_by_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="service_type_id"
+                                 constraintName="ipd_slot_service_type_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="service_category_id"
+                                 constraintName="ipd_slot_service_category_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="speciality_id"
+                                 constraintName="ipd_slot_speciality_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="appointment_type_id"
+                                 constraintName="ipd_slot_appointment_type_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="schedule_id"
+                                 constraintName="ipd_slot_schedule_fk"
+                                 referencedTableName="ipd_schedule" referencedColumnNames="schedule_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="location_id"
+                                 constraintName="ipd_slot_location_fk"
+                                 referencedTableName="location" referencedColumnNames="location_id"/>
     </changeSet>
 
     <changeSet id="ipd_reference_202307270855" author="tw">
@@ -76,11 +148,11 @@
         <addForeignKeyConstraint baseTableName="ipd_reference" baseColumnNames="retired_by"
                                  constraintName="ipd_reference_retired_by_fk"
                                  referencedTableName="users" referencedColumnNames="user_id"/>
-        <addForeignKeyConstraint baseTableName="ipd_reference" baseColumnNames="for_reference_id"
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="for_reference_id"
                                  constraintName="ipd_reference_managed_by_reference_fk"
                                  referencedTableName="ipd_reference"
                                  referencedColumnNames="reference_id"/>
-        <addForeignKeyConstraint baseTableName="ipd_reference" baseColumnNames="by_reference_id"
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="by_reference_id"
                                  constraintName="ipd_reference_for_reference_fk"
                                  referencedTableName="ipd_reference"
                                  referencedColumnNames="reference_id"/>

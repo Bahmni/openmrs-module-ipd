@@ -38,6 +38,7 @@
 	<properties>
 		<openmrsPlatformVersion>2.5.10</openmrsPlatformVersion>
 		<openMRSWebServicesVersion>2.39.0</openMRSWebServicesVersion>
+		<bedManagementVersion>5.13.0</bedManagementVersion>
 		<springVersion>5.2.14.RELEASE</springVersion>
 		<junitVersion>4.13</junitVersion>
 		<powerMockVersion>2.0.7</powerMockVersion>
@@ -153,6 +154,12 @@
 				<groupId>org.openmrs.web</groupId>
 				<artifactId>openmrs-web</artifactId>
 				<version>${openmrsPlatformVersion}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.openmrs.module</groupId>
+				<artifactId>bedmanagement-api</artifactId>
+				<version>${bedManagementVersion}</version>
 				<scope>provided</scope>
 			</dependency>
 
