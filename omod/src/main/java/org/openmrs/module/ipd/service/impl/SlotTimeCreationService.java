@@ -4,9 +4,11 @@ import org.openmrs.DrugOrder;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,44 +17,63 @@ import static org.openmrs.module.ipd.contract.ScheduleMedicationRequest.Medicati
 
 @Component
 public class SlotTimeCreationService {
-    public List<LocalDateTime> createSlotsStartTimeFrom(ScheduleMedicationRequest scheduleMedicationRequest, Schedule savedSchedule) {
+    public List<LocalDateTime> createSlotsStartTimeFrom(ScheduleMedicationRequest request, Schedule savedSchedule) {
         DrugOrder order = (DrugOrder) savedSchedule.getOrder();
+
+        if (request.getSlotStartTime() != null && request.getMedicationFrequency() == START_TIME_DURATION_FREQUENCY) {
+            return getSlotsStartTimeWithStartTimeDurationFrequency(request, order);
+        } else if (!CollectionUtils.isEmpty(request.getDayWiseSlotsStartTime()) && request.getMedicationFrequency() == FIXED_SCHEDULE_FREQUENCY) {
+            return getSlotsStartTimeWithFixedScheduleFrequency(request, order);
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<LocalDateTime> getSlotsStartTimeWithFixedScheduleFrequency(ScheduleMedicationRequest request, DrugOrder order) {
         int numberOfSlotsStartTimeToBeCreated = (int) (Math.ceil(order.getQuantity() / order.getDose()));
         List<LocalDateTime> slotsStartTime = new ArrayList<>();
 
-        if (scheduleMedicationRequest.getSlotStartTime() != null && scheduleMedicationRequest.getMedicationFrequency() == START_TIME_DURATION_FREQUENCY) {
-            int slotDurationInHours = (int) (Math.floor(24 / order.getFrequency().getFrequencyPerDay()));
-            LocalDateTime slotStartTime = scheduleMedicationRequest.getSlotStartTime();
-            while (numberOfSlotsStartTimeToBeCreated-- > 0) {
-                slotsStartTime.add(slotStartTime);
-                slotStartTime = slotStartTime.plusHours(slotDurationInHours);
-            }
-        } else if (scheduleMedicationRequest.getMedicationFrequency() == FIXED_SCHEDULE_FREQUENCY) {
-            if (scheduleMedicationRequest.getFirstDaySlotsStartTime() != null && !scheduleMedicationRequest.getFirstDaySlotsStartTime().isEmpty()) {
-                if (numberOfSlotsStartTimeToBeCreated >= scheduleMedicationRequest.getFirstDaySlotsStartTime().size()) {
-                    slotsStartTime.addAll(scheduleMedicationRequest.getFirstDaySlotsStartTime());
-                    numberOfSlotsStartTimeToBeCreated -= scheduleMedicationRequest.getFirstDaySlotsStartTime().size();
-                }
-            }
-            if (scheduleMedicationRequest.getDayWiseSlotsStartTime() != null && !scheduleMedicationRequest.getDayWiseSlotsStartTime().isEmpty()) {
+        if (!CollectionUtils.isEmpty(request.getFirstDaySlotsStartTime())) {
+            List<LocalDateTime> slotsToBeAddedForFirstDay = numberOfSlotsStartTimeToBeCreated < request.getFirstDaySlotsStartTime().size()
+                ? request.getFirstDaySlotsStartTime().subList(0, numberOfSlotsStartTimeToBeCreated)
+                : request.getFirstDaySlotsStartTime();
 
-                if (numberOfSlotsStartTimeToBeCreated >= scheduleMedicationRequest.getDayWiseSlotsStartTime().size()) {
-                    slotsStartTime.addAll(scheduleMedicationRequest.getDayWiseSlotsStartTime());
-                    numberOfSlotsStartTimeToBeCreated -= scheduleMedicationRequest.getDayWiseSlotsStartTime().size();
-                }
+            slotsStartTime.addAll(slotsToBeAddedForFirstDay);
+            numberOfSlotsStartTimeToBeCreated -= slotsToBeAddedForFirstDay.size();
+        }
 
-                List<LocalDateTime> nextSlotsStartTime = scheduleMedicationRequest.getDayWiseSlotsStartTime();
-                while (numberOfSlotsStartTimeToBeCreated > 0) {
-                    nextSlotsStartTime = nextSlotsStartTime.stream().map(slotStartTime -> slotStartTime.plusHours(24)).collect(Collectors.toList());
-                    if (numberOfSlotsStartTimeToBeCreated >= nextSlotsStartTime.size()) {
-                        slotsStartTime.addAll(nextSlotsStartTime);
-                        numberOfSlotsStartTimeToBeCreated -= nextSlotsStartTime.size();
-                    } else {
-                        slotsStartTime.addAll(nextSlotsStartTime.subList(0, numberOfSlotsStartTimeToBeCreated));
-                        numberOfSlotsStartTimeToBeCreated -= nextSlotsStartTime.subList(0, numberOfSlotsStartTimeToBeCreated).size();
-                    }
+        if (!CollectionUtils.isEmpty(request.getDayWiseSlotsStartTime()) && numberOfSlotsStartTimeToBeCreated > 0) {
+
+            List<LocalDateTime> initialSlotsToBeAddedForSecondDay = numberOfSlotsStartTimeToBeCreated < request.getDayWiseSlotsStartTime().size()
+                    ? request.getDayWiseSlotsStartTime().subList(0, numberOfSlotsStartTimeToBeCreated)
+                    : request.getDayWiseSlotsStartTime();
+            slotsStartTime.addAll(initialSlotsToBeAddedForSecondDay);
+            numberOfSlotsStartTimeToBeCreated -= initialSlotsToBeAddedForSecondDay.size();
+
+            List<LocalDateTime> nextSlotsStartTime = request.getDayWiseSlotsStartTime();
+            while (numberOfSlotsStartTimeToBeCreated > 0) {
+                nextSlotsStartTime = nextSlotsStartTime.stream().map(slotStartTime -> slotStartTime.plusHours(24)).collect(Collectors.toList());
+                if (numberOfSlotsStartTimeToBeCreated >= nextSlotsStartTime.size()) {
+                    slotsStartTime.addAll(nextSlotsStartTime);
+                    numberOfSlotsStartTimeToBeCreated -= nextSlotsStartTime.size();
+                } else {
+                    slotsStartTime.addAll(nextSlotsStartTime.subList(0, numberOfSlotsStartTimeToBeCreated));
+                    numberOfSlotsStartTimeToBeCreated -= nextSlotsStartTime.subList(0, numberOfSlotsStartTimeToBeCreated).size();
                 }
             }
+        }
+
+        return slotsStartTime;
+    }
+
+    private List<LocalDateTime> getSlotsStartTimeWithStartTimeDurationFrequency(ScheduleMedicationRequest request, DrugOrder order) {
+        int numberOfSlotsStartTimeToBeCreated = (int) (Math.ceil(order.getQuantity() / order.getDose()));
+        List<LocalDateTime> slotsStartTime = new ArrayList<>();
+        int slotDurationInHours = (int) (Math.floor(24 / order.getFrequency().getFrequencyPerDay()));
+        LocalDateTime slotStartTime = request.getSlotStartTime();
+        while (numberOfSlotsStartTimeToBeCreated-- > 0) {
+            slotsStartTime.add(slotStartTime);
+            slotStartTime = slotStartTime.plusHours(slotDurationInHours);
         }
         return slotsStartTime;
     }
