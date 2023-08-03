@@ -1,10 +1,10 @@
 package org.openmrs.module.ipd.factory;
 
 import org.openmrs.Concept;
-import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
+import org.openmrs.module.bedmanagement.BedDetails;
 import org.openmrs.module.bedmanagement.service.BedManagementService;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.Slot;
@@ -40,8 +40,10 @@ public class SlotFactory {
 
             String patientUuid = savedSchedule.getForReference().getTargetUuid();
             Patient patient = patientService.getPatientByUuid(patientUuid);
-            Location patientLocation = bedManagementService.getBedAssignmentDetailsByPatient(patient).getPhysicalLocation();
-            slot.setLocation(patientLocation);
+            BedDetails bedAssignmentDetailsByPatient = bedManagementService.getBedAssignmentDetailsByPatient(patient);
+            if(bedAssignmentDetailsByPatient != null){
+                slot.setLocation(bedAssignmentDetailsByPatient.getPhysicalLocation());
+            }
 
             Concept medicationRequestServiceType = conceptService.getConceptByName(IPD_MEDICATION_SERVICE_TYPE);
             slot.setServiceType(medicationRequestServiceType);

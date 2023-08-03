@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -26,5 +28,21 @@ public class ScheduleMedicationRequest {
     public enum MedicationFrequency {
         START_TIME_DURATION_FREQUENCY,
         FIXED_SCHEDULE_FREQUENCY
+    }
+
+    public LocalDateTime getSlotStartTimeAsLocaltime() {
+        return slotStartTime != null ? convertUTCToLocalTimeZone(slotStartTime): null;
+    }
+
+    public List<LocalDateTime> getFirstDaySlotsStartTimeAsLocalTime() {
+        return firstDaySlotsStartTime != null ? firstDaySlotsStartTime.stream().map(this::convertUTCToLocalTimeZone).collect(Collectors.toList()) : null;
+    }
+
+    public List<LocalDateTime> getDayWiseSlotsStartTimeAsLocalTime() {
+        return dayWiseSlotsStartTime != null ? dayWiseSlotsStartTime.stream().map(this::convertUTCToLocalTimeZone).collect(Collectors.toList()) : null;
+    }
+
+    private LocalDateTime convertUTCToLocalTimeZone(LocalDateTime slotStartTime) {
+        return slotStartTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
     }
 }

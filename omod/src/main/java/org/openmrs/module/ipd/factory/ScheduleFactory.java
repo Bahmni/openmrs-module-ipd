@@ -44,8 +44,8 @@ public class ScheduleFactory {
 
         schedule.setForReference(openmrsForReference);
         schedule.setByReference(openmrsByReference);
-        schedule.setStartDate(drugOrder.getEffectiveStartDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate());
-        schedule.setEndDate(drugOrder.getEffectiveStopDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate());
+        schedule.setStartDate(drugOrder.getEffectiveStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+        schedule.setEndDate(drugOrder.getEffectiveStopDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
         schedule.setServiceType(medicationRequestServiceType);
         schedule.setOrder(drugOrder);
         schedule.setActive(true);

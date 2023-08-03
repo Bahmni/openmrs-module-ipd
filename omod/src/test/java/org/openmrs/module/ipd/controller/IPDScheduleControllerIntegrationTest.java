@@ -1,14 +1,15 @@
 package org.openmrs.module.ipd.controller;
 
-import org.openmrs.module.ipd.BaseIntegrationTest;
-import org.openmrs.module.ipd.contract.ScheduleMedicationResponse;
-import org.openmrs.module.ipd.api.model.Schedule;
-import org.openmrs.module.ipd.api.service.ScheduleService;
-import org.codehaus.jackson.type.TypeReference;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.junit.Test;
 import org.openmrs.DrugOrder;
+import org.openmrs.module.bedmanagement.entity.BedPatientAssignment;
+import org.openmrs.module.ipd.BaseIntegrationTest;
+import org.openmrs.module.ipd.api.model.Schedule;
+import org.openmrs.module.ipd.api.service.ScheduleService;
+import org.openmrs.module.ipd.contract.ScheduleMedicationResponse;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -48,5 +49,10 @@ public class IPDScheduleControllerIntegrationTest extends BaseIntegrationTest {
     private List<DrugOrder> getAllDrudOrders() {
         Query query = sessionFactory.getCurrentSession().createQuery("FROM org.openmrs.DrugOrder");
         return (List<DrugOrder>) query.getResultList();
+    }
+
+    private List<BedPatientAssignment> getAllBedsAssignedToPatient() {
+        Query query = sessionFactory.getCurrentSession().createQuery("FROM org.openmrs.module.bedmanagement.entity.BedPatientAssignment");
+        return (List<BedPatientAssignment>) query.getResultList();
     }
 }*/
