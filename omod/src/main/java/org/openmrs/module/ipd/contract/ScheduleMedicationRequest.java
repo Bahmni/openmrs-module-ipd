@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.openmrs.module.ipd.util.DateTimeUtil;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.openmrs.module.ipd.util.DateTimeUtil.convertUTCToLocalTimeZone;
 
 @Getter
 @Builder
@@ -20,9 +22,9 @@ public class ScheduleMedicationRequest {
     private String orderUuid;
     private String providerUuid;
     private String comments;
-    private LocalDateTime slotStartTime;
-    private List<LocalDateTime> firstDaySlotsStartTime;
-    private List<LocalDateTime> dayWiseSlotsStartTime;
+    private Long slotStartTime;
+    private List<Long> firstDaySlotsStartTime;
+    private List<Long> dayWiseSlotsStartTime;
     private MedicationFrequency medicationFrequency;
 
     public enum MedicationFrequency {
@@ -35,14 +37,10 @@ public class ScheduleMedicationRequest {
     }
 
     public List<LocalDateTime> getFirstDaySlotsStartTimeAsLocalTime() {
-        return firstDaySlotsStartTime != null ? firstDaySlotsStartTime.stream().map(this::convertUTCToLocalTimeZone).collect(Collectors.toList()) : null;
+        return firstDaySlotsStartTime != null ? firstDaySlotsStartTime.stream().map(DateTimeUtil::convertUTCToLocalTimeZone).collect(Collectors.toList()) : null;
     }
 
     public List<LocalDateTime> getDayWiseSlotsStartTimeAsLocalTime() {
-        return dayWiseSlotsStartTime != null ? dayWiseSlotsStartTime.stream().map(this::convertUTCToLocalTimeZone).collect(Collectors.toList()) : null;
-    }
-
-    private LocalDateTime convertUTCToLocalTimeZone(LocalDateTime slotStartTime) {
-        return slotStartTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+        return dayWiseSlotsStartTime != null ? dayWiseSlotsStartTime.stream().map(DateTimeUtil::convertUTCToLocalTimeZone).collect(Collectors.toList()) : null;
     }
 }
