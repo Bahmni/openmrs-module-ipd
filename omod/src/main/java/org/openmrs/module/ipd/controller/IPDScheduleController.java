@@ -33,7 +33,7 @@ public class IPDScheduleController extends BaseRestController {
         this.ipdScheduleService = ipdScheduleService;
     }
 
-    @RequestMapping(value = "/medication", method = RequestMethod.POST)
+    @RequestMapping(value = "type/medication", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createMedicationSchedule(@Valid @RequestBody ScheduleMedicationRequest scheduleMedicationRequest) {
         try {

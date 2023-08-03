@@ -16,8 +16,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.List;
 
-/*
-public class IPDScheduleControllerIntegrationTest extends BaseIntegrationTest {
+/*public class IPDScheduleControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private ScheduleService scheduleService;
@@ -40,7 +39,7 @@ public class IPDScheduleControllerIntegrationTest extends BaseIntegrationTest {
                 "\"medicationFrequency\":\"START_TIME_DURATION_FREQUENCY\"" +
                 "}";
 
-        MockHttpServletResponse response = handle(newPostRequest("/rest/" + RestConstants.VERSION_1 + "/ipd/schedule/medication", content));
+        MockHttpServletResponse response = handle(newPostRequest("/rest/" + RestConstants.VERSION_1 + "/ipd/schedule/type/medication", content));
         ScheduleMedicationResponse scheduleMedicationResponse = deserialize(response, new TypeReference<ScheduleMedicationResponse>() {});
         Schedule savedSchedule = scheduleService.getSchedule(scheduleMedicationResponse.getId());
         scheduleService.purgeSchedule(savedSchedule);

@@ -20,7 +20,6 @@ public class ScheduleMedicationResponse {
     private String comments;
     private LocalDate startDate;
     private LocalDate endDate;
-    // Add list of default Slot response.
 
     public static ScheduleMedicationResponse constructFrom(Schedule schedule) {
         return ScheduleMedicationResponse.builder()
