@@ -69,11 +69,18 @@ public class SlotTimeCreationService {
     private List<LocalDateTime> getSlotsStartTimeWithStartTimeDurationFrequency(ScheduleMedicationRequest request, DrugOrder order) {
         int numberOfSlotsStartTimeToBeCreated = (int) (Math.ceil(order.getQuantity() / order.getDose()));
         List<LocalDateTime> slotsStartTime = new ArrayList<>();
-        int slotDurationInHours = (int) (Math.floor(24 / order.getFrequency().getFrequencyPerDay()));
+        Double slotDurationInHours =  24 / order.getFrequency().getFrequencyPerDay();
         LocalDateTime slotStartTime = request.getSlotStartTimeAsLocaltime();
         while (numberOfSlotsStartTimeToBeCreated-- > 0) {
             slotsStartTime.add(slotStartTime);
-            slotStartTime = slotStartTime.plusHours(slotDurationInHours);
+            if(slotDurationInHours.compareTo(1.0) >= 0)
+            {
+                slotStartTime = slotStartTime.plusHours(slotDurationInHours.longValue());
+            }
+            else {
+                Double minutesToBeAdded = 60 * slotDurationInHours;
+                slotStartTime = slotStartTime.plusMinutes(minutesToBeAdded.longValue());
+            }
         }
         return slotsStartTime;
     }

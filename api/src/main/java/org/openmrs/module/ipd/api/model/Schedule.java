@@ -25,10 +25,16 @@ public class Schedule extends BaseChangeableOpenmrsData {
 	@Column(name = "schedule_id")
 	private Integer id;
 
+	/**
+	 * Should we rename it to "subject"
+	 */
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "for_reference_id", referencedColumnName = "reference_id")
 	private Reference forReference;  // actor in fhir reference
 
+	/**
+	 * Should we rename it to "author"
+	 */
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "by_reference_id", referencedColumnName = "reference_id")
 	private Reference byReference; // actor in fhir reference
