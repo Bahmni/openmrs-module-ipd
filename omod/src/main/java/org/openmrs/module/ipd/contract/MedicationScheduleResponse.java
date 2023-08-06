@@ -13,8 +13,7 @@ import org.openmrs.module.webservices.rest.web.representation.Representation;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.openmrs.module.ipd.util.DateTimeUtil.convertLocalTimeToEpoc;
-import static org.openmrs.module.ipd.util.DateTimeUtil.convertLocalTimeToUTCEpoc;
+import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertLocalDateTimeToUTCEpoc;
 
 @Getter
 @Builder
@@ -37,8 +36,8 @@ public class MedicationScheduleResponse {
                 .uuid(schedule.getUuid())
                 .serviceType(schedule.getServiceType().getName().getName())
                 .comments(schedule.getComments())
-                .startDate(convertLocalTimeToEpoc(schedule.getStartDate()))
-                .endDate(convertLocalTimeToEpoc(schedule.getEndDate()))
+                .startDate(convertLocalDateTimeToUTCEpoc(schedule.getStartDate()))
+                .endDate(convertLocalDateTimeToUTCEpoc(schedule.getEndDate()))
                 .order(ConversionUtil.convertToRepresentation(schedule.getOrder(), Representation.FULL))
                 .slots(slots.stream().map(MedicationSlot::createFrom).collect(Collectors.toList()))
                 .build();
@@ -62,7 +61,7 @@ public class MedicationScheduleResponse {
                     .uuid(slot.getUuid())
                     .serviceType(slot.getServiceType().getName().getName())
                     .status(slot.getStatus().name())
-                    .startTime(convertLocalTimeToUTCEpoc(slot.getStartDateTime()))
+                    .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
                     .build();
         }
     }

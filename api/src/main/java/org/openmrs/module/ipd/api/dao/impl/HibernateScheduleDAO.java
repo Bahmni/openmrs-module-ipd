@@ -30,9 +30,4 @@ public class HibernateScheduleDAO implements ScheduleDAO {
 		sessionFactory.getCurrentSession().saveOrUpdate(schedule);
 		return schedule;
 	}
-
-	@Override
-	public void purgeSchedule(Schedule schedule) throws DAOException {
-		sessionFactory.getCurrentSession().delete(schedule);
-	}
 }

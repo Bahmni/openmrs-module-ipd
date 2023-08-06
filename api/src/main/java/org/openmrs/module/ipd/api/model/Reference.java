@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.openmrs.BaseOpenmrsMetadata;
+import org.openmrs.OpenmrsObject;
 
 import javax.persistence.*;
 
@@ -18,6 +19,12 @@ public class Reference extends BaseOpenmrsMetadata {
 	public Reference() {
 		setName("");
 	}
+
+	public Reference(String type, String targetUuid) {
+		this.type = type;
+		this.targetUuid = targetUuid;
+		this.setName(type + "/" + targetUuid);
+	}
 	
 	@EqualsAndHashCode.Include
 	@Id
@@ -25,9 +32,9 @@ public class Reference extends BaseOpenmrsMetadata {
 	@Column(name = "reference_id")
 	private Integer id;
 	
-	@Column(name = "target_type")
+	@Column(name = "target_type", nullable = false)
 	private String type;
 	
-	@Column(name = "target_uuid")
+	@Column(name = "target_uuid", nullable = false)
 	private String targetUuid;
 }

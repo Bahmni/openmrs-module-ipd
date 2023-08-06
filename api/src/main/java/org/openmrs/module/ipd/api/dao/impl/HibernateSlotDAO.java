@@ -3,6 +3,7 @@ package org.openmrs.module.ipd.api.dao.impl;
 import org.hibernate.query.Query;
 import org.openmrs.Concept;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
+import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.hibernate.SessionFactory;
 import org.openmrs.api.db.DAOException;
@@ -38,17 +39,14 @@ public class HibernateSlotDAO implements SlotDAO {
 	}
 
 	@Override
-	public void purgeSlot(Slot slot) throws DAOException {
-		sessionFactory.getCurrentSession().delete(slot);
-	}
-
-	@Override
-	public List<Slot> getSlotByForReferenceAndForDateAndServiceType(String forReference, LocalDate forDate, Concept serviceType) {
+	public List<Slot> getSlotsByForReferenceIdAndForDateAndServiceType(Reference forReference, LocalDate forDate, Concept serviceType) {
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Slot slot WHERE slot.schedule.forReference.targetUuid=:forReference and slot.schedule.forReference.type='org.openmrs.Patient' and slot.schedule.startDate<=:forDate and slot.schedule.endDate>=:forDate and slot.serviceType=:serviceType");
+				.createQuery("FROM Slot slot WHERE slot.schedule.forReference=:forReference and YEAR(slot.startDateTime)=:forYear and MONTH(slot.startDateTime)=:forMonth and DAY(slot.startDateTime)=:forDay and slot.serviceType=:serviceType");
 
 		query.setParameter("forReference", forReference);
-		query.setParameter("forDate", forDate);
+		query.setParameter("forYear", forDate.getYear());
+		query.setParameter("forMonth", forDate.getMonthValue());
+		query.setParameter("forDay", forDate.getDayOfMonth());
 		query.setParameter("serviceType", serviceType);
 
 		return query.getResultList();

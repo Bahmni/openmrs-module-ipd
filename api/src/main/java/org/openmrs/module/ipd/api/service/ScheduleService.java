@@ -13,7 +13,4 @@ public interface ScheduleService extends OpenmrsService {
 	
 //	@Authorized({ PrivilegeConstants.EDIT_IPD_SCHEDULES })
 	Schedule saveSchedule(Schedule schedule) throws APIException;
-
-//	@Authorized({ PrivilegeConstants.EDIT_IPD_SCHEDULES })
-	void purgeSchedule(Schedule schedule) throws APIException;
 }

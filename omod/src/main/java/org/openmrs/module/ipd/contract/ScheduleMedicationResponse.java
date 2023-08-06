@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.openmrs.module.ipd.api.model.Schedule;
 
-import java.time.LocalDate;
+import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertLocalDateTimeToUTCEpoc;
 
 @Builder
 @Getter
@@ -18,16 +18,16 @@ public class ScheduleMedicationResponse {
     private Integer id;
     private String patientUuid;
     private String comments;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private long startDate;
+    private long endDate;
 
     public static ScheduleMedicationResponse constructFrom(Schedule schedule) {
         return ScheduleMedicationResponse.builder()
             .id(schedule.getId())
             .patientUuid(schedule.getForReference().getUuid())
             .comments(schedule.getComments())
-            .startDate(schedule.getStartDate())
-            .endDate(schedule.getEndDate())
+            .startDate(convertLocalDateTimeToUTCEpoc(schedule.getStartDate()))
+            .endDate(convertLocalDateTimeToUTCEpoc(schedule.getEndDate()))
             .build();
     }
 }

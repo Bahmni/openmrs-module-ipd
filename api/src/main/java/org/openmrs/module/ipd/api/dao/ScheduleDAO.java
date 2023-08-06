@@ -10,6 +10,4 @@ public interface ScheduleDAO {
 	Schedule getSchedule(Integer scheduleId) throws DAOException;
 	
 	Schedule saveSchedule(Schedule schedule) throws DAOException;
-
-	void purgeSchedule(Schedule schedule) throws DAOException;
 }

@@ -50,7 +50,7 @@ public class Slot extends BaseChangeableOpenmrsData {
 	 * The Service Type of the Schedule
 	 */
 	@OneToOne
-	@JoinColumn(name = "service_type_id", referencedColumnName = "concept_id")
+	@JoinColumn(name = "service_type_id", referencedColumnName = "concept_id", nullable = false)
 	private Concept serviceType; // as per schedule service type
 	
 	/**
@@ -71,7 +71,7 @@ public class Slot extends BaseChangeableOpenmrsData {
 	 * The entity that belongs to a Schedule
 	 */
 	@ManyToOne
-	@JoinColumn(name = "schedule_id", referencedColumnName = "schedule_id")
+	@JoinColumn(name = "schedule_id", referencedColumnName = "schedule_id", nullable = false)
 	private Schedule schedule;
 	
 	/**
@@ -99,8 +99,8 @@ public class Slot extends BaseChangeableOpenmrsData {
 	@Enumerated(EnumType.STRING)
 	private SlotStatus status = SlotStatus.SCHEDULED;
 
-	@Column(name = "overbooked")
-	private Boolean overbooked = false; // not is use
+	@Column(name = "overbooked", nullable = false)
+	private Boolean overbooked = Boolean.FALSE; // not is use
 }
 
 

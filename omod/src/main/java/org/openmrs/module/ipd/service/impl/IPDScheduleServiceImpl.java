@@ -1,9 +1,12 @@
 package org.openmrs.module.ipd.service.impl;
 
 import org.openmrs.Concept;
+import org.openmrs.Patient;
 import org.openmrs.api.ConceptService;
+import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.Slot;
+import org.openmrs.module.ipd.api.service.ReferenceService;
 import org.openmrs.module.ipd.api.service.ScheduleService;
 import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
@@ -29,14 +32,17 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     private final SlotTimeCreationService slotTimeCreationService;
     private final ConceptService conceptService;
 
+    private final ReferenceService referenceService;
+
     @Autowired
-    public IPDScheduleServiceImpl(ScheduleService scheduleService, ScheduleFactory scheduleFactory, SlotFactory slotFactory, SlotService slotService, SlotTimeCreationService slotTimeCreationService, ConceptService conceptService) {
+    public IPDScheduleServiceImpl(ScheduleService scheduleService, ScheduleFactory scheduleFactory, SlotFactory slotFactory, SlotService slotService, SlotTimeCreationService slotTimeCreationService, ConceptService conceptService, ReferenceService referenceService) {
         this.scheduleService = scheduleService;
         this.scheduleFactory = scheduleFactory;
         this.slotFactory = slotFactory;
         this.slotService = slotService;
         this.slotTimeCreationService = slotTimeCreationService;
         this.conceptService = conceptService;
+        this.referenceService = referenceService;
     }
 
     @Override
@@ -54,6 +60,7 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     @Override
     public List<Slot> getMedicationSlots(String patientUuid, String serviceType, LocalDate forDate) {
         Concept concept = conceptService.getConceptByName(serviceType);
-        return slotService.getSlotByForReferenceAndForDateAndServiceType(patientUuid, forDate, concept);
+        Reference reference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid).get();
+        return slotService.getSlotByForReferenceIdAndForDateAndServiceType(reference, forDate, concept);
     }
 }

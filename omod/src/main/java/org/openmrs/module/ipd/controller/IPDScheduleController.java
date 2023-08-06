@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.openmrs.module.ipd.contract.MedicationScheduleResponse.createFrom;
-import static org.openmrs.module.ipd.util.DateTimeUtil.convertUTCToLocalTimeZone;
+import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertEpocUTCToLocalTimeZone;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -56,7 +56,7 @@ public class IPDScheduleController extends BaseRestController {
                                                         @RequestParam(value = "serviceType") String serviceType,
                                                         @RequestParam(value = "forDate") long forDate) {
         try {
-            LocalDate localDate = convertUTCToLocalTimeZone(forDate).toLocalDate();
+            LocalDate localDate = convertEpocUTCToLocalTimeZone(forDate).toLocalDate();
             List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, serviceType, localDate);
             Map<Schedule, List<Slot>> slotsBySchedule = slots.stream().collect(Collectors.groupingBy(Slot::getSchedule));
             List<MedicationScheduleResponse> responses = slotsBySchedule.entrySet().stream().map(entry -> createFrom(entry.getKey(), entry.getValue())).collect(Collectors.toList());

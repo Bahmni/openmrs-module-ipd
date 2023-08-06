@@ -34,9 +34,4 @@ public class ScheduleServiceImpl extends BaseOpenmrsService implements ScheduleS
 	public Schedule saveSchedule(Schedule schedule) throws APIException {
 		return scheduleDAO.saveSchedule(schedule);
 	}
-
-	@Override
-	public void purgeSchedule(Schedule schedule) throws APIException {
-		scheduleDAO.purgeSchedule(schedule);
-	}
 }

@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.openmrs.module.ipd.util.DateTimeUtil;
+import org.openmrs.module.ipd.api.util.DateTimeUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.openmrs.module.ipd.util.DateTimeUtil.convertUTCToLocalTimeZone;
+import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertEpocUTCToLocalTimeZone;
 
 @Getter
 @Builder
@@ -33,14 +33,14 @@ public class ScheduleMedicationRequest {
     }
 
     public LocalDateTime getSlotStartTimeAsLocaltime() {
-        return slotStartTime != null ? convertUTCToLocalTimeZone(slotStartTime): null;
+        return slotStartTime != null ? convertEpocUTCToLocalTimeZone(slotStartTime): null;
     }
 
     public List<LocalDateTime> getFirstDaySlotsStartTimeAsLocalTime() {
-        return firstDaySlotsStartTime != null ? firstDaySlotsStartTime.stream().map(DateTimeUtil::convertUTCToLocalTimeZone).collect(Collectors.toList()) : null;
+        return firstDaySlotsStartTime != null ? firstDaySlotsStartTime.stream().map(DateTimeUtil::convertEpocUTCToLocalTimeZone).collect(Collectors.toList()) : null;
     }
 
     public List<LocalDateTime> getDayWiseSlotsStartTimeAsLocalTime() {
-        return dayWiseSlotsStartTime != null ? dayWiseSlotsStartTime.stream().map(DateTimeUtil::convertUTCToLocalTimeZone).collect(Collectors.toList()) : null;
+        return dayWiseSlotsStartTime != null ? dayWiseSlotsStartTime.stream().map(DateTimeUtil::convertEpocUTCToLocalTimeZone).collect(Collectors.toList()) : null;
     }
 }

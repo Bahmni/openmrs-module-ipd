@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.api.service;
 
 import org.openmrs.Concept;
+import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.api.APIException;
 import org.openmrs.api.OpenmrsService;
@@ -18,8 +19,5 @@ public interface SlotService extends OpenmrsService {
 //	@Authorized({ PrivilegeConstants.EDIT_IPD_SLOTS })
 	Slot saveSlot(Slot slot) throws APIException;
 
-//	@Authorized({ PrivilegeConstants.EDIT_IPD_SLOTS })
-	void purgeSlot(Slot slot) throws APIException;
-
-	List<Slot> getSlotByForReferenceAndForDateAndServiceType(String forReference, LocalDate forDate, Concept serviceType);
+	List<Slot> getSlotByForReferenceIdAndForDateAndServiceType(Reference forReference, LocalDate forDate, Concept serviceType);
 }

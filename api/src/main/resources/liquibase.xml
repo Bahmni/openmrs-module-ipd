@@ -126,7 +126,7 @@
         <createTable tableName="ipd_reference">
             <column name="reference_id" type="int" autoIncrement="true"><constraints primaryKey="true"/></column>
             <column name="target_type" type="varchar(255)"><constraints nullable="false"/></column>
-            <column name="target_uuid" type="varchar(38)"><constraints unique="true"/></column>
+            <column name="target_uuid" type="varchar(38)"><constraints unique="true" nullable="false" /></column>
             <column name="description" type="varchar(255)"/>
             <column name="creator" type="int"><constraints nullable="false"/></column>
             <column name="date_created" type="datetime"><constraints nullable="false"/></column>

@@ -10,9 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.Optional;
 
 @Repository
@@ -26,7 +23,6 @@ public class HibernateReferenceDAO implements ReferenceDAO {
 	public HibernateReferenceDAO(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
-
 
 	@Override
 	public Optional<Reference> getReferenceByTypeAndTargetUUID(String type, String targetUuid) throws DAOException {

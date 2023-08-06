@@ -8,7 +8,7 @@ import org.openmrs.Concept;
 import org.openmrs.Order;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -29,14 +29,14 @@ public class Schedule extends BaseChangeableOpenmrsData {
 	 * Should we rename it to "subject"
 	 */
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "for_reference_id", referencedColumnName = "reference_id")
+	@JoinColumn(name = "for_reference_id", referencedColumnName = "reference_id", nullable = false)
 	private Reference forReference;  // actor in fhir reference
 
 	/**
 	 * Should we rename it to "author"
 	 */
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "by_reference_id", referencedColumnName = "reference_id")
+	@JoinColumn(name = "by_reference_id", referencedColumnName = "reference_id", nullable = false)
 	private Reference byReference; // actor in fhir reference
 
 	@Column(name = "active", nullable = false)
@@ -47,7 +47,7 @@ public class Schedule extends BaseChangeableOpenmrsData {
 	private Concept serviceCategory; // null not in use
 
 	@OneToOne
-	@JoinColumn(name = "service_type_id", referencedColumnName = "concept_id")
+	@JoinColumn(name = "service_type_id", referencedColumnName = "concept_id", nullable = false)
 	private Concept serviceType;
 
 	@OneToOne
@@ -59,12 +59,11 @@ public class Schedule extends BaseChangeableOpenmrsData {
 	private Order order;
 
 	@Column(name = "start_date", nullable = false)
-	private LocalDate startDate;
+	private LocalDateTime startDate;
 
 	@Column(name = "end_date", nullable = false)
-	private LocalDate endDate;
+	private LocalDateTime endDate;
 
 	@Column(name = "comments")
 	private String comments;
-
 }

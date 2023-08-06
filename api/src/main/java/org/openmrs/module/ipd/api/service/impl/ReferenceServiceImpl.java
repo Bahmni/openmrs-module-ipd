@@ -2,7 +2,7 @@ package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.api.APIException;
 import org.openmrs.api.impl.BaseOpenmrsService;
-import org.openmrs.module.ipd.api.dao.impl.HibernateReferenceDAO;
+import org.openmrs.module.ipd.api.dao.ReferenceDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.service.ReferenceService;
 import org.slf4j.Logger;
@@ -19,21 +19,21 @@ public class ReferenceServiceImpl extends BaseOpenmrsService implements Referenc
 
 	private static final Logger log = LoggerFactory.getLogger(ReferenceServiceImpl.class);
 
-	private final HibernateReferenceDAO hibernateReferenceDAO;
+	private final ReferenceDAO referenceDAO;
 
 	@Autowired
-	public ReferenceServiceImpl(HibernateReferenceDAO hibernateReferenceDAO) {
-		this.hibernateReferenceDAO = hibernateReferenceDAO;
+	public ReferenceServiceImpl(ReferenceDAO referenceDAO) {
+		this.referenceDAO = referenceDAO;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<Reference> getReferenceByTypeAndTargetUUID(String type, String targetUuid) throws APIException {
-		return hibernateReferenceDAO.getReferenceByTypeAndTargetUUID(type, targetUuid);
+		return referenceDAO.getReferenceByTypeAndTargetUUID(type, targetUuid);
 	}
 
 	@Override
 	public Reference saveReference(Reference reference) throws APIException {
-		return hibernateReferenceDAO.saveReference(reference);
+		return referenceDAO.saveReference(reference);
 	}
 }

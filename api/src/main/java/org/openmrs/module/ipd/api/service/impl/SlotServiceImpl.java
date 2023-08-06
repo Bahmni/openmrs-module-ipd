@@ -2,6 +2,7 @@ package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.Concept;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
+import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.api.APIException;
@@ -40,12 +41,8 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	}
 
 	@Override
-	public void purgeSlot(Slot slot) throws APIException {
-		slotDAO.purgeSlot(slot);
-	}
-
-	@Override
-	public List<Slot> getSlotByForReferenceAndForDateAndServiceType(String forReference, LocalDate forDate, Concept serviceType) {
-		return slotDAO.getSlotByForReferenceAndForDateAndServiceType(forReference, forDate, serviceType);
+	@Transactional(readOnly = true)
+	public List<Slot> getSlotByForReferenceIdAndForDateAndServiceType(Reference forReference, LocalDate forDate, Concept serviceType) {
+		return slotDAO.getSlotsByForReferenceIdAndForDateAndServiceType(forReference, forDate, serviceType);
 	}
 }
