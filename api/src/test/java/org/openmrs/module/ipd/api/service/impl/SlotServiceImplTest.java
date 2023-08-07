@@ -67,10 +67,10 @@ public class SlotServiceImplTest {
 
         Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
 
-        Mockito.when(slotDAO.getSlotsByForReferenceIdAndForDateAndServiceType(patientReference, today, medicationRequestConcept)).thenReturn(slots);
+        Mockito.when(slotDAO.getSlotsBySubjectReferenceIdAndForDateAndServiceType(patientReference, today, medicationRequestConcept)).thenReturn(slots);
 
-        slotService.getSlotByForReferenceIdAndForDateAndServiceType(patientReference, today, medicationRequestConcept);
+        slotService.getSlotsBySubjectReferenceIdAndForDateAndServiceType(patientReference, today, medicationRequestConcept);
 
-        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsByForReferenceIdAndForDateAndServiceType(patientReference, today, medicationRequestConcept);
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectReferenceIdAndForDateAndServiceType(patientReference, today, medicationRequestConcept);
     }
 }

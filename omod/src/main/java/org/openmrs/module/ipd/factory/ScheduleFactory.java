@@ -22,7 +22,6 @@ public class ScheduleFactory {
 
     private final OrderService orderService;
     private final ConceptService conceptService;
-
     private final ReferenceService referenceService;
 
     private final String IPD_MEDICATION_SERVICE_TYPE  = "MedicationRequest";
@@ -40,11 +39,11 @@ public class ScheduleFactory {
         DrugOrder drugOrder = (DrugOrder) orderService.getOrderByUuid(request.getOrderUuid());
         Concept medicationRequestServiceType = conceptService.getConceptByName(IPD_MEDICATION_SERVICE_TYPE);
 
-        Reference openmrsForReference = getReference(Patient.class.getTypeName(), request.getPatientUuid());
-        Reference openmrsByReference = getReference(Provider.class.getTypeName(), request.getProviderUuid());
+        Reference subject = getReference(Patient.class.getTypeName(), request.getPatientUuid());
+        Reference actor = getReference(Provider.class.getTypeName(), request.getProviderUuid());
 
-        schedule.setForReference(openmrsForReference);
-        schedule.setByReference(openmrsByReference);
+        schedule.setSubject(subject);
+        schedule.setActor(actor);
         schedule.setStartDate(convertDateToLocalDateTime(drugOrder.getEffectiveStartDate()));
         schedule.setEndDate(convertDateToLocalDateTime(drugOrder.getEffectiveStopDate()));
         schedule.setServiceType(medicationRequestServiceType);

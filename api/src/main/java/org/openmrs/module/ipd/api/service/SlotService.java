@@ -19,5 +19,5 @@ public interface SlotService extends OpenmrsService {
 //	@Authorized({ PrivilegeConstants.EDIT_IPD_SLOTS })
 	Slot saveSlot(Slot slot) throws APIException;
 
-	List<Slot> getSlotByForReferenceIdAndForDateAndServiceType(Reference forReference, LocalDate forDate, Concept serviceType);
+	List<Slot> getSlotsBySubjectReferenceIdAndForDateAndServiceType(Reference subject, LocalDate forDate, Concept serviceType);
 }

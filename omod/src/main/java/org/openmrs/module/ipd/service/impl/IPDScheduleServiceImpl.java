@@ -31,7 +31,6 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     private final SlotService slotService;
     private final SlotTimeCreationService slotTimeCreationService;
     private final ConceptService conceptService;
-
     private final ReferenceService referenceService;
 
     @Autowired
@@ -47,7 +46,6 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
 
     @Override
     public Schedule saveMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest) {
-
         Schedule schedule = scheduleFactory.createScheduleForMedicationFrom(scheduleMedicationRequest);
         Schedule savedSchedule = scheduleService.saveSchedule(schedule);
         List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, savedSchedule);
@@ -61,6 +59,6 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     public List<Slot> getMedicationSlots(String patientUuid, String serviceType, LocalDate forDate) {
         Concept concept = conceptService.getConceptByName(serviceType);
         Reference reference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid).get();
-        return slotService.getSlotByForReferenceIdAndForDateAndServiceType(reference, forDate, concept);
+        return slotService.getSlotsBySubjectReferenceIdAndForDateAndServiceType(reference, forDate, concept);
     }
 }

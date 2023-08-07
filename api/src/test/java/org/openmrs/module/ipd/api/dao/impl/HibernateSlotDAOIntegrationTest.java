@@ -16,7 +16,6 @@ import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -43,8 +42,8 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
 
         Schedule schedule = new Schedule();
         schedule.setOrder(drugOrder);
-        schedule.setForReference(patientReference);
-        schedule.setByReference(providerReference);
+        schedule.setSubject(patientReference);
+        schedule.setActor(providerReference);
         schedule.setStartDate(startDate);
         schedule.setEndDate(endDate);
         schedule.setServiceType(testConcept);
@@ -76,8 +75,8 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
 
         Schedule schedule = new Schedule();
         schedule.setOrder(drugOrder);
-        schedule.setForReference(patientReference);
-        schedule.setByReference(providerReference);
+        schedule.setSubject(patientReference);
+        schedule.setActor(providerReference);
         schedule.setStartDate(startDate);
         schedule.setEndDate(endDate);
         schedule.setServiceType(testConcept);
@@ -110,8 +109,8 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
 
         Schedule schedule = new Schedule();
         schedule.setOrder(drugOrder);
-        schedule.setForReference(patientReference);
-        schedule.setByReference(providerReference);
+        schedule.setSubject(patientReference);
+        schedule.setActor(providerReference);
         schedule.setStartDate(startDate);
         schedule.setEndDate(endDate);
         schedule.setServiceType(testConcept);
@@ -133,7 +132,7 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         Slot savedSlot1 = slotDAO.saveSlot(slot1);
         Slot savedSlot2 = slotDAO.saveSlot(slot2);
 
-        List<Slot> slotsAgainstSchedule = slotDAO.getSlotsByForReferenceIdAndForDateAndServiceType(patientReference, slotStartTime.toLocalDate(), testConcept);
+        List<Slot> slotsAgainstSchedule = slotDAO.getSlotsBySubjectReferenceIdAndForDateAndServiceType(patientReference, slotStartTime.toLocalDate(), testConcept);
 
         Assertions.assertEquals(1, slotsAgainstSchedule.size());
 

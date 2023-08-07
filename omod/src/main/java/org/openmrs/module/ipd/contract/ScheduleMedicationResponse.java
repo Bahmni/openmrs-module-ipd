@@ -24,7 +24,7 @@ public class ScheduleMedicationResponse {
     public static ScheduleMedicationResponse constructFrom(Schedule schedule) {
         return ScheduleMedicationResponse.builder()
             .id(schedule.getId())
-            .patientUuid(schedule.getForReference().getUuid())
+            .patientUuid(schedule.getSubject().getUuid())
             .comments(schedule.getComments())
             .startDate(convertLocalDateTimeToUTCEpoc(schedule.getStartDate()))
             .endDate(convertLocalDateTimeToUTCEpoc(schedule.getEndDate()))

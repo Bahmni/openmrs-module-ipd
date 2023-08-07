@@ -39,11 +39,11 @@ public class HibernateSlotDAO implements SlotDAO {
 	}
 
 	@Override
-	public List<Slot> getSlotsByForReferenceIdAndForDateAndServiceType(Reference forReference, LocalDate forDate, Concept serviceType) {
+	public List<Slot> getSlotsBySubjectReferenceIdAndForDateAndServiceType(Reference subject, LocalDate forDate, Concept serviceType) {
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Slot slot WHERE slot.schedule.forReference=:forReference and YEAR(slot.startDateTime)=:forYear and MONTH(slot.startDateTime)=:forMonth and DAY(slot.startDateTime)=:forDay and slot.serviceType=:serviceType");
+				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and YEAR(slot.startDateTime)=:forYear and MONTH(slot.startDateTime)=:forMonth and DAY(slot.startDateTime)=:forDay and slot.serviceType=:serviceType");
 
-		query.setParameter("forReference", forReference);
+		query.setParameter("subject", subject);
 		query.setParameter("forYear", forDate.getYear());
 		query.setParameter("forMonth", forDate.getMonthValue());
 		query.setParameter("forDay", forDate.getDayOfMonth());

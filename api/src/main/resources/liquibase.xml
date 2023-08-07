@@ -14,8 +14,8 @@
         <createTable tableName="ipd_schedule">
             <column autoIncrement="true" name="schedule_id" type="int"> <constraints nullable="false" primaryKey="true"/> </column>
             <column name="uuid" type="varchar(38)" />
-            <column name="for_reference_id" type="int"> <constraints nullable="false"/> </column>
-            <column name="by_reference_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="subject_reference_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="actor_reference_id" type="int"> <constraints nullable="false"/> </column>
             <column name="service_category_id" type="int"> <constraints nullable="true"/> </column>
             <column name="service_type_id" type="int"> <constraints nullable="false"/> </column>
             <column name="speciality_id" type="int"> <constraints nullable="true"/> </column>
@@ -148,17 +148,22 @@
         <addForeignKeyConstraint baseTableName="ipd_reference" baseColumnNames="retired_by"
                                  constraintName="ipd_reference_retired_by_fk"
                                  referencedTableName="users" referencedColumnNames="user_id"/>
-        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="for_reference_id"
-                                 constraintName="ipd_reference_managed_by_reference_fk"
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="subject_reference_id"
+                                 constraintName="ipd_reference_for_reference_fk"
                                  referencedTableName="ipd_reference"
                                  referencedColumnNames="reference_id"/>
-        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="by_reference_id"
-                                 constraintName="ipd_reference_for_reference_fk"
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="actor_reference_id"
+                                 constraintName="ipd_reference_managed_by_reference_fk"
                                  referencedTableName="ipd_reference"
                                  referencedColumnNames="reference_id"/>
     </changeSet>
 
     <changeSet id="ipd_concept_202307271045" author="tw">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept where short_name='MedicationRequest' and description='MedicationRequest';
+            </sqlCheck>
+        </preConditions>
         <comment>Add concept Medication Request</comment>
         <sql>
             insert into concept (retired, short_name, description, datatype_id, class_id, is_set, creator, date_created,
@@ -171,6 +176,11 @@
     </changeSet>
 
     <changeSet id="ipd_concept_name_202307271046" author="tw">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept_name where name ='MedicationRequest';
+            </sqlCheck>
+        </preConditions>
         <comment>Add concept-name Medication Request</comment>
         <sql>
             insert into concept_name (concept_id, name, locale, locale_preferred, creator, date_created,

@@ -27,17 +27,19 @@ public class Schedule extends BaseChangeableOpenmrsData {
 
 	/**
 	 * Should we rename it to "subject"
+	 * This can have reference for which the schedule is being created
 	 */
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "for_reference_id", referencedColumnName = "reference_id", nullable = false)
-	private Reference forReference;  // actor in fhir reference
+	@JoinColumn(name = "subject_reference_id", referencedColumnName = "reference_id", nullable = false)
+	private Reference subject;
 
 	/**
-	 * Should we rename it to "author"
+	 * Should we rename it to "carer/executor/  actor"
+	 * This can have reference which execute the schedule is being created
 	 */
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "by_reference_id", referencedColumnName = "reference_id", nullable = false)
-	private Reference byReference; // actor in fhir reference
+	@JoinColumn(name = "actor_reference_id", referencedColumnName = "reference_id", nullable = false)
+	private Reference actor;
 
 	@Column(name = "active", nullable = false)
 	private boolean active = Boolean.TRUE;

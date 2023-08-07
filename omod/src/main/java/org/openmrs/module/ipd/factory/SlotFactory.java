@@ -38,7 +38,7 @@ public class SlotFactory {
         return slotsStartTime.stream().map(slotStartTime -> {
             Slot slot = new Slot();
 
-            String patientUuid = savedSchedule.getForReference().getTargetUuid();
+            String patientUuid = savedSchedule.getSubject().getTargetUuid();
             Patient patient = patientService.getPatientByUuid(patientUuid);
             BedDetails bedAssignmentDetailsByPatient = bedManagementService.getBedAssignmentDetailsByPatient(patient);
             if(bedAssignmentDetailsByPatient != null){
