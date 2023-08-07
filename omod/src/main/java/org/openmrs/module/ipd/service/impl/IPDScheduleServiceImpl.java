@@ -5,6 +5,7 @@ import org.openmrs.Patient;
 import org.openmrs.api.ConceptService;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
+import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.ReferenceService;
 import org.openmrs.module.ipd.api.service.ScheduleService;
@@ -56,8 +57,8 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     }
 
     @Override
-    public List<Slot> getMedicationSlots(String patientUuid, String serviceType, LocalDate forDate) {
-        Concept concept = conceptService.getConceptByName(serviceType);
+    public List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, LocalDate forDate) {
+        Concept concept = conceptService.getConceptByName(serviceType.conceptName());
         Reference reference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid).get();
         return slotService.getSlotsBySubjectReferenceIdAndForDateAndServiceType(reference, forDate, concept);
     }

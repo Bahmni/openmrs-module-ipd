@@ -15,14 +15,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.openmrs.module.ipd.contract.MedicationScheduleResponse.createFrom;
+import static org.openmrs.module.ipd.api.model.ServiceType.MEDICATION_REQUEST;
 import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertEpocUTCToLocalTimeZone;
+import static org.openmrs.module.ipd.contract.MedicationScheduleResponse.createFrom;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -40,7 +40,7 @@ public class IPDScheduleController extends BaseRestController {
 
     @RequestMapping(value = "type/medication", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createMedicationSchedule(@Valid @RequestBody ScheduleMedicationRequest scheduleMedicationRequest) {
+    public ResponseEntity<Object> createMedicationSchedule(@RequestBody ScheduleMedicationRequest scheduleMedicationRequest) {
         try {
             Schedule schedule = ipdScheduleService.saveMedicationSchedule(scheduleMedicationRequest);
             return new ResponseEntity<>(ScheduleMedicationResponse.constructFrom(schedule), OK);
@@ -52,18 +52,20 @@ public class IPDScheduleController extends BaseRestController {
 
     @RequestMapping(value = "type/medication", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Object> getMedicationSchedule(@Valid @RequestParam(value = "patientUuid") String patientUuid,
-                                                        @RequestParam(value = "serviceType") String serviceType,
+    public ResponseEntity<Object> getMedicationSchedule(@RequestParam(value = "patientUuid") String patientUuid,
                                                         @RequestParam(value = "forDate") long forDate) {
         try {
             LocalDate localDate = convertEpocUTCToLocalTimeZone(forDate).toLocalDate();
-            List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, serviceType, localDate);
-            Map<Schedule, List<Slot>> slotsBySchedule = slots.stream().collect(Collectors.groupingBy(Slot::getSchedule));
-            List<MedicationScheduleResponse> responses = slotsBySchedule.entrySet().stream().map(entry -> createFrom(entry.getKey(), entry.getValue())).collect(Collectors.toList());
-            return new ResponseEntity<>(responses, OK);
+            List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, localDate);
+            return new ResponseEntity<>(constructResponse(slots), OK);
         } catch (Exception e) {
             log.error("Runtime error while trying to create new schedule", e);
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
         }
+    }
+
+    private List<MedicationScheduleResponse> constructResponse(List<Slot> slots) {
+        Map<Schedule, List<Slot>> slotsBySchedule = slots.stream().collect(Collectors.groupingBy(Slot::getSchedule));
+        return slotsBySchedule.entrySet().stream().map(entry -> createFrom(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 }

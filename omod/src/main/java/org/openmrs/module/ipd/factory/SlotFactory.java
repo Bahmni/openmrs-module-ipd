@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.openmrs.module.ipd.api.model.ServiceType.MEDICATION_REQUEST;
 import static org.openmrs.module.ipd.api.model.Slot.SlotStatus.SCHEDULED;
 
 @Component
@@ -23,8 +24,6 @@ public class SlotFactory {
     private final BedManagementService bedManagementService;
     private final ConceptService conceptService;
     private final PatientService patientService;
-
-    private final String IPD_MEDICATION_SERVICE_TYPE  = "MedicationRequest";
 
     @Autowired
     public SlotFactory(BedManagementService bedManagementService, ConceptService conceptService, PatientService patientService) {
@@ -45,7 +44,7 @@ public class SlotFactory {
                 slot.setLocation(bedAssignmentDetailsByPatient.getPhysicalLocation());
             }
 
-            Concept medicationRequestServiceType = conceptService.getConceptByName(IPD_MEDICATION_SERVICE_TYPE);
+            Concept medicationRequestServiceType = conceptService.getConceptByName(MEDICATION_REQUEST.conceptName());
             slot.setServiceType(medicationRequestServiceType);
 
             slot.setSchedule(savedSchedule);

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+import static org.openmrs.module.ipd.api.model.ServiceType.MEDICATION_REQUEST;
 import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertDateToLocalDateTime;
 
 @Component
@@ -23,8 +24,6 @@ public class ScheduleFactory {
     private final OrderService orderService;
     private final ConceptService conceptService;
     private final ReferenceService referenceService;
-
-    private final String IPD_MEDICATION_SERVICE_TYPE  = "MedicationRequest";
 
     @Autowired
     public ScheduleFactory(OrderService orderService, ConceptService conceptService, ReferenceService referenceService) {
@@ -37,7 +36,7 @@ public class ScheduleFactory {
         Schedule schedule = new Schedule();
 
         DrugOrder drugOrder = (DrugOrder) orderService.getOrderByUuid(request.getOrderUuid());
-        Concept medicationRequestServiceType = conceptService.getConceptByName(IPD_MEDICATION_SERVICE_TYPE);
+        Concept medicationRequestServiceType = conceptService.getConceptByName(MEDICATION_REQUEST.conceptName());
 
         Reference subject = getReference(Patient.class.getTypeName(), request.getPatientUuid());
         Reference actor = getReference(Provider.class.getTypeName(), request.getProviderUuid());
