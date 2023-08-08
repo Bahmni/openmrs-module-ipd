@@ -7,34 +7,52 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.TimeZone;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DateTimeUtilTest {
 
     @Test
     public void shouldConvertEPOCUTCToLocalTimeZone() {
+        ZoneId defaultZoneId = TimeZone.getDefault().toZoneId();
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Kolkata")));
+
         LocalDateTime localDateTime = DateTimeUtil.convertEpocUTCToLocalTimeZone(1690906304);
 
-        Assertions.assertEquals(2023,localDateTime.getYear());
-        Assertions.assertEquals(8, localDateTime.getMonthValue());
-        Assertions.assertEquals(1, localDateTime.getDayOfMonth());
-        Assertions.assertEquals(21, localDateTime.getHour());
-        Assertions.assertEquals(41, localDateTime.getMinute());
-        Assertions.assertEquals(44, localDateTime.getSecond());
+        assertEquals(2023,localDateTime.getYear());
+        assertEquals(8, localDateTime.getMonthValue());
+        assertEquals(1, localDateTime.getDayOfMonth());
+        assertEquals(21, localDateTime.getHour());
+        assertEquals(41, localDateTime.getMinute());
+        assertEquals(44, localDateTime.getSecond());
+
+        TimeZone.setDefault(TimeZone.getTimeZone(defaultZoneId));
     }
 
     @Test
     public void shouldConvertLocalTimeZoneToEPOCUTC() {
+        ZoneId defaultZoneId = TimeZone.getDefault().toZoneId();
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Kolkata")));
+
         LocalDateTime localDateTime = LocalDateTime.of(2023, 8, 1, 21, 41, 44);
         long epocUTCTime = DateTimeUtil.convertLocalDateTimeToUTCEpoc(localDateTime);
 
-        Assertions.assertEquals(1690906304,epocUTCTime);
+        assertEquals(1690906304,epocUTCTime);
+
+        TimeZone.setDefault(TimeZone.getTimeZone(defaultZoneId));
     }
 
     @Test
     public void shouldConvertDateToLocalDateTime() {
+        ZoneId defaultZoneId = TimeZone.getDefault().toZoneId();
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Kolkata")));
+
         Date date = Date.from(Instant.ofEpochSecond(1690906304));
         LocalDateTime localDateTime = DateTimeUtil.convertDateToLocalDateTime(date);
 
-        Assertions.assertEquals(1690906304, localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
+        assertEquals(1690906304, localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond());
+
+        TimeZone.setDefault(TimeZone.getTimeZone(defaultZoneId));
     }
 }
