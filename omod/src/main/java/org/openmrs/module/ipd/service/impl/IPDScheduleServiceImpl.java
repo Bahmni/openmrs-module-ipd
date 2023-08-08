@@ -20,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -59,7 +61,9 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     @Override
     public List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, LocalDate forDate) {
         Concept concept = conceptService.getConceptByName(serviceType.conceptName());
-        Reference reference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid).get();
-        return slotService.getSlotsBySubjectReferenceIdAndForDateAndServiceType(reference, forDate, concept);
+        Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid);
+        if(!subjectReference.isPresent())
+            return Collections.emptyList();
+        return slotService.getSlotsBySubjectReferenceIdAndForDateAndServiceType(subjectReference.get(), forDate, concept);
     }
 }
