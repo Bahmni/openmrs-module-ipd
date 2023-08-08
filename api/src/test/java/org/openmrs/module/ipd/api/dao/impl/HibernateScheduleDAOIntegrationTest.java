@@ -15,6 +15,7 @@ import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class HibernateScheduleDAOIntegrationTest extends BaseIntegrationTest {
 
@@ -82,6 +83,33 @@ public class HibernateScheduleDAOIntegrationTest extends BaseIntegrationTest {
         Assertions.assertEquals(startDate, scheduleById.getStartDate());
         Assertions.assertEquals(endDate, scheduleById.getEndDate());
         Assertions.assertEquals(testConcept, scheduleById.getServiceType());
+
+        sessionFactory.getCurrentSession().delete(savedSchedule);
+    }
+
+    @Test
+    public void shouldGetTheSavedSchedulesForPatientByForReferenceIdAndServiceType() {
+
+        DrugOrder drugOrder = (DrugOrder) Context.getOrderService().getOrderByUuid("921de0a3-05c4-444a-be03-e01b4c4b9142");
+        Reference patientReference = new Reference(Patient.class.getTypeName(), "2c33920f-7aa6-0000-998a-60412d8ff7d5");
+        Reference providerReference = new Reference(Patient.class.getTypeName(), "d869ad24-d2a0-4747-a888-fe55048bb7ce");
+        Concept testConcept = Context.getConceptService().getConceptByName("UNKNOWN");
+        LocalDateTime startDate = DateTimeUtil.convertDateToLocalDateTime(drugOrder.getEffectiveStartDate());
+        LocalDateTime endDate = DateTimeUtil.convertDateToLocalDateTime(drugOrder.getEffectiveStopDate());
+
+        Schedule schedule = new Schedule();
+        schedule.setOrder(drugOrder);
+        schedule.setSubject(patientReference);
+        schedule.setActor(providerReference);
+        schedule.setStartDate(startDate);
+        schedule.setEndDate(endDate);
+        schedule.setServiceType(testConcept);
+
+        Schedule savedSchedule = scheduleDAO.saveSchedule(schedule);
+
+        List<Schedule> schedulesBySubjectReferenceIdAndServiceType = scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceType(patientReference, testConcept);
+
+        Assertions.assertEquals(1, schedulesBySubjectReferenceIdAndServiceType.size());
 
         sessionFactory.getCurrentSession().delete(savedSchedule);
     }

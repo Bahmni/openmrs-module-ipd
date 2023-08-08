@@ -64,6 +64,21 @@ public class IPDScheduleController extends BaseRestController {
         }
     }
 
+    @RequestMapping(value = "type/medication/created", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<Object> getSchedulesCreatedForPatient(@RequestParam(value = "patientUuid") String patientUuid) {
+        try {
+            List<Schedule> schedules = ipdScheduleService.getMedicationSchedules(patientUuid, MEDICATION_REQUEST);
+            List<ScheduleMedicationResponse> medicationResponses = schedules.stream()
+                    .map(ScheduleMedicationResponse::constructFrom)
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(medicationResponses, OK);
+        } catch (Exception e) {
+            log.error("Runtime error while trying to retrieve schedules created by patient", e);
+            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
+        }
+    }
+
     private List<MedicationScheduleResponse> constructResponse(List<Slot> slots) {
         Map<Schedule, List<Slot>> slotsBySchedule = slots.stream().collect(Collectors.groupingBy(Slot::getSchedule));
         return slotsBySchedule.entrySet().stream().map(entry -> createFrom(entry.getKey(), entry.getValue())).collect(Collectors.toList());
