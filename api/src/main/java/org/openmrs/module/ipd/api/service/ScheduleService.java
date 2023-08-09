@@ -18,5 +18,6 @@ public interface ScheduleService extends OpenmrsService {
 //	@Authorized({ PrivilegeConstants.EDIT_IPD_SCHEDULES })
 	Schedule saveSchedule(Schedule schedule) throws APIException;
 
-	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType);
+	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType) throws APIException;
+	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) throws APIException;
 }

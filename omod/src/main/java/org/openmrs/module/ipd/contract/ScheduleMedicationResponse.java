@@ -29,7 +29,7 @@ public class ScheduleMedicationResponse {
             .id(schedule.getId())
             .patientUuid(schedule.getSubject().getUuid())
             .comments(schedule.getComments())
-            .order(ConversionUtil.convertToRepresentation(schedule.getOrder(), Representation.REF))
+            .order(ConversionUtil.convertToRepresentation(schedule.getOrder(), Representation.REF)) // TODO. Clarify why we need to use REF here with product team
             .startDate(convertLocalDateTimeToUTCEpoc(schedule.getStartDate()))
             .endDate(convertLocalDateTimeToUTCEpoc(schedule.getEndDate()))
             .build();

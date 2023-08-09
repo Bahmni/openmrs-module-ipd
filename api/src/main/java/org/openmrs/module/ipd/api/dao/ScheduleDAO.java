@@ -15,5 +15,6 @@ public interface ScheduleDAO {
 	
 	Schedule saveSchedule(Schedule schedule) throws DAOException;
 
-	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType);
+	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType) throws DAOException;
+	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) throws DAOException;
 }

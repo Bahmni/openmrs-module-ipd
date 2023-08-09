@@ -12,7 +12,6 @@ import org.openmrs.Patient;
 import org.openmrs.module.ipd.api.dao.ScheduleDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
-import org.openmrs.module.ipd.api.model.Slot;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -68,10 +67,35 @@ public class ScheduleServiceImplTest {
 
         Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
 
-        Mockito.when(scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept)).thenReturn(schedules);
+        Mockito.when(scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept)).thenReturn(schedules);
 
-        scheduleService.getSchedulesBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept);
+        scheduleService.getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept);
 
-        Mockito.verify(scheduleDAO, Mockito.times(1)).getSchedulesBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept);
+        Mockito.verify(scheduleDAO, Mockito.times(1)).getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept);
+    }
+
+    @Test
+    public void shouldInvokeGetSchedulesByForReferenceAndServiceTypeAndOrderUuidsWithGivenScheduleId() {
+        Schedule expectedSchedule = new Schedule();
+        expectedSchedule.setId(1);
+        List<Schedule> schedules = new ArrayList<>();
+
+        LocalDate today = LocalDate.now();
+        Concept medicationRequestConcept = new Concept();
+        ConceptName conceptName = new ConceptName();
+        conceptName.setName("MedicationRequest");
+        conceptName.setLocale(Locale.US);
+        medicationRequestConcept.setFullySpecifiedName(conceptName);
+
+        List<String> orderUuids = new ArrayList<>();
+        orderUuids.add("orderUuid");
+
+        Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
+
+        Mockito.when(scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids)).thenReturn(schedules);
+
+        scheduleService.getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids);
+
+        Mockito.verify(scheduleDAO, Mockito.times(1)).getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids);
     }
 }
