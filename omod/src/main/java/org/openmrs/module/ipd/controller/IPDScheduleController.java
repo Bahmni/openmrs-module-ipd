@@ -50,7 +50,7 @@ public class IPDScheduleController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "type/medication", method = RequestMethod.GET)
+    @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid", "forDate"})
     @ResponseBody
     public ResponseEntity<Object> getMedicationScheduleByDate(@RequestParam(value = "patientUuid") String patientUuid,
                                                               @RequestParam(value = "forDate") long forDate) {
@@ -64,7 +64,7 @@ public class IPDScheduleController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "type/medication", method = RequestMethod.GET)
+    @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid"})
     @ResponseBody
     public ResponseEntity<Object> getMedicationScheduleByOrderUuids(@RequestParam(value = "patientUuid") String patientUuid,
                                                                     @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
