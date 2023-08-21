@@ -36,8 +36,7 @@ public class HibernateScheduleDAO implements ScheduleDAO {
 		return schedule;
 	}
 
-	@Override
-	public List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType) throws DAOException {
+	public List<Schedule> getSchedulesBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType) throws DAOException {
 		Query query = sessionFactory.getCurrentSession()
 				.createQuery("FROM Schedule schedule WHERE schedule.subject = :subject AND schedule.serviceType = :serviceType");
 

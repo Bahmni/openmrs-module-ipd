@@ -141,7 +141,7 @@ public class HibernateScheduleDAOIntegrationTest extends BaseIntegrationTest {
         List<String> orderUuidList = new ArrayList<>();
         orderUuidList.add(orderUuid);
 
-        List<Schedule> schedulesBySubjectReferenceIdAndServiceType = scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, testConcept);
+        List<Schedule> schedulesBySubjectReferenceIdAndServiceType = scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceType(patientReference, testConcept);
 
         Assertions.assertEquals(1, schedulesBySubjectReferenceIdAndServiceType.size());
 

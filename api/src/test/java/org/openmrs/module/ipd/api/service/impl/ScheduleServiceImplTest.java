@@ -67,11 +67,11 @@ public class ScheduleServiceImplTest {
 
         Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
 
-        Mockito.when(scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept)).thenReturn(schedules);
+        Mockito.when(scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept)).thenReturn(schedules);
 
-        scheduleService.getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept);
+        scheduleService.getSchedulesBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept);
 
-        Mockito.verify(scheduleDAO, Mockito.times(1)).getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept);
+        Mockito.verify(scheduleDAO, Mockito.times(1)).getSchedulesBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept);
     }
 
     @Test
