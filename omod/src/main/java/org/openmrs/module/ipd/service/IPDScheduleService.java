@@ -11,4 +11,6 @@ import java.util.List;
 public interface IPDScheduleService {
     Schedule saveMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest);
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, LocalDate forDate);
+    List<Schedule> getMedicationSchedules(String patientUuid, ServiceType serviceType);
+    List<Schedule> getMedicationSchedules(String patientUuid, ServiceType serviceType, List<String> orderUuids);
 }

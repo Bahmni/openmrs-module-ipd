@@ -50,10 +50,10 @@ public class IPDScheduleController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "type/medication", method = RequestMethod.GET)
+    @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid", "forDate"})
     @ResponseBody
-    public ResponseEntity<Object> getMedicationSchedule(@RequestParam(value = "patientUuid") String patientUuid,
-                                                        @RequestParam(value = "forDate") long forDate) {
+    public ResponseEntity<Object> getMedicationScheduleByDate(@RequestParam(value = "patientUuid") String patientUuid,
+                                                              @RequestParam(value = "forDate") long forDate) {
         try {
             LocalDate localDate = convertEpocUTCToLocalTimeZone(forDate).toLocalDate();
             List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, localDate);
@@ -63,6 +63,28 @@ public class IPDScheduleController extends BaseRestController {
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
         }
     }
+
+    @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid"})
+    @ResponseBody
+    public ResponseEntity<Object> getMedicationScheduleByOrderUuids(@RequestParam(value = "patientUuid") String patientUuid,
+                                                                    @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
+        try {
+            List<Schedule> schedules;
+            if (orderUuids == null || orderUuids.isEmpty()) {
+                schedules = ipdScheduleService.getMedicationSchedules(patientUuid, MEDICATION_REQUEST);
+            } else {
+                schedules = ipdScheduleService.getMedicationSchedules(patientUuid, MEDICATION_REQUEST, orderUuids);
+            }
+            List<ScheduleMedicationResponse> medicationResponses = schedules.stream()
+                    .map(ScheduleMedicationResponse::constructFrom)
+                    .collect(Collectors.toList());
+            return new ResponseEntity<>(medicationResponses, OK);
+        } catch (Exception e) {
+            log.error("Runtime error while trying to retrieve schedules created by patient", e);
+            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
+        }
+    }
+
 
     private List<MedicationScheduleResponse> constructResponse(List<Slot> slots) {
         Map<Schedule, List<Slot>> slotsBySchedule = slots.stream().collect(Collectors.groupingBy(Slot::getSchedule));
