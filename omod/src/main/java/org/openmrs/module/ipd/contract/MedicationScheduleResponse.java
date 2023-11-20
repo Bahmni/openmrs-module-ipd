@@ -27,7 +27,6 @@ public class MedicationScheduleResponse {
     private String comments;
     private long startDate;
     private long endDate;
-    private Object order;
     private List<MedicationSlot> slots;
     public static MedicationScheduleResponse createFrom(Schedule schedule, List<Slot> slots) {
 
@@ -38,7 +37,6 @@ public class MedicationScheduleResponse {
                 .comments(schedule.getComments())
                 .startDate(convertLocalDateTimeToUTCEpoc(schedule.getStartDate()))
                 .endDate(convertLocalDateTimeToUTCEpoc(schedule.getEndDate()))
-                .order(ConversionUtil.convertToRepresentation(schedule.getOrder(), Representation.FULL))
                 .slots(slots.stream().map(MedicationSlot::createFrom).collect(Collectors.toList()))
                 .build();
 
@@ -55,6 +53,7 @@ public class MedicationScheduleResponse {
         private String serviceType;
         private String status;
         private long startTime;
+        private Object order;
         public static MedicationSlot createFrom(Slot slot) {
             return MedicationSlot.builder()
                     .id(slot.getId())
@@ -62,6 +61,7 @@ public class MedicationScheduleResponse {
                     .serviceType(slot.getServiceType().getName().getName())
                     .status(slot.getStatus().name())
                     .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
+                    .order(ConversionUtil.convertToRepresentation(slot.getOrder(), Representation.FULL))
                     .build();
         }
     }

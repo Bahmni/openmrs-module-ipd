@@ -1,8 +1,13 @@
 package org.openmrs.module.ipd.service.impl;
 
 import org.openmrs.Concept;
+import org.openmrs.DrugOrder;
 import org.openmrs.Patient;
+import org.openmrs.Visit;
 import org.openmrs.api.ConceptService;
+import org.openmrs.api.OrderService;
+import org.openmrs.api.PatientService;
+import org.openmrs.api.VisitService;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.ServiceType;
@@ -35,9 +40,12 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     private final SlotTimeCreationService slotTimeCreationService;
     private final ConceptService conceptService;
     private final ReferenceService referenceService;
+    private final VisitService visitService;
+    private final PatientService patientService;
+    private final OrderService orderService;
 
     @Autowired
-    public IPDScheduleServiceImpl(ScheduleService scheduleService, ScheduleFactory scheduleFactory, SlotFactory slotFactory, SlotService slotService, SlotTimeCreationService slotTimeCreationService, ConceptService conceptService, ReferenceService referenceService) {
+    public IPDScheduleServiceImpl(ScheduleService scheduleService, ScheduleFactory scheduleFactory, SlotFactory slotFactory, SlotService slotService, SlotTimeCreationService slotTimeCreationService, ConceptService conceptService, ReferenceService referenceService, VisitService visitService, PatientService patientService, OrderService orderService) {
         this.scheduleService = scheduleService;
         this.scheduleFactory = scheduleFactory;
         this.slotFactory = slotFactory;
@@ -45,14 +53,23 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         this.slotTimeCreationService = slotTimeCreationService;
         this.conceptService = conceptService;
         this.referenceService = referenceService;
+        this.visitService = visitService;
+        this.patientService = patientService;
+        this.orderService = orderService;
     }
 
     @Override
     public Schedule saveMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest) {
-        Schedule schedule = scheduleFactory.createScheduleForMedicationFrom(scheduleMedicationRequest);
-        Schedule savedSchedule = scheduleService.saveSchedule(schedule);
-        List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, savedSchedule);
-        slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime)
+        Patient patient = patientService.getPatientByUuid(scheduleMedicationRequest.getPatientUuid());
+        Visit visit = visitService.getActiveVisitsByPatient(patient).get(0);
+        Schedule savedSchedule = scheduleService.getScheduleByVisit(visit);
+        if(savedSchedule == null || savedSchedule.getId() == null) {
+            Schedule schedule = scheduleFactory.createScheduleForMedicationFrom(scheduleMedicationRequest, visit);
+            savedSchedule = scheduleService.saveSchedule(schedule);
+        }
+        DrugOrder order = (DrugOrder) orderService.getOrderByUuid(scheduleMedicationRequest.getOrderUuid());
+        List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, order);
+        slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order)
                 .forEach(slotService::saveSlot);
 
         return savedSchedule;

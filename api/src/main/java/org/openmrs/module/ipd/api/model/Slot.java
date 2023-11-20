@@ -4,8 +4,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.openmrs.BaseChangeableOpenmrsData;
-import org.openmrs.Concept;
+import org.openmrs.Order;
 import org.openmrs.Location;
+import org.openmrs.Concept;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -73,6 +74,10 @@ public class Slot extends BaseChangeableOpenmrsData {
 	@ManyToOne
 	@JoinColumn(name = "schedule_id", referencedColumnName = "schedule_id", nullable = false)
 	private Schedule schedule;
+
+	@OneToOne
+	@JoinColumn(name = "order_id", referencedColumnName = "order_id")
+	private Order order;
 	
 	/**
 	 * The Start Date the Slot

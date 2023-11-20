@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.api.service;
 
 import org.openmrs.Concept;
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.api.APIException;
@@ -20,4 +21,6 @@ public interface ScheduleService extends OpenmrsService {
 
 	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType) throws APIException;
 	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) throws APIException;
+
+	Schedule getScheduleByVisit(Visit visit);
 }

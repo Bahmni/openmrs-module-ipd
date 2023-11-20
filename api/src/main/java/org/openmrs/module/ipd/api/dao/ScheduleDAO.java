@@ -1,5 +1,6 @@
 package org.openmrs.module.ipd.api.dao;
 
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.api.db.DAOException;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,6 @@ public interface ScheduleDAO {
 
 	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType) throws DAOException;
 	List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) throws DAOException;
+
+	Schedule getScheduleByVisit(Visit visit);
 }

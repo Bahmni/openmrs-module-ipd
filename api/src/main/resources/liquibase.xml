@@ -189,4 +189,19 @@
                     'MedicationRequest', 'en', 1, 1, now(), 'FULLY_SPECIFIED', 0, uuid());
         </sql>
     </changeSet>
+
+    <changeSet id="update_ipd_schedule_202311201530" author="tw">
+        <comment>Add visit id and remove order id from schedule table</comment>
+        <sql>
+            ALTER TABLE ipd_schedule ADD COLUMN visit_id INT(11) NULL;
+            ALTER TABLE ipd_schedule DROP COLUMN order_id;
+        </sql>
+    </changeSet>
+
+    <changeSet id="update_ipd_slot_202311201542" author="tw">
+        <comment>Add order id to slot table</comment>
+        <sql>
+            ALTER TABLE ipd_slot ADD COLUMN order_id INT(11) NULL;
+        </sql>
+    </changeSet>
 </databaseChangeLog>

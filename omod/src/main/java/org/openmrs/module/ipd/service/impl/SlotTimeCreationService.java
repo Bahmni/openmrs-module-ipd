@@ -17,9 +17,7 @@ import static org.openmrs.module.ipd.contract.ScheduleMedicationRequest.Medicati
 
 @Component
 public class SlotTimeCreationService {
-    public List<LocalDateTime> createSlotsStartTimeFrom(ScheduleMedicationRequest request, Schedule savedSchedule) {
-        DrugOrder order = (DrugOrder) savedSchedule.getOrder();
-
+    public List<LocalDateTime> createSlotsStartTimeFrom(ScheduleMedicationRequest request, DrugOrder order) {
         if (request.getSlotStartTimeAsLocaltime() != null && request.getMedicationFrequency() == START_TIME_DURATION_FREQUENCY) {
             return getSlotsStartTimeWithStartTimeDurationFrequency(request, order);
         } else if (!CollectionUtils.isEmpty(request.getDayWiseSlotsStartTimeAsLocalTime()) && request.getMedicationFrequency() == FIXED_SCHEDULE_FREQUENCY) {

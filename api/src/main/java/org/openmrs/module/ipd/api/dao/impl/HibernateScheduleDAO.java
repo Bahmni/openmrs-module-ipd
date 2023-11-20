@@ -3,6 +3,7 @@ package org.openmrs.module.ipd.api.dao.impl;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.openmrs.Concept;
+import org.openmrs.Visit;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.ipd.api.dao.ScheduleDAO;
 import org.openmrs.module.ipd.api.model.Reference;
@@ -57,4 +58,14 @@ public class HibernateScheduleDAO implements ScheduleDAO {
 
 		return query.getResultList();
 	}
+
+    @Override
+    public Schedule getScheduleByVisit(Visit visit) {
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("FROM Schedule schedule WHERE schedule.visit = :visit AND active = 1");
+
+		query.setParameter("visit", visit);
+
+		return (Schedule) query.uniqueResult();
+    }
 }
