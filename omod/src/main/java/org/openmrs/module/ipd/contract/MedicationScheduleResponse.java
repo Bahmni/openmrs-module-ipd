@@ -26,7 +26,7 @@ public class MedicationScheduleResponse {
     private String serviceType;
     private String comments;
     private long startDate;
-    private long endDate;
+    private Object endDate;
     private List<MedicationSlot> slots;
     public static MedicationScheduleResponse createFrom(Schedule schedule, List<Slot> slots) {
 
@@ -36,7 +36,7 @@ public class MedicationScheduleResponse {
                 .serviceType(schedule.getServiceType().getName().getName())
                 .comments(schedule.getComments())
                 .startDate(convertLocalDateTimeToUTCEpoc(schedule.getStartDate()))
-                .endDate(convertLocalDateTimeToUTCEpoc(schedule.getEndDate()))
+                .endDate(schedule.getEndDate() != null ? convertLocalDateTimeToUTCEpoc(schedule.getEndDate()) : null)
                 .slots(slots.stream().map(MedicationSlot::createFrom).collect(Collectors.toList()))
                 .build();
 
