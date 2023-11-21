@@ -2,18 +2,14 @@ package org.openmrs.module.ipd.api.dao.impl;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
-import org.openmrs.Concept;
 import org.openmrs.Visit;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.ipd.api.dao.ScheduleDAO;
-import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public class HibernateScheduleDAO implements ScheduleDAO {
@@ -37,32 +33,12 @@ public class HibernateScheduleDAO implements ScheduleDAO {
 		return schedule;
 	}
 
-	public List<Schedule> getSchedulesBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType) throws DAOException {
-		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Schedule schedule WHERE schedule.subject = :subject AND schedule.serviceType = :serviceType");
-
-
-		query.setParameter("subject", subject);
-		query.setParameter("serviceType", serviceType);
-		return query.getResultList();
-	}
-
-	@Override
-	public List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) throws DAOException {
-		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Schedule schedule WHERE schedule.subject = :subject AND schedule.serviceType = :serviceType AND schedule.order.uuid IN :orderUuids");
-
-		query.setParameter("subject", subject);
-		query.setParameter("serviceType", serviceType);
-		query.setParameter("orderUuids", orderUuids);
-
-		return query.getResultList();
-	}
-
     @Override
-    public Schedule getScheduleByVisit(Visit visit) {
+    public Schedule getScheduleByVisit(Visit visit) throws DAOException {
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Schedule schedule WHERE schedule.visit = :visit AND active = 1");
+				.createQuery("FROM Schedule schedule " +
+						"WHERE schedule.visit=:visit " +
+						"and active=1");
 
 		query.setParameter("visit", visit);
 

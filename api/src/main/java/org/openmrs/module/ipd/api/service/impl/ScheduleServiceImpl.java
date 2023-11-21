@@ -40,16 +40,6 @@ public class ScheduleServiceImpl extends BaseOpenmrsService implements ScheduleS
 		return scheduleDAO.saveSchedule(schedule);
 	}
 
-	@Override
-	public List<Schedule> getSchedulesBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType) throws APIException {
-		return scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceType(subject, serviceType);
-	}
-
-	@Override
-	public List<Schedule> getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) throws APIException {
-		return scheduleDAO.getSchedulesBySubjectReferenceIdAndServiceTypeAndOrderUuids(subject, serviceType, orderUuids);
-	}
-
     @Override
     public Schedule getScheduleByVisit(Visit visit) {
 		return scheduleDAO.getScheduleByVisit(visit);

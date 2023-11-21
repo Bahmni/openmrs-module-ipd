@@ -11,6 +11,7 @@ import org.openmrs.ConceptName;
 import org.openmrs.Patient;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
+import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.Slot;
 
 import java.time.LocalDate;
@@ -72,5 +73,50 @@ public class SlotServiceImplTest {
         slotService.getSlotsBySubjectReferenceIdAndForDateAndServiceType(patientReference, today, medicationRequestConcept);
 
         Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectReferenceIdAndForDateAndServiceType(patientReference, today, medicationRequestConcept);
+    }
+
+    @Test
+    public void shouldInvokeGetSlotsByForReferenceAndServiceTypeWithGivenScheduleId() {
+        List<Slot> slots = new ArrayList<>();
+
+        LocalDate today = LocalDate.now();
+        Concept medicationRequestConcept = new Concept();
+        ConceptName conceptName = new ConceptName();
+        conceptName.setName("MedicationRequest");
+        conceptName.setLocale(Locale.US);
+        medicationRequestConcept.setFullySpecifiedName(conceptName);
+
+        Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
+
+        Mockito.when(slotDAO.getSlotsBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept)).thenReturn(slots);
+
+        slotService.getSlotsBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept);
+
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectReferenceIdAndServiceType(patientReference, medicationRequestConcept);
+    }
+
+    @Test
+    public void shouldInvokeGetSlotsByForReferenceAndServiceTypeAndOrderUuidsWithGivenScheduleId() {
+        Schedule expectedSchedule = new Schedule();
+        expectedSchedule.setId(1);
+        List<Slot> slots = new ArrayList<>();
+
+        LocalDate today = LocalDate.now();
+        Concept medicationRequestConcept = new Concept();
+        ConceptName conceptName = new ConceptName();
+        conceptName.setName("MedicationRequest");
+        conceptName.setLocale(Locale.US);
+        medicationRequestConcept.setFullySpecifiedName(conceptName);
+
+        List<String> orderUuids = new ArrayList<>();
+        orderUuids.add("orderUuid");
+
+        Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
+
+        Mockito.when(slotDAO.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids)).thenReturn(slots);
+
+        slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids);
+
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids);
     }
 }

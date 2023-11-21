@@ -75,6 +75,9 @@ public class Slot extends BaseChangeableOpenmrsData {
 	@JoinColumn(name = "schedule_id", referencedColumnName = "schedule_id", nullable = false)
 	private Schedule schedule;
 
+	/**
+	 * Order with respect to the Slot
+	 */
 	@OneToOne
 	@JoinColumn(name = "order_id", referencedColumnName = "order_id")
 	private Order order;

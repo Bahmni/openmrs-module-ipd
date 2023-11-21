@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.contract.MedicationScheduleResponse;
+import org.openmrs.module.ipd.contract.MedicationSlotResponse;
 import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.openmrs.module.ipd.contract.ScheduleMedicationResponse;
 import org.openmrs.module.ipd.service.IPDScheduleService;
@@ -52,8 +53,8 @@ public class IPDScheduleController extends BaseRestController {
 
     @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid", "forDate"})
     @ResponseBody
-    public ResponseEntity<Object> getMedicationScheduleByDate(@RequestParam(value = "patientUuid") String patientUuid,
-                                                              @RequestParam(value = "forDate") long forDate) {
+    public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid") String patientUuid,
+                                                           @RequestParam(value = "forDate") long forDate) {
         try {
             LocalDate localDate = convertEpocUTCToLocalTimeZone(forDate).toLocalDate();
             List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, localDate);
@@ -66,17 +67,17 @@ public class IPDScheduleController extends BaseRestController {
 
     @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid"})
     @ResponseBody
-    public ResponseEntity<Object> getMedicationScheduleByOrderUuids(@RequestParam(value = "patientUuid") String patientUuid,
-                                                                    @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
+    public ResponseEntity<Object> getMedicationSlotsByOrderUuids(@RequestParam(value = "patientUuid") String patientUuid,
+                                                                 @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
         try {
-            List<Schedule> schedules;
+            List<Slot> slots;
             if (orderUuids == null || orderUuids.isEmpty()) {
-                schedules = ipdScheduleService.getMedicationSchedules(patientUuid, MEDICATION_REQUEST);
+                slots = ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST);
             } else {
-                schedules = ipdScheduleService.getMedicationSchedules(patientUuid, MEDICATION_REQUEST, orderUuids);
+                slots = ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, orderUuids);
             }
-            List<ScheduleMedicationResponse> medicationResponses = schedules.stream()
-                    .map(ScheduleMedicationResponse::constructFrom)
+            List<MedicationSlotResponse> medicationResponses = slots.stream()
+                    .map(MedicationSlotResponse::createFrom)
                     .collect(Collectors.toList());
             return new ResponseEntity<>(medicationResponses, OK);
         } catch (Exception e) {
