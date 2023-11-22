@@ -45,16 +45,8 @@ public class Schedule extends BaseChangeableOpenmrsData {
 	private boolean active = Boolean.TRUE;
 
 	@OneToOne
-	@JoinColumn(name = "service_category_id", referencedColumnName = "concept_id")
-	private Concept serviceCategory; // null not in use
-
-	@OneToOne
 	@JoinColumn(name = "service_type_id", referencedColumnName = "concept_id", nullable = false)
 	private Concept serviceType;
-
-	@OneToOne
-	@JoinColumn(name = "speciality_id", referencedColumnName = "concept_id")
-	private Concept speciality; // null not in use
 
 	@OneToOne
 	@JoinColumn(name = "visit_id", referencedColumnName = "visit_id")

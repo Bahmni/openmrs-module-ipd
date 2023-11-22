@@ -41,32 +41,11 @@ public class Slot extends BaseChangeableOpenmrsData {
 	private Location location; // bed location for patient
 	
 	/**
-	 * The Service Category of the Schedule
-	 */
-	@OneToOne
-	@JoinColumn(name = "service_category_id", referencedColumnName = "concept_id")
-	private Concept serviceCategory; // null not in use
-	
-	/**
 	 * The Service Type of the Schedule
 	 */
 	@OneToOne
 	@JoinColumn(name = "service_type_id", referencedColumnName = "concept_id", nullable = false)
 	private Concept serviceType; // as per schedule service type
-	
-	/**
-	 * The Speciality of the Schedule
-	 */
-	@OneToOne
-	@JoinColumn(name = "speciality_id", referencedColumnName = "concept_id")
-	private Concept speciality; // null not in sue
-	
-	/**
-	 * The Appointment Type of the Schedule
-	 */
-	@OneToOne
-	@JoinColumn(name = "appointment_type_id", referencedColumnName = "concept_id")
-	private Concept appointmentType; // null not in use
 	
 	/**
 	 * The entity that belongs to a Schedule
@@ -87,28 +66,19 @@ public class Slot extends BaseChangeableOpenmrsData {
 	 */
 	@Column(name = "start_date_time", nullable = false)
 	private LocalDateTime startDateTime; // slot start time
-	
+
 	/**
 	 * The End Date the Slot
 	 */
 	@Column(name = "end_date_time")
 	private LocalDateTime endDateTime; // can be null for now
-	
-	/**
-	 * Any Comment for the Slot
-	 */
-	@Column(name = "comments")
-	private String comments; // null not is use
-	
+
 	/**
 	 * The current status of the slot.
 	 */
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private SlotStatus status = SlotStatus.SCHEDULED;
-
-	@Column(name = "overbooked", nullable = false)
-	private Boolean overbooked = Boolean.FALSE; // not is use
 }
 
 
