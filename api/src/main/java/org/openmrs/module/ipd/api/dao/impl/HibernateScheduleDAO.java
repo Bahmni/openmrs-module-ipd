@@ -37,8 +37,8 @@ public class HibernateScheduleDAO implements ScheduleDAO {
     public Schedule getScheduleByVisit(Visit visit) throws DAOException {
 		Query query = sessionFactory.getCurrentSession()
 				.createQuery("FROM Schedule schedule " +
-						"WHERE schedule.visit=:visit " +
-						"and active=1");
+						"WHERE schedule.visit = :visit " +
+						"and active = 1");
 
 		query.setParameter("visit", visit);
 
