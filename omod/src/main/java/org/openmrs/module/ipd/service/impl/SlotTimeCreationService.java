@@ -49,9 +49,17 @@ public class SlotTimeCreationService {
             numberOfSlotsStartTimeToBeCreated -= initialSlotsToBeAddedForSecondDay.size();
 
             List<LocalDateTime> nextSlotsStartTime = request.getDayWiseSlotsStartTimeAsLocalTime();
+            List<LocalDateTime> remainingDaySlotsStartTime = request.getRemainingDaySlotsStartTimeAsLocalTime();
             while (numberOfSlotsStartTimeToBeCreated > 0) {
                 nextSlotsStartTime = nextSlotsStartTime.stream().map(slotStartTime -> slotStartTime.plusHours(24)).collect(Collectors.toList());
-                if (numberOfSlotsStartTimeToBeCreated >= nextSlotsStartTime.size()) {
+                if (!CollectionUtils.isEmpty(remainingDaySlotsStartTime) && numberOfSlotsStartTimeToBeCreated <= remainingDaySlotsStartTime.size()){
+                    List<LocalDateTime> slotsToBeAddedForRemainingDay = numberOfSlotsStartTimeToBeCreated < remainingDaySlotsStartTime.size()
+                            ? remainingDaySlotsStartTime.subList(0, numberOfSlotsStartTimeToBeCreated)
+                            : remainingDaySlotsStartTime;
+                    numberOfSlotsStartTimeToBeCreated -= slotsToBeAddedForRemainingDay.size();
+                    slotsStartTime.addAll(slotsToBeAddedForRemainingDay);
+                }
+                else if (numberOfSlotsStartTimeToBeCreated >= nextSlotsStartTime.size()) {
                     slotsStartTime.addAll(nextSlotsStartTime);
                     numberOfSlotsStartTimeToBeCreated -= nextSlotsStartTime.size();
                 } else {
