@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="ipd_schedule_202307270755" author="tw">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ipd_schedule"/>
+            </not>
+        </preConditions>
+        <createTable tableName="ipd_schedule">
+            <column autoIncrement="true" name="schedule_id" type="int"> <constraints nullable="false" primaryKey="true"/> </column>
+            <column name="uuid" type="varchar(38)" />
+            <column name="subject_reference_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="actor_reference_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="service_category_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="service_type_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="speciality_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="order_id" type="int"> <constraints nullable="true"/> </column>
+            <column defaultValueBoolean="true" name="active" type="BOOLEAN"><constraints nullable="false" /></column>
+            <column name="start_date" type="DATETIME"> <constraints nullable="false"/> </column>
+            <column name="end_date" type="DATETIME"> <constraints nullable="false"/> </column>
+            <column name="comments" type="varchar(255)" />
+            <column name="creator" type="int"> <constraints nullable="false"/> </column>
+            <column name="date_created" type="DATETIME"> <constraints nullable="false"/> </column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="DATETIME"/>
+            <column defaultValueBoolean="false" name="voided" type="BOOLEAN"><constraints nullable="false" /></column>
+            <column name="date_voided" type="datetime" />
+            <column name="voided_by" type="int" />
+            <column name="void_reason" type="varchar(255)" />
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="creator"
+                                 constraintName="ipd_schedule_creator_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="changed_by"
+                                 constraintName="ipd_schedule_changed_by_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="voided_by"
+                                 constraintName="ipd_schedule_voided_by_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="service_type_id"
+                                 constraintName="ipd_schedule_service_type_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="service_category_id"
+                                 constraintName="ipd_schedule_service_category_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="speciality_id"
+                                 constraintName="ipd_schedule_speciality_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="order_id"
+                                 constraintName="ipd_schedule_order_fk"
+                                 referencedTableName="orders" referencedColumnNames="order_id"/>
+    </changeSet>
+
+    <changeSet id="ipd_slot_202307311600" author="tw">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ipd_slot"/>
+            </not>
+        </preConditions>
+        <createTable tableName="ipd_slot">
+            <column autoIncrement="true" name="slot_id" type="int"> <constraints nullable="false" primaryKey="true"/> </column>
+            <column name="uuid" type="varchar(38)" />
+
+            <column name="location_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="appointment_type_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="service_category_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="service_type_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="speciality_id" type="int"> <constraints nullable="true"/> </column>
+            <column name="schedule_id" type="int"> <constraints nullable="false"/> </column>
+            <column name="status" type="varchar(30)"><constraints nullable="false" /></column>
+            <column name="start_date_time" type="DATETIME"> <constraints nullable="false"/> </column>
+            <column name="end_date_time" type="DATETIME"> <constraints nullable="true"/> </column>
+            <column name="comments" type="varchar(255)" ><constraints nullable="true"/> </column>
+            <column defaultValueBoolean="false" name="overbooked" type="BOOLEAN"><constraints nullable="false" /></column>
+
+            <column name="creator" type="int"> <constraints nullable="false"/> </column>
+            <column name="date_created" type="DATETIME"> <constraints nullable="false"/> </column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="DATETIME"/>
+            <column defaultValueBoolean="false" name="voided" type="BOOLEAN"><constraints nullable="false" /></column>
+            <column name="date_voided" type="datetime" />
+            <column name="voided_by" type="int" />
+            <column name="void_reason" type="varchar(255)" />
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="creator"
+                                 constraintName="ipd_slot_creator_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="changed_by"
+                                 constraintName="ipd_slot_changed_by_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="voided_by"
+                                 constraintName="ipd_slot_voided_by_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="service_type_id"
+                                 constraintName="ipd_slot_service_type_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="service_category_id"
+                                 constraintName="ipd_slot_service_category_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="speciality_id"
+                                 constraintName="ipd_slot_speciality_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="appointment_type_id"
+                                 constraintName="ipd_slot_appointment_type_fk"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="schedule_id"
+                                 constraintName="ipd_slot_schedule_fk"
+                                 referencedTableName="ipd_schedule" referencedColumnNames="schedule_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="location_id"
+                                 constraintName="ipd_slot_location_fk"
+                                 referencedTableName="location" referencedColumnNames="location_id"/>
+    </changeSet>
+
+    <changeSet id="ipd_reference_202307270855" author="tw">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ipd_reference"/>
+            </not>
+            <tableExists tableName="ipd_schedule"/>
+        </preConditions>
+        <createTable tableName="ipd_reference">
+            <column name="reference_id" type="int" autoIncrement="true"><constraints primaryKey="true"/></column>
+            <column name="target_type" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="target_uuid" type="varchar(38)"><constraints unique="true" nullable="false" /></column>
+            <column name="description" type="varchar(255)"/>
+            <column name="creator" type="int"><constraints nullable="false"/></column>
+            <column name="date_created" type="datetime"><constraints nullable="false"/></column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="name" type="varchar(255)"><constraints nullable="false"/></column>
+            <column name="retired" type="boolean" defaultValueBoolean="false"><constraints nullable="false"/></column>
+            <column name="retired_by" type="int"/>
+            <column name="date_retired" type="datetime"/>
+            <column name="retire_reason" type="varchar(255)" defaultValue="null"/>
+            <column name="uuid" type="varchar(38)"><constraints nullable="false" unique="true"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="ipd_reference" baseColumnNames="creator"
+                                 constraintName="ipd_reference_creator_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_reference" baseColumnNames="changed_by"
+                                 constraintName="ipd_reference_changed_by_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_reference" baseColumnNames="retired_by"
+                                 constraintName="ipd_reference_retired_by_fk"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="subject_reference_id"
+                                 constraintName="ipd_reference_for_reference_fk"
+                                 referencedTableName="ipd_reference"
+                                 referencedColumnNames="reference_id"/>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="actor_reference_id"
+                                 constraintName="ipd_reference_managed_by_reference_fk"
+                                 referencedTableName="ipd_reference"
+                                 referencedColumnNames="reference_id"/>
+    </changeSet>
+
+    <changeSet id="ipd_concept_202307271045" author="tw">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept where short_name='MedicationRequest' and description='MedicationRequest';
+            </sqlCheck>
+        </preConditions>
+        <comment>Add concept Medication Request</comment>
+        <sql>
+            insert into concept (retired, short_name, description, datatype_id, class_id, is_set, creator, date_created,
+                                 changed_by, date_changed, uuid)
+            values (0, 'MedicationRequest', 'MedicationRequest',
+                    (select concept_datatype_id from concept_datatype where name = 'Text'),
+                    (select concept_class_id from concept_class where name = 'Misc'),
+                    0, 1, now(), 1, now(), uuid());
+        </sql>
+    </changeSet>
+
+    <changeSet id="ipd_concept_name_202307271046" author="tw">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept_name where name ='MedicationRequest';
+            </sqlCheck>
+        </preConditions>
+        <comment>Add concept-name Medication Request</comment>
+        <sql>
+            insert into concept_name (concept_id, name, locale, locale_preferred, creator, date_created,
+                                      concept_name_type, voided, uuid)
+            values ((select concept_id from concept where short_name='MedicationRequest'),
+                    'MedicationRequest', 'en', 1, 1, now(), 'FULLY_SPECIFIED', 0, uuid());
+        </sql>
+    </changeSet>
+</databaseChangeLog>
