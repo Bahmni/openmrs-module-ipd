@@ -127,6 +127,19 @@
 
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
+			<artifactId>fhir2-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>fhir2-omod</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
 			<artifactId>webservices.rest-omod-common</artifactId>
 			<type>test-jar</type>
 			<scope>test</scope>

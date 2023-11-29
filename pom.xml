@@ -47,6 +47,7 @@
 		<argLine>-Xmx1024m</argLine>
 		<jacocoVersion>0.7.9</jacocoVersion>
 		<lombokVersion>1.18.26</lombokVersion>
+		<openmrsFhir2Version>1.11.0</openmrsFhir2Version>
 	</properties>
 
 	<build>
@@ -162,6 +163,22 @@
 				<version>${bedManagementVersion}</version>
 				<scope>provided</scope>
 			</dependency>
+
+
+			<dependency>
+				<groupId>org.openmrs.module</groupId>
+				<artifactId>fhir2-api</artifactId>
+				<version>${openmrsFhir2Version}</version>
+				<scope>provided</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openmrs.module</groupId>
+				<artifactId>fhir2-omod</artifactId>
+				<version>${openmrsFhir2Version}</version>
+				<scope>provided</scope>
+			</dependency>
+
 
 			<!-- OpenMRS Test dependencies -->
 			<dependency>

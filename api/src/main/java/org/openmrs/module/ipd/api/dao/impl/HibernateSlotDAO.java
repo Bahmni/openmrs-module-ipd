@@ -2,6 +2,8 @@ package org.openmrs.module.ipd.api.dao.impl;
 
 import org.hibernate.query.Query;
 import org.openmrs.Concept;
+import org.openmrs.Patient;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
@@ -31,7 +33,13 @@ public class HibernateSlotDAO implements SlotDAO {
 	public Slot getSlot(Integer slotId) throws DAOException {
 		return sessionFactory.getCurrentSession().get(Slot.class, slotId);
 	}
-	
+
+	@Override
+	public Slot getSlotByUUID(String uuid) throws DAOException {
+		Slot s = (Slot)this.sessionFactory.getCurrentSession().createQuery("from Slot s where s.uuid = :uuid").setString("uuid", uuid).uniqueResult();
+		return s;
+	}
+
 	@Override
 	public Slot saveSlot(Slot slot) throws DAOException {
 		sessionFactory.getCurrentSession().saveOrUpdate(slot);
