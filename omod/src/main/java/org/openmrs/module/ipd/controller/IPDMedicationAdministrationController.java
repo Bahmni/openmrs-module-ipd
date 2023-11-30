@@ -23,7 +23,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
 @Controller
-@RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/ipd/schedule")
+@RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/ipd")
 @Slf4j
 public class IPDMedicationAdministrationController extends BaseRestController {
 
@@ -35,7 +35,7 @@ public class IPDMedicationAdministrationController extends BaseRestController {
     }
 
 
-    @RequestMapping(value = "/medication_administration", method = RequestMethod.POST)
+    @RequestMapping(value = "/medicationAdministration", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createMedicationAdministration(@RequestBody MedicationAdministrationRequest medicationAdministrationRequest) {
         try {

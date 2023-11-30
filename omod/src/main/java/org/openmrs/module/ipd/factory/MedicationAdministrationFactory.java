@@ -1,11 +1,17 @@
 package org.openmrs.module.ipd.factory;
 
-import org.hl7.fhir.r4.model.*;
+import org.hl7.fhir.r4.model.MedicationAdministration;
+import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.Annotation;
+import org.hl7.fhir.r4.model.DateTimeType;
+import org.hl7.fhir.r4.model.MarkdownType;
 import org.openmrs.api.ConceptService;
+import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.ReferenceService;
 import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
 import org.openmrs.module.ipd.contract.MedicationAdministrationResponse;
+import org.openmrs.module.ipd.contract.MedicationSlotResponse;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +40,12 @@ public class MedicationAdministrationFactory {
 
         medicationAdministration.setEffective(new DateTimeType(request.getEffectiveDateTime()));
 
-        medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.valueOf(request.getStatus()));
+        medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus()));
         medicationAdministration
                 .setSubject(new Reference("Patient/"+request.getPatientUuid()));
 
         MedicationAdministration.MedicationAdministrationPerformerComponent performer= new MedicationAdministration.MedicationAdministrationPerformerComponent();
-        performer.setActor(new Reference("Provider/"+request.getProviderUuid()));
+        performer.setActor(new Reference("Practitioner/"+request.getProviderUuid()));
         List<MedicationAdministration.MedicationAdministrationPerformerComponent> performers=new ArrayList<>();
         performers.add(performer);
         medicationAdministration.setPerformer(performers);
@@ -53,6 +59,7 @@ public class MedicationAdministrationFactory {
 
         List<Reference> supportedInfo= new ArrayList<>();
         supportedInfo.add(new Reference("Slot/"+request.getSlotUuid()));
+        medicationAdministration.setSupportingInformation(supportedInfo);
 
         return medicationAdministration;
     }
@@ -61,6 +68,7 @@ public class MedicationAdministrationFactory {
         String patientUuid = null;
         String providerUuid = null;
         String slotUuid = medicationAdministration.getSupportingInformation().get(0).getReference().split("/")[1];
+        Slot slot = slotService.getSlotByUUID(slotUuid);
         if(medicationAdministration.getSubject() !=null){
             patientUuid = medicationAdministration.getSubject().getReference().split("/")[1];
         }
@@ -71,14 +79,13 @@ public class MedicationAdministrationFactory {
                 .uuid(medicationAdministration.getId())
                 .notes(medicationAdministration.getNote().get(0).getText())
                 .effectiveDateTime(medicationAdministration.getEffectiveDateTimeType().getValue())
-                .status(medicationAdministration.getStatus().toString())
-                .order(ConversionUtil.convertToRepresentation(medicationAdministration.getRequest(), Representation.FULL))
-                .slot(ConversionUtil.convertToRepresentation(slotService.getSlotByUUID(slotUuid), Representation.FULL))
+                .status(medicationAdministration.getStatus().toCode())
+                .orderUuid(slot.getOrder().getUuid())
+                .slot(MedicationSlotResponse.createFrom(slot))
                 .patientUuid(patientUuid)
                 .providerUuid(providerUuid)
                 .build();
     }
-
 
 
 }
