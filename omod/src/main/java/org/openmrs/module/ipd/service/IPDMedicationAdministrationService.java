@@ -13,8 +13,8 @@ import java.util.List;
 
 public interface IPDMedicationAdministrationService {
 
-    MedicationAdministrationResponse saveMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest);
+    List<MedicationAdministrationResponse> saveMedicationAdministration(List<MedicationAdministrationRequest> medicationAdministrationRequestList);
 
-    List<MedicationAdministrationResponse> getMedicationAdministrationList(String orderUuid, LocalDate forDate);
+    List<MedicationAdministrationResponse> getMedicationAdministrationList(String patientUuid,LocalDate forDate,String providerUuid,String slotUuid);
 
 }

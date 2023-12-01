@@ -19,5 +19,5 @@ public class MedicationAdministrationRequest {
     private String notes;
     private String status;
     private String slotUuid;
-    private Date effectiveDateTime;
+        private Date effectiveDateTime;
 }
