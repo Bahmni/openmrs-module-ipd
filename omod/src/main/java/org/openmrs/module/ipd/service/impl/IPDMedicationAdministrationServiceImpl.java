@@ -46,7 +46,8 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
 
     @Override
     public List<MedicationAdministrationResponse> getMedicationAdministrationList(String patientUuid, LocalDate forDate, String providerUuid, String slotUuid) {
-        ReferenceParam patient=new ReferenceParam("Patient","target_uuid",patientUuid);
+        ReferenceParam patient=new ReferenceParam();
+        patient.setValue(patientUuid);
         ReferenceAndListParam subjectReference = new ReferenceAndListParam();
         subjectReference.addValue(new ReferenceOrListParam().add(patient));
         MedicationAdministrationSearchParams medicationAdministrationSearchParams= MedicationAdministrationSearchParams.builder().patientReference(subjectReference).build();
