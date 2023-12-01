@@ -52,6 +52,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         subjectReference.addValue(new ReferenceOrListParam().add(patient));
         MedicationAdministrationSearchParams medicationAdministrationSearchParams= MedicationAdministrationSearchParams.builder().patientReference(subjectReference).build();
         IBundleProvider response = fhirMedicationAdministrationService.searchForMedicationAdministration(medicationAdministrationSearchParams);
+        response.getAllResources();
         return null;
     }
 
