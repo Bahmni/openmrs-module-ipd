@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.openmrs.BaseChangeableOpenmrsData;
 import org.openmrs.Concept;
-import org.openmrs.Order;
+import org.openmrs.Visit;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -45,25 +45,17 @@ public class Schedule extends BaseChangeableOpenmrsData {
 	private boolean active = Boolean.TRUE;
 
 	@OneToOne
-	@JoinColumn(name = "service_category_id", referencedColumnName = "concept_id")
-	private Concept serviceCategory; // null not in use
-
-	@OneToOne
 	@JoinColumn(name = "service_type_id", referencedColumnName = "concept_id", nullable = false)
 	private Concept serviceType;
 
 	@OneToOne
-	@JoinColumn(name = "speciality_id", referencedColumnName = "concept_id")
-	private Concept speciality; // null not in use
-
-	@OneToOne
-	@JoinColumn(name = "order_id", referencedColumnName = "order_id")
-	private Order order;
+	@JoinColumn(name = "visit_id", referencedColumnName = "visit_id")
+	private Visit visit;
 
 	@Column(name = "start_date", nullable = false)
 	private LocalDateTime startDate;
 
-	@Column(name = "end_date", nullable = false)
+	@Column(name = "end_date")
 	private LocalDateTime endDate;
 
 	@Column(name = "comments")

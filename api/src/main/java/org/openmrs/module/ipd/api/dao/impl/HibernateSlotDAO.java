@@ -51,4 +51,30 @@ public class HibernateSlotDAO implements SlotDAO {
 
 		return query.getResultList();
 	}
+
+	@Override
+	public List<Slot> getSlotsBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType) {
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and slot.serviceType=:serviceType");
+
+		query.setParameter("subject", subject);
+		query.setParameter("serviceType", serviceType);
+
+		return query.getResultList();
+	}
+
+	@Override
+	public List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) {
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("FROM Slot slot " +
+						"WHERE slot.schedule.subject=:subject and " +
+						"slot.serviceType=:serviceType and"
+						+ " slot.order.uuid IN :orderUuids");
+
+		query.setParameter("subject", subject);
+		query.setParameter("serviceType", serviceType);
+		query.setParameter("orderUuids", orderUuids);
+
+		return query.getResultList();
+	}
 }

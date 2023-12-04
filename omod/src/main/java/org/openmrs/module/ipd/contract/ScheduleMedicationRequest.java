@@ -25,6 +25,7 @@ public class ScheduleMedicationRequest {
     private Long slotStartTime;
     private List<Long> firstDaySlotsStartTime;
     private List<Long> dayWiseSlotsStartTime;
+    private List<Long> remainingDaySlotsStartTime;
     private MedicationFrequency medicationFrequency;
 
     public enum MedicationFrequency {
@@ -42,5 +43,9 @@ public class ScheduleMedicationRequest {
 
     public List<LocalDateTime> getDayWiseSlotsStartTimeAsLocalTime() {
         return dayWiseSlotsStartTime != null ? dayWiseSlotsStartTime.stream().map(DateTimeUtil::convertEpocUTCToLocalTimeZone).collect(Collectors.toList()) : null;
+    }
+
+    public List<LocalDateTime> getRemainingDaySlotsStartTimeAsLocalTime() {
+        return remainingDaySlotsStartTime != null ? remainingDaySlotsStartTime.stream().map(DateTimeUtil::convertEpocUTCToLocalTimeZone).collect(Collectors.toList()) : null;
     }
 }

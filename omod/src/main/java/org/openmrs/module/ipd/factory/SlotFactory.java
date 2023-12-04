@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.factory;
 
 import org.openmrs.Concept;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
@@ -32,7 +33,7 @@ public class SlotFactory {
         this.patientService = patientService;
     }
 
-    public List<Slot> createSlotsForMedicationFrom(Schedule savedSchedule, List<LocalDateTime> slotsStartTime) {
+    public List<Slot> createSlotsForMedicationFrom(Schedule savedSchedule, List<LocalDateTime> slotsStartTime, Order drugOrder) {
 
         return slotsStartTime.stream().map(slotStartTime -> {
             Slot slot = new Slot();
@@ -47,6 +48,7 @@ public class SlotFactory {
             Concept medicationRequestServiceType = conceptService.getConceptByName(MEDICATION_REQUEST.conceptName());
             slot.setServiceType(medicationRequestServiceType);
 
+            slot.setOrder(drugOrder);
             slot.setSchedule(savedSchedule);
             slot.setStartDateTime(slotStartTime);
             slot.setStatus(SCHEDULED);

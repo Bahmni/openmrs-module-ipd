@@ -17,4 +17,8 @@ public interface SlotDAO {
 	Slot saveSlot(Slot slot) throws DAOException;
 
     List<Slot> getSlotsBySubjectReferenceIdAndForDateAndServiceType(Reference subject, LocalDate forDate, Concept serviceType);
+
+	List<Slot> getSlotsBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType);
+
+	List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids);
 }

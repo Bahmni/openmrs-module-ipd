@@ -1,11 +1,10 @@
 package org.openmrs.module.ipd.factory;
 
 import org.openmrs.Concept;
-import org.openmrs.DrugOrder;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
+import org.openmrs.Visit;
 import org.openmrs.api.ConceptService;
-import org.openmrs.api.OrderService;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.service.ReferenceService;
@@ -21,21 +20,17 @@ import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertDateToLocalDat
 @Component
 public class ScheduleFactory {
 
-    private final OrderService orderService;
     private final ConceptService conceptService;
     private final ReferenceService referenceService;
 
     @Autowired
-    public ScheduleFactory(OrderService orderService, ConceptService conceptService, ReferenceService referenceService) {
-        this.orderService = orderService;
+    public ScheduleFactory(ConceptService conceptService, ReferenceService referenceService) {
         this.conceptService = conceptService;
         this.referenceService = referenceService;
     }
 
-    public Schedule createScheduleForMedicationFrom(ScheduleMedicationRequest request) {
+    public Schedule createScheduleForMedicationFrom(ScheduleMedicationRequest request, Visit visit) {
         Schedule schedule = new Schedule();
-
-        DrugOrder drugOrder = (DrugOrder) orderService.getOrderByUuid(request.getOrderUuid());
         Concept medicationRequestServiceType = conceptService.getConceptByName(MEDICATION_REQUEST.conceptName());
 
         Reference subject = getReference(Patient.class.getTypeName(), request.getPatientUuid());
@@ -43,10 +38,11 @@ public class ScheduleFactory {
 
         schedule.setSubject(subject);
         schedule.setActor(actor);
-        schedule.setStartDate(convertDateToLocalDateTime(drugOrder.getEffectiveStartDate()));
-        schedule.setEndDate(convertDateToLocalDateTime(drugOrder.getEffectiveStopDate()));
+        schedule.setStartDate(convertDateToLocalDateTime(visit.getStartDatetime()));
+//        schedule.setEndDate(convertDateToLocalDateTime(null);
+
         schedule.setServiceType(medicationRequestServiceType);
-        schedule.setOrder(drugOrder);
+        schedule.setVisit(visit);
         schedule.setActive(true);
 
         return schedule;

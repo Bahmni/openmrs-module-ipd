@@ -189,4 +189,33 @@
                     'MedicationRequest', 'en', 1, 1, now(), 'FULLY_SPECIFIED', 0, uuid());
         </sql>
     </changeSet>
+
+    <changeSet id="add_visit_id_202311201530" author="tw">
+        <addColumn tableName="ipd_schedule">
+            <column name="visit_id" type="int"> <constraints nullable="false"/> </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="visit_id"
+                                 constraintName="ipd_schedule_visit_fk"
+                                 referencedTableName="visit" referencedColumnNames="visit_id"/>
+    </changeSet>
+
+    <changeSet id="drop_order_id_ipd_schedule_202311201530" author="tw">
+        <dropForeignKeyConstraint baseTableName="ipd_schedule" constraintName="ipd_schedule_order_fk"/>
+        <dropColumn tableName="ipd_schedule" columnName="order_id"/>
+    </changeSet>
+
+    <changeSet id="add_order_id_ipd_slot_202311201542" author="tw">
+        <addColumn tableName="ipd_slot">
+            <column name="order_id" type="int"> <constraints nullable="true"/> </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="order_id"
+                                 constraintName="ipd_slot_order_fk"
+                                 referencedTableName="orders" referencedColumnNames="order_id"/>
+    </changeSet>
+
+    <changeSet id="make_end_date_nullable_ipd_schedule_202311211542" author="tw">
+        <sql>
+            ALTER TABLE ipd_schedule MODIFY COLUMN end_date datetime NULL;
+        </sql>
+    </changeSet>
 </databaseChangeLog>
