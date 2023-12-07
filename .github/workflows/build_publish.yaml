@@ -1,7 +1,9 @@
 name: Build and Publish package
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - Bahmni-IPD-master
   workflow_dispatch:
 
 jobs:
