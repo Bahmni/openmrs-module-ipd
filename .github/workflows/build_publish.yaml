@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - Bahmni-IPD-master
+      - ipd-publish-workflow
   workflow_dispatch:
 
 jobs:
@@ -20,7 +21,7 @@ jobs:
           server-username: NEXUS_USERNAME
           server-password: NEXUS_PASSWORD
       - name: Build and deploy with Maven
-        run: ./mvnw --no-transfer-progress clean -U deploy
+        run: mvn clean -U deploy
         env:
           NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
