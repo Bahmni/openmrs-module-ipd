@@ -12,6 +12,7 @@ import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
 import org.openmrs.module.ipd.contract.MedicationAdministrationResponse;
 import org.openmrs.module.ipd.factory.MedicationAdministrationFactory;
 import org.openmrs.module.ipd.service.IPDMedicationAdministrationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +25,11 @@ import java.util.stream.Collectors;
 @Service
 public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdministrationService {
 
+
     private FhirMedicationAdministrationService fhirMedicationAdministrationService;
     private MedicationAdministrationFactory medicationAdministrationFactory;
 
+    @Autowired
     public IPDMedicationAdministrationServiceImpl(FhirMedicationAdministrationService fhirMedicationAdministrationService, MedicationAdministrationFactory medicationAdministrationFactory) {
         this.fhirMedicationAdministrationService = fhirMedicationAdministrationService;
         this.medicationAdministrationFactory = medicationAdministrationFactory;

@@ -13,6 +13,7 @@
 		<require_module>org.openmrs.module.webservices.rest</require_module>
 		<require_module>org.bahmni.module.bahmnicore</require_module>
 		<require_module>org.openmrs.module.bedmanagement</require_module>
+		<require_module>org.bahmni.module.medication-administration</require_module>
 	</require_modules>
 	<activator>org.openmrs.module.ipd.api.IPDActivator</activator>
 </module>
