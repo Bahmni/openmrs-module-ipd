@@ -49,14 +49,14 @@ public class IPDMedicationAdministrationController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "/medicationAdministrations", method = RequestMethod.GET, params = {"patientUuid", "forDate","providerUuid","slotUuid"})
+    @RequestMapping(value = "/medicationAdministrations", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid") String patientUuid,
-                                                           @RequestParam(value = "forDate") long forDate,
-                                                            @RequestParam(value = "providerUuid") String providerUuid,
-                                                            @RequestParam (value = "slotUuid")String slotUuid) {
+    public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid", required = false) String patientUuid,
+                                                           @RequestParam(value = "forDate", required = false) Long forDate,
+                                                            @RequestParam(value = "providerUuid", required = false) String providerUuid,
+                                                            @RequestParam (value = "slotUuid" , required = false)String slotUuid) {
         try {
-            LocalDate localDate = convertEpocUTCToLocalTimeZone(forDate).toLocalDate();
+            LocalDate localDate = forDate !=null ? convertEpocUTCToLocalTimeZone(forDate).toLocalDate() : null;
             List<MedicationAdministrationResponse> medicationAdministrationResponseList = ipdMedicationAdministrationService.getMedicationAdministrationList(patientUuid,localDate,providerUuid,slotUuid);
             return new ResponseEntity<>(medicationAdministrationResponseList, OK);
         } catch (Exception e) {

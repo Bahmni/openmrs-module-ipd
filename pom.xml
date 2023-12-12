@@ -179,6 +179,13 @@
 				<scope>provided</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>org.bahmni.module</groupId>
+				<artifactId>medication-administration-api</artifactId>
+				<version>1.0.0-SNAPSHOT</version>
+				<scope>provided</scope>
+			</dependency>
+
 
 			<!-- OpenMRS Test dependencies -->
 			<dependency>
