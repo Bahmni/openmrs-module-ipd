@@ -67,8 +67,8 @@ public class MedicationAdministrationFactory {
     public MedicationAdministrationResponse createFrom(MedicationAdministration medicationAdministration) {
         String patientUuid = null;
         String providerUuid = null;
-        String slotUuid = medicationAdministration.getSupportingInformation().get(0).getReference().split("/")[1];
-        Slot slot = slotService.getSlotByUUID(slotUuid);
+//        String slotUuid = medicationAdministration.getSupportingInformation().get(0).getReference().split("/")[1];
+//        Slot slot = slotService.getSlotByUUID(slotUuid);
         if(medicationAdministration.getSubject() !=null){
             patientUuid = medicationAdministration.getSubject().getReference().split("/")[1];
         }
@@ -80,8 +80,8 @@ public class MedicationAdministrationFactory {
                 .notes(medicationAdministration.getNote().get(0).getText())
                 .effectiveDateTime(medicationAdministration.getEffectiveDateTimeType().getValue())
                 .status(medicationAdministration.getStatus().toCode())
-                .orderUuid(slot.getOrder().getUuid())
-                .slot(MedicationSlotResponse.createFrom(slot))
+               // .orderUuid(medicationAdministration.getRequest().getReference())
+               // .slot(MedicationSlotResponse.createFrom(slot))
                 .patientUuid(patientUuid)
                 .providerUuid(providerUuid)
                 .build();
