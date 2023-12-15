@@ -13,7 +13,9 @@ import java.util.List;
 
 public interface IPDMedicationAdministrationService {
 
-    List<MedicationAdministrationResponse> saveMedicationAdministration(List<MedicationAdministrationRequest> medicationAdministrationRequestList);
+//    List<MedicationAdministrationResponse> saveMedicationAdministration(List<MedicationAdministrationRequest> medicationAdministrationRequestList);
+
+    MedicationAdministration saveMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest);
 
     List<MedicationAdministrationResponse> getMedicationAdministrationList(String patientUuid,LocalDate forDate,String providerUuid,String slotUuid);
 

@@ -3,10 +3,8 @@ package org.openmrs.module.ipd.api.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.openmrs.BaseChangeableOpenmrsData;
-import org.openmrs.Order;
-import org.openmrs.Location;
-import org.openmrs.Concept;
+import org.openmrs.*;
+import org.openmrs.module.fhir2.model.MedicationAdministration;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -79,6 +77,13 @@ public class Slot extends BaseChangeableOpenmrsData {
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private SlotStatus status = SlotStatus.SCHEDULED;
+
+	/**
+	 * The reference of medication administration if the medication is administered
+	 */
+	@OneToOne
+	@JoinColumn(name = "medication_administration_id", referencedColumnName = "medication_administration_id")
+	private MedicationAdministration medicationAdministration;
 }
 
 

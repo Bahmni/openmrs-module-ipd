@@ -7,6 +7,8 @@ import org.openmrs.api.ConceptService;
 import org.openmrs.api.PatientService;
 import org.openmrs.module.bedmanagement.BedDetails;
 import org.openmrs.module.bedmanagement.service.BedManagementService;
+import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
+import org.openmrs.module.fhir2.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.SlotService;
@@ -27,13 +29,16 @@ public class SlotFactory {
     private final ConceptService conceptService;
     private final PatientService patientService;
     private final SlotService slotService;
+    private final MedicationAdministrationTranslator medicationAdministrationTranslator;
 
     @Autowired
-    public SlotFactory(BedManagementService bedManagementService, ConceptService conceptService, PatientService patientService,SlotService slotService) {
+    public SlotFactory(BedManagementService bedManagementService, ConceptService conceptService, PatientService patientService,SlotService slotService,
+    MedicationAdministrationTranslator medicationAdministrationTranslator) {
         this.bedManagementService = bedManagementService;
         this.conceptService = conceptService;
         this.patientService = patientService;
         this.slotService = slotService;
+        this.medicationAdministrationTranslator = medicationAdministrationTranslator;
     }
 
     public List<Slot> createSlotsForMedicationFrom(Schedule savedSchedule, List<LocalDateTime> slotsStartTime, Order drugOrder) {
@@ -62,4 +67,14 @@ public class SlotFactory {
     public Slot getSlotFromUUID(String uuid){
        return slotService.getSlotByUUID(uuid);
     }
+
+//    public Slot saveSlot(String slotUuid, MedicationAdministration medicationAdministration) {
+//        Slot slot = getSlotFromUUID(slotUuid);
+//        if(medicationAdministration.getStatus().equals(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED)){
+//            slot.setStatus(Slot.SlotStatus.COMPLETED);
+//        }
+//        slot.setMedicationAdministration((org.openmrs.module.fhir2.model.MedicationAdministration) medicationAdministrationTranslator.toOpenmrsType(medicationAdministration));
+//        slotService.saveSlot(slot);
+//        return slotService.saveSlot(slot);
+//    }
 }

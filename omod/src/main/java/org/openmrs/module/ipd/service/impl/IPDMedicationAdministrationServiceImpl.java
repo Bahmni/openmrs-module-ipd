@@ -8,6 +8,9 @@ import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.MedicationAdministration;
 import org.openmrs.module.fhir2.apiext.FhirMedicationAdministrationService;
 import org.openmrs.module.fhir2.apiext.search.param.MedicationAdministrationSearchParams;
+import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
+import org.openmrs.module.ipd.api.model.Slot;
+import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
 import org.openmrs.module.ipd.contract.MedicationAdministrationResponse;
 import org.openmrs.module.ipd.factory.MedicationAdministrationFactory;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,22 +32,33 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
 
     private FhirMedicationAdministrationService fhirMedicationAdministrationService;
     private MedicationAdministrationFactory medicationAdministrationFactory;
+    private SlotService slotService;
+    private MedicationAdministrationTranslator medicationAdministrationTranslator;
 
     @Autowired
-    public IPDMedicationAdministrationServiceImpl(FhirMedicationAdministrationService fhirMedicationAdministrationService, MedicationAdministrationFactory medicationAdministrationFactory) {
+    public IPDMedicationAdministrationServiceImpl(FhirMedicationAdministrationService fhirMedicationAdministrationService,
+                                                  MedicationAdministrationFactory medicationAdministrationFactory,
+                                                  SlotService slotService,
+                                                  MedicationAdministrationTranslator medicationAdministrationTranslator) {
         this.fhirMedicationAdministrationService = fhirMedicationAdministrationService;
         this.medicationAdministrationFactory = medicationAdministrationFactory;
+        this.slotService = slotService;
+        this.medicationAdministrationTranslator = medicationAdministrationTranslator;
     }
 
 
     @Override
-    public List<MedicationAdministrationResponse> saveMedicationAdministration(List<MedicationAdministrationRequest> medicationAdministrationRequestList) {
+    public MedicationAdministration saveMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
 
-        List<MedicationAdministrationResponse> medicationAdministrationsResponse = medicationAdministrationRequestList.stream().
-                map(medicationAdministrationFactory::createMedicationAdministrationFrom).
-                map(fhirMedicationAdministrationService::create).
-                map(medicationAdministrationFactory::createFrom).collect(Collectors.toList());
-        return medicationAdministrationsResponse;
+//        List<MedicationAdministrationResponse> medicationAdministrationsResponse = medicationAdministrationRequestList.stream().
+//                map(medicationAdministrationFactory::createMedicationAdministrationFrom).
+//                map(fhirMedicationAdministrationService::create).
+//                map(medicationAdministrationFactory::createFrom).collect(Collectors.toList());
+//        return medicationAdministrationsResponse;
+        MedicationAdministration medicationAdministration = medicationAdministrationFactory.createMedicationAdministrationFrom(medicationAdministrationRequest);
+        medicationAdministration = fhirMedicationAdministrationService.create(medicationAdministration);
+        return medicationAdministration;
+
     }
 
     @Override

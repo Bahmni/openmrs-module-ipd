@@ -218,4 +218,14 @@
             ALTER TABLE ipd_schedule MODIFY COLUMN end_date datetime NULL;
         </sql>
     </changeSet>
+
+    <changeSet id="add_medication_administration_id_202312141530" author="Bahmni">
+        <addColumn tableName="ipd_slot">
+            <column name="medication_administration_id" type="int" />
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="ipd_slot" baseColumnNames="medication_administration_id"
+                                 constraintName="ipd_slot_medication_administration_fk"
+                                 referencedTableName="medication_administration" referencedColumnNames="medication_administration_id"/>
+    </changeSet>
+
 </databaseChangeLog>

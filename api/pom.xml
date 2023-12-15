@@ -141,7 +141,7 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.openmrs.module</groupId>
+			<groupId>org.bahmni.module</groupId>
 			<artifactId>medication-administration-api</artifactId>
 			<scope>provided</scope>
 		</dependency>

@@ -28,10 +28,35 @@ public class MedicationAdministrationResponse {
     private String notes;
     private Date effectiveDateTime;
     private String status;
-    private Object slot;
+    private String slotUuid;
     private String orderUuid;
     private String patientUuid;
     private String providerUuid;
 
+    public static MedicationAdministrationResponse createFrom(org.openmrs.module.fhir2.model.MedicationAdministration medicationAdministration) {
+        if (medicationAdministration == null) {
+            return null;
+        }
+        String patientUuid = null;
+        String providerUuid = null;
+//        String slotUuid = medicationAdministration.getSupportingInformation().get(0).getReference().split("/")[1];
+//        Slot slot = slotService.getSlotByUUID(slotUuid);
+        if (medicationAdministration.getPatient() != null) {
+            patientUuid = medicationAdministration.getPatient().getUuid();
+        }
+        if (medicationAdministration.getAdminister() != null) {
+            providerUuid = medicationAdministration.getAdminister().getUuid();
+        }
+        return MedicationAdministrationResponse.builder()
+                .uuid(medicationAdministration.getUuid())
+                .notes(medicationAdministration.getNotes())
+                .effectiveDateTime(medicationAdministration.getAdministeredDateTime())
+                .status(medicationAdministration.getStatus().getDisplayString())
+                // .orderUuid(medicationAdministration.getRequest().getReference())
+                // .slot(MedicationSlotResponse.createFrom(slot))
+                .patientUuid(patientUuid)
+                .providerUuid(providerUuid)
+                .build();
+    }
 }
 

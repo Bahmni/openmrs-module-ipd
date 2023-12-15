@@ -6,6 +6,7 @@ import org.hl7.fhir.r4.model.Annotation;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.MarkdownType;
 import org.openmrs.api.ConceptService;
+import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.ReferenceService;
 import org.openmrs.module.ipd.api.service.SlotService;
@@ -24,21 +25,23 @@ import java.util.List;
 @Component
 public class MedicationAdministrationFactory {
 
-    private final ConceptService conceptService;
-    private final ReferenceService referenceService;
+//    private final ConceptService conceptService;
+//    private final ReferenceService referenceService;
     private SlotService slotService;
+    private MedicationAdministrationTranslator medicationAdministrationTranslator;
 
     @Autowired
-    public MedicationAdministrationFactory(ConceptService conceptService, ReferenceService referenceService,SlotService slotService) {
-        this.conceptService = conceptService;
-        this.referenceService = referenceService;
+    public MedicationAdministrationFactory(SlotService slotService, MedicationAdministrationTranslator medicationAdministrationTranslator) {
+//        this.conceptService = conceptService;
+//        this.referenceService = referenceService;
         this.slotService = slotService;
+        this.medicationAdministrationTranslator = medicationAdministrationTranslator;
     }
 
     public MedicationAdministration createMedicationAdministrationFrom(MedicationAdministrationRequest request) {
         MedicationAdministration medicationAdministration = new MedicationAdministration();
 
-        medicationAdministration.setEffective(new DateTimeType(request.getEffectiveDateTime()));
+        medicationAdministration.setEffective(new DateTimeType(request.getEffectiveDateTimeAsLocaltime()));
 
         medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus()));
         medicationAdministration
@@ -81,7 +84,7 @@ public class MedicationAdministrationFactory {
                 .effectiveDateTime(medicationAdministration.getEffectiveDateTimeType().getValue())
                 .status(medicationAdministration.getStatus().toCode())
                // .orderUuid(medicationAdministration.getRequest().getReference())
-               // .slot(MedicationSlotResponse.createFrom(slot))
+//                .slotUuid(slotUuid)
                 .patientUuid(patientUuid)
                 .providerUuid(providerUuid)
                 .build();
