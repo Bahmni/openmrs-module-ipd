@@ -7,6 +7,7 @@ import ca.uhn.fhir.rest.param.ReferenceParam;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.MedicationAdministration;
 import org.openmrs.module.fhir2.apiext.FhirMedicationAdministrationService;
+import org.openmrs.module.fhir2.apiext.dao.FhirMedicationAdministrationDao;
 import org.openmrs.module.fhir2.apiext.search.param.MedicationAdministrationSearchParams;
 import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
 import org.openmrs.module.ipd.api.model.Slot;
@@ -33,17 +34,17 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     private FhirMedicationAdministrationService fhirMedicationAdministrationService;
     private MedicationAdministrationFactory medicationAdministrationFactory;
     private SlotService slotService;
-    private MedicationAdministrationTranslator medicationAdministrationTranslator;
+    private FhirMedicationAdministrationDao fhirMedicationAdministrationDao;
 
     @Autowired
     public IPDMedicationAdministrationServiceImpl(FhirMedicationAdministrationService fhirMedicationAdministrationService,
                                                   MedicationAdministrationFactory medicationAdministrationFactory,
                                                   SlotService slotService,
-                                                  MedicationAdministrationTranslator medicationAdministrationTranslator) {
+                                                  FhirMedicationAdministrationDao fhirMedicationAdministrationDao) {
         this.fhirMedicationAdministrationService = fhirMedicationAdministrationService;
         this.medicationAdministrationFactory = medicationAdministrationFactory;
         this.slotService = slotService;
-        this.medicationAdministrationTranslator = medicationAdministrationTranslator;
+        this.fhirMedicationAdministrationDao = fhirMedicationAdministrationDao;
     }
 
 
@@ -57,6 +58,13 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
 //        return medicationAdministrationsResponse;
         MedicationAdministration medicationAdministration = medicationAdministrationFactory.createMedicationAdministrationFrom(medicationAdministrationRequest);
         medicationAdministration = fhirMedicationAdministrationService.create(medicationAdministration);
+        Slot slot = slotService.getSlotByUUID(medicationAdministrationRequest.getSlotUuid());
+        if(medicationAdministration.getStatus().equals(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED)){
+            slot.setStatus(Slot.SlotStatus.COMPLETED);
+        }
+        slot.setMedicationAdministration((org.openmrs.module.fhir2.model.MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId()));
+        slotService.saveSlot(slot);
+        System.out.println("after saving slot ********* "+slot.getMedicationAdministration().getUuid());
         return medicationAdministration;
 
     }

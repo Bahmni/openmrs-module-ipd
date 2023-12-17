@@ -28,7 +28,7 @@ public class MedicationAdministrationResponse {
     private String notes;
     private Date effectiveDateTime;
     private String status;
-    private String slotUuid;
+   // private String slotUuid;
     private String orderUuid;
     private String patientUuid;
     private String providerUuid;
