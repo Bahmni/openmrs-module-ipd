@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-
-import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertEpocUTCToLocalTimeZone;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 @Builder
@@ -25,7 +24,7 @@ public class MedicationAdministrationRequest {
     private Long effectiveDateTime;
 
     public Date getEffectiveDateTimeAsLocaltime() {
-        return this.effectiveDateTime != null ? new Date(this.effectiveDateTime): null;
+        return this.effectiveDateTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.effectiveDateTime)): null;
     }
 
 }

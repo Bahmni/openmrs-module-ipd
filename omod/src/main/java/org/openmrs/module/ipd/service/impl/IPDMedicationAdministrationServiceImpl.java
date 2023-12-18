@@ -50,22 +50,22 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
 
     @Override
     public MedicationAdministration saveMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
-
-//        List<MedicationAdministrationResponse> medicationAdministrationsResponse = medicationAdministrationRequestList.stream().
-//                map(medicationAdministrationFactory::createMedicationAdministrationFrom).
-//                map(fhirMedicationAdministrationService::create).
-//                map(medicationAdministrationFactory::createFrom).collect(Collectors.toList());
-//        return medicationAdministrationsResponse;
-        MedicationAdministration medicationAdministration = medicationAdministrationFactory.createMedicationAdministrationFrom(medicationAdministrationRequest);
-        medicationAdministration = fhirMedicationAdministrationService.create(medicationAdministration);
         Slot slot = slotService.getSlotByUUID(medicationAdministrationRequest.getSlotUuid());
-        if(medicationAdministration.getStatus().equals(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED)){
-            slot.setStatus(Slot.SlotStatus.COMPLETED);
+
+        if(slot.getMedicationAdministration() != null){
+            return fhirMedicationAdministrationService.get(slot.getMedicationAdministration().getUuid());
+        } else {
+            MedicationAdministration medicationAdministration = medicationAdministrationFactory.createMedicationAdministrationFrom(medicationAdministrationRequest);
+            medicationAdministration = fhirMedicationAdministrationService.create(medicationAdministration);
+
+            if (medicationAdministration.getStatus().equals(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED)) {
+                slot.setStatus(Slot.SlotStatus.COMPLETED);
+            }
+            slot.setMedicationAdministration((org.openmrs.module.fhir2.model.MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId()));
+            slotService.saveSlot(slot);
+            System.out.println("after saving slot ********* " + slot.getMedicationAdministration().getUuid());
+            return medicationAdministration;
         }
-        slot.setMedicationAdministration((org.openmrs.module.fhir2.model.MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId()));
-        slotService.saveSlot(slot);
-        System.out.println("after saving slot ********* "+slot.getMedicationAdministration().getUuid());
-        return medicationAdministration;
 
     }
 

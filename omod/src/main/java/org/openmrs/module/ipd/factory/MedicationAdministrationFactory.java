@@ -5,14 +5,11 @@ import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Annotation;
 import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.MarkdownType;
-import org.openmrs.api.ConceptService;
+import org.openmrs.Provider;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
-import org.openmrs.module.ipd.api.model.Slot;
-import org.openmrs.module.ipd.api.service.ReferenceService;
-import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
 import org.openmrs.module.ipd.contract.MedicationAdministrationResponse;
-import org.openmrs.module.ipd.contract.MedicationSlotResponse;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,16 +22,10 @@ import java.util.List;
 @Component
 public class MedicationAdministrationFactory {
 
-//    private final ConceptService conceptService;
-//    private final ReferenceService referenceService;
-    private SlotService slotService;
     private MedicationAdministrationTranslator medicationAdministrationTranslator;
 
     @Autowired
-    public MedicationAdministrationFactory(SlotService slotService, MedicationAdministrationTranslator medicationAdministrationTranslator) {
-//        this.conceptService = conceptService;
-//        this.referenceService = referenceService;
-        this.slotService = slotService;
+    public MedicationAdministrationFactory(MedicationAdministrationTranslator medicationAdministrationTranslator) {
         this.medicationAdministrationTranslator = medicationAdministrationTranslator;
     }
 
@@ -69,24 +60,22 @@ public class MedicationAdministrationFactory {
 
     public MedicationAdministrationResponse createFrom(MedicationAdministration medicationAdministration) {
         String patientUuid = null;
-        String providerUuid = null;
-//        String slotUuid = medicationAdministration.getSupportingInformation().get(0).getReference().split("/")[1];
-//        Slot slot = slotService.getSlotByUUID(slotUuid);
+        Provider provider = null;
+
         if(medicationAdministration.getSubject() !=null){
             patientUuid = medicationAdministration.getSubject().getReference().split("/")[1];
         }
         if(medicationAdministration.getPerformer() !=null){
-            providerUuid = medicationAdministration.getPerformer().get(0).getActor().getReference().split("/")[1];
+            provider = Context.getProviderService().getProviderByUuid(medicationAdministration.getPerformer().get(0).getActor().getReference().split("/")[1]);
         }
         return MedicationAdministrationResponse.builder()
                 .uuid(medicationAdministration.getId())
                 .notes(medicationAdministration.getNote().get(0).getText())
-                .effectiveDateTime(medicationAdministration.getEffectiveDateTimeType().getValue())
+                .administeredDateTime(medicationAdministration.getEffectiveDateTimeType().getValue())
                 .status(medicationAdministration.getStatus().toCode())
                // .orderUuid(medicationAdministration.getRequest().getReference())
-//                .slotUuid(slotUuid)
                 .patientUuid(patientUuid)
-                .providerUuid(providerUuid)
+                .provider(ConversionUtil.convertToRepresentation(provider, Representation.REF))
                 .build();
     }
 
