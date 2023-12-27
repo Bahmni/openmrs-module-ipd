@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.openmrs.*;
-import org.openmrs.module.fhir2.model.MedicationAdministration;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

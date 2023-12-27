@@ -6,6 +6,7 @@ import org.openmrs.Visit;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.ipd.api.dao.ScheduleDAO;
 import org.openmrs.module.ipd.api.model.Schedule;
+import org.openmrs.module.ipd.api.model.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,12 @@ public class HibernateScheduleDAO implements ScheduleDAO {
 	@Override
 	public Schedule getSchedule(Integer scheduleId) throws DAOException {
 		return sessionFactory.getCurrentSession().get(Schedule.class, scheduleId);
+	}
+
+	@Override
+	public Schedule getScheduleByUUID(String uuid) throws DAOException {
+		Schedule s = (Schedule)this.sessionFactory.getCurrentSession().createQuery("from Schedule s where s.uuid = :uuid").setString("uuid", uuid).uniqueResult();
+		return s;
 	}
 	
 	@Override

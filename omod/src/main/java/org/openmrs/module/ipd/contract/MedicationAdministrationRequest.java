@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -15,16 +15,26 @@ import java.util.concurrent.TimeUnit;
 @AllArgsConstructor
 public class MedicationAdministrationRequest {
 
+    private String uuid;
     private String patientUuid;
+    private String encounterUuid;
     private String orderUuid;
-    private String providerUuid;
-    private String notes;
+    private List<MedicationAdministrationPerformerRequest> providers;
+    private List<MedicationAdministrationNoteRequest> notes;
     private String status;
+    private String statusReason;
+    private String drugUuid;
+    private String dosingInstructions;
+    private Double dose;
+    private String doseUnitsUuid;
+    private String routeUuid;
+    private String siteUuid;
+    private Long administeredDateTime;
     private String slotUuid;
-    private Long effectiveDateTime;
+    private String scheduleUuid;
 
-    public Date getEffectiveDateTimeAsLocaltime() {
-        return this.effectiveDateTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.effectiveDateTime)): null;
+    public Date getAdministeredDateTimeAsLocaltime() {
+        return this.administeredDateTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.administeredDateTime)): null;
     }
 
 }

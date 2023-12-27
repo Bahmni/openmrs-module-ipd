@@ -34,6 +34,12 @@ public class ScheduleServiceImpl extends BaseOpenmrsService implements ScheduleS
 	public Schedule getSchedule(Integer scheduleId) throws APIException {
 		return scheduleDAO.getSchedule(scheduleId);
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Schedule getScheduleByUUID(String uuid) throws APIException {
+		return scheduleDAO.getScheduleByUUID(uuid);
+	}
 	
 	@Override
 	public Schedule saveSchedule(Schedule schedule) throws APIException {

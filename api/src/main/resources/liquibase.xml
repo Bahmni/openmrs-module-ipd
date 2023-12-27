@@ -228,4 +228,52 @@
                                  referencedTableName="medication_administration" referencedColumnNames="medication_administration_id"/>
     </changeSet>
 
+    <changeSet id="add_emergency_medication_concept_202312270121" author="Bahmni">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept where short_name='EmergencyMedicationRequest' and description='EmergencyMedicationRequest';
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept_name where name ='EmergencyMedicationRequest';
+            </sqlCheck>
+        </preConditions>
+        <comment>Add concept for Emergency Medication Request</comment>
+        <sql>
+            insert into concept (retired, short_name, description, datatype_id, class_id, is_set, creator, date_created,
+            changed_by, date_changed, uuid)
+            values (0, 'EmergencyMedicationRequest', 'EmergencyMedicationRequest',
+            (select concept_datatype_id from concept_datatype where name = 'Text'),
+            (select concept_class_id from concept_class where name = 'Misc'),
+            0, 1, now(), 1, now(), uuid());
+            insert into concept_name (concept_id, name, locale, locale_preferred, creator, date_created,
+            concept_name_type, voided, uuid)
+            values ((select concept_id from concept where short_name='EmergencyMedicationRequest'),
+            'EmergencyMedicationRequest', 'en', 1, 1, now(), 'FULLY_SPECIFIED', 0, uuid());
+        </sql>
+    </changeSet>
+
+    <changeSet id="add_as_needed_medication_concept_202312270121" author="Bahmni">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept where short_name='AsNeededMedicationRequest' and description='AsNeededMedicationRequest';
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept_name where name ='AsNeededMedicationRequest';
+            </sqlCheck>
+        </preConditions>
+        <comment>Add concept for As Needed Medication Request</comment>
+        <sql>
+            insert into concept (retired, short_name, description, datatype_id, class_id, is_set, creator, date_created,
+            changed_by, date_changed, uuid)
+            values (0, 'AsNeededMedicationRequest', 'AsNeededMedicationRequest',
+            (select concept_datatype_id from concept_datatype where name = 'Text'),
+            (select concept_class_id from concept_class where name = 'Misc'),
+            0, 1, now(), 1, now(), uuid());
+            insert into concept_name (concept_id, name, locale, locale_preferred, creator, date_created,
+            concept_name_type, voided, uuid)
+            values ((select concept_id from concept where short_name='AsNeededMedicationRequest'),
+            'AsNeededMedicationRequest', 'en', 1, 1, now(), 'FULLY_SPECIFIED', 0, uuid());
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

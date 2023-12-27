@@ -16,12 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openmrs.module.ipd.api.model.ServiceType.MEDICATION_REQUEST;
-import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertEpocUTCToLocalTimeZone;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -42,14 +39,14 @@ public class IPDMedicationAdministrationController extends BaseRestController {
         this.medicationAdministrationFactory = medicationAdministrationFactory;
     }
 
-    @RequestMapping(value = "/medicationAdministrations", method = RequestMethod.POST)
+    @RequestMapping(value = "/scheduledMedicationAdministrations", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createMedicationAdministration(@RequestBody List<MedicationAdministrationRequest> medicationAdministrationRequestList) {
+    public ResponseEntity<Object> createScheduledMedicationAdministration(@RequestBody List<MedicationAdministrationRequest> medicationAdministrationRequestList) {
         try {
             List<MedicationAdministrationResponse> medicationAdministrationResponseList = new ArrayList<>();
             for (MedicationAdministrationRequest medicationAdministrationRequest : medicationAdministrationRequestList) {
-                MedicationAdministration medicationAdministration = ipdMedicationAdministrationService.saveMedicationAdministration(medicationAdministrationRequest);
-                medicationAdministrationResponseList.add(medicationAdministrationFactory.createFrom(medicationAdministration));
+                MedicationAdministration medicationAdministration = ipdMedicationAdministrationService.saveScheduledMedicationAdministration(medicationAdministrationRequest);
+                medicationAdministrationResponseList.add(medicationAdministrationFactory.mapMedicationAdministrationToResponse(medicationAdministration));
             }
             return new ResponseEntity<>(medicationAdministrationResponseList, OK);
         } catch (Exception e) {
@@ -58,19 +55,32 @@ public class IPDMedicationAdministrationController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "/medicationAdministrations", method = RequestMethod.GET)
+    @RequestMapping(value = "/adhocMedicationAdministrations", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid", required = false) String patientUuid,
-                                                           @RequestParam(value = "forDate", required = false) Long forDate,
-                                                            @RequestParam(value = "providerUuid", required = false) String providerUuid,
-                                                            @RequestParam (value = "slotUuid" , required = false)String slotUuid) {
+    public ResponseEntity<Object> createAdhocMedicationAdministration(@RequestBody MedicationAdministrationRequest medicationAdministrationRequest) {
         try {
-            LocalDate localDate = forDate !=null ? convertEpocUTCToLocalTimeZone(forDate).toLocalDate() : null;
-            List<MedicationAdministrationResponse> medicationAdministrationResponseList = ipdMedicationAdministrationService.getMedicationAdministrationList(patientUuid,localDate,providerUuid,slotUuid);
-            return new ResponseEntity<>(medicationAdministrationResponseList, OK);
+            MedicationAdministration medicationAdministration = ipdMedicationAdministrationService.saveAdhocMedicationAdministration(medicationAdministrationRequest);
+            MedicationAdministrationResponse medicationAdministrationResponse = medicationAdministrationFactory.mapMedicationAdministrationToResponse(medicationAdministration);
+            return new ResponseEntity<>(medicationAdministrationResponse, OK);
         } catch (Exception e) {
-            log.error("Runtime error while fetching medicationAdministrations ", e);
+            log.error("Runtime error while trying to create new medicationAdministration", e);
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
         }
     }
+
+//    @RequestMapping(value = "/medicationAdministrations", method = RequestMethod.GET)
+//    @ResponseBody
+//    public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid", required = false) String patientUuid,
+//                                                           @RequestParam(value = "forDate", required = false) Long forDate,
+//                                                            @RequestParam(value = "providerUuid", required = false) String providerUuid,
+//                                                            @RequestParam (value = "slotUuid" , required = false)String slotUuid) {
+//        try {
+//            LocalDate localDate = forDate !=null ? convertEpocUTCToLocalTimeZone(forDate).toLocalDate() : null;
+//            List<MedicationAdministrationResponse> medicationAdministrationResponseList = ipdMedicationAdministrationService.getMedicationAdministrationList(patientUuid,localDate,providerUuid,slotUuid);
+//            return new ResponseEntity<>(medicationAdministrationResponseList, OK);
+//        } catch (Exception e) {
+//            log.error("Runtime error while fetching medicationAdministrations ", e);
+//            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
+//        }
+//    }
 }

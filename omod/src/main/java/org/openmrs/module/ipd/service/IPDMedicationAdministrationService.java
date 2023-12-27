@@ -15,8 +15,10 @@ public interface IPDMedicationAdministrationService {
 
 //    List<MedicationAdministrationResponse> saveMedicationAdministration(List<MedicationAdministrationRequest> medicationAdministrationRequestList);
 
-    MedicationAdministration saveMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest);
+    MedicationAdministration saveScheduledMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest);
 
-    List<MedicationAdministrationResponse> getMedicationAdministrationList(String patientUuid,LocalDate forDate,String providerUuid,String slotUuid);
+    MedicationAdministration saveAdhocMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest);
+
+//    List<MedicationAdministrationResponse> getMedicationAdministrationList(String patientUuid,LocalDate forDate,String providerUuid,String slotUuid);
 
 }
