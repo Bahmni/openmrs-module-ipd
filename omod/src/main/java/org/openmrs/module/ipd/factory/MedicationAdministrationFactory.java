@@ -9,14 +9,11 @@ import org.openmrs.DrugOrder;
 import org.openmrs.Provider;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
-import org.openmrs.module.fhir2.apiext.translators.AnnotationTranslator;
 import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationStatusTranslator;
 import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
-//import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationPerformerTranslator;
-//import org.openmrs.module.fhir2.model.Annotation;
 import org.openmrs.module.ipd.api.model.MedicationAdministration;
+import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationPerformer;
-import org.openmrs.module.ipd.api.model.Annotation;
 import org.openmrs.module.ipd.contract.*;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
@@ -59,10 +56,10 @@ public class MedicationAdministrationFactory {
             }
         }
         medicationAdministration.setPerformers(new HashSet<>(providers));
-        List<Annotation> notes = new ArrayList<>();
+        List<MedicationAdministrationNote> notes = new ArrayList<>();
         if (request.getNotes() != null) {
             for (MedicationAdministrationNoteRequest note : request.getNotes()) {
-                Annotation newNote = new Annotation();
+                MedicationAdministrationNote newNote = new MedicationAdministrationNote();
                 newNote.setAuthor(Context.getProviderService().getProviderByUuid(note.getAuthorUuid()));
                 newNote.setText(note.getText());
                 newNote.setRecordedTime(note.getRecordedTimeAsLocaltime());

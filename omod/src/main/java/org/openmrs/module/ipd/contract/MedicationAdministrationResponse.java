@@ -2,7 +2,7 @@ package org.openmrs.module.ipd.contract;
 
 import lombok.*;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.ipd.api.model.Annotation;
+import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationPerformer;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
@@ -52,7 +52,7 @@ public class MedicationAdministrationResponse {
         }
         List<MedicationAdministrationNoteResponse> notes = new java.util.ArrayList<>();
         if (openmrsMedicationAdministration.getNotes() != null) {
-            for (Annotation note : openmrsMedicationAdministration.getNotes()) {
+            for (MedicationAdministrationNote note : openmrsMedicationAdministration.getNotes()) {
                 notes.add(MedicationAdministrationNoteResponse.createFrom(note));
             }
         }
