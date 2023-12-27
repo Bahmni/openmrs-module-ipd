@@ -77,40 +77,6 @@ public class MedicationAdministrationFactory {
         medicationAdministration.setRoute(Context.getConceptService().getConceptByUuid(request.getRouteUuid()));
         medicationAdministration.setSite(Context.getConceptService().getConceptByUuid(request.getSiteUuid()));
 
-//        medicationAdministration.setEffective(new DateTimeType(request.getAdministeredDateTimeAsLocaltime()));
-//        medicationAdministration.setStatus(MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus()));
-//        medicationAdministration.setSubject(new Reference("Patient/"+request.getPatientUuid()));
-//        medicationAdministration.setContext(new Reference("Encounter/"+request.getEncounterUuid()));
-//        medicationAdministration.setRequest(new Reference("MedicationRequest/"+request.getOrderUuid()));
-//
-//        List<MedicationAdministration.MedicationAdministrationPerformerComponent> fhirPerformers = new ArrayList<>();
-//        MedicationAdministrationPerformer openmrsPerformer = new MedicationAdministrationPerformer();
-//        for (MedicationAdministrationPerformerRequest performer : request.getProviders()) {
-//            openmrsPerformer.setActor(Context.getProviderService().getProviderByUuid(performer.getProviderUuid()));
-//            openmrsPerformer.setFunction(Context.getConceptService().getConceptByName(performer.getFunction()));
-//            fhirPerformers.add(medicationAdministrationPerformerTranslator.toFhirResource(openmrsPerformer));
-//        }
-//        medicationAdministration.setPerformer(fhirPerformers);
-//
-//        List<org.hl7.fhir.r4.model.Annotation> notes = new ArrayList<>();
-//        Annotation openmrsNote = new Annotation();
-//        for (MedicationAdministrationNoteRequest note : request.getNotes()) {
-//            openmrsNote.setAuthor(Context.getProviderService().getProviderByUuid(note.getAuthorUuid()));
-//            openmrsNote.setText(note.getText());
-//            openmrsNote.setRecordedTime(note.getRecordedTimeAsLocaltime());
-//            notes.add(annotationTranslator.toFhirResource(note));
-//        }
-//        medicationAdministration.setNote(notes);
-//
-//        medicationAdministration.setMedication(new Reference("Medication/"+request.getDrugUuid()));
-//
-//        MedicationAdministration.MedicationAdministrationDosageComponent dosage = new MedicationAdministration.MedicationAdministrationDosageComponent();
-//        dosage.setText(request.getDosingInstructions());
-//        dosage.setDose(new org.hl7.fhir.r4.model.SimpleQuantity().setValue(request.getDose()).setUnit(request.getDoseUnitsUuid()));
-//        dosage.setRoute(conceptTranslator.toFhirResource(Context.getConceptService().getConceptByUuid(request.getRouteUuid())));
-//        dosage.setSite(conceptTranslator.toFhirResource(Context.getConceptService().getConceptByUuid(request.getSiteUuid())));
-//        medicationAdministration.setDosage(dosage);
-
         return medicationAdministration;
     }
 

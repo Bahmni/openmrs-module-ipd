@@ -26,7 +26,7 @@ public class MedicationAdministrationResponse {
     private List<MedicationAdministrationNoteResponse> notes;
     private String status;
     private String statusReason;
-    private String drugUuid;
+    private Object drug;
     private String dosingInstructions;
     private Double dose;
     private Object doseUnits;
@@ -43,7 +43,6 @@ public class MedicationAdministrationResponse {
         String patientUuid = openmrsMedicationAdministration.getPatient() != null ? openmrsMedicationAdministration.getPatient().getUuid() : null;
         String encounterUuid = openmrsMedicationAdministration.getEncounter() != null ? openmrsMedicationAdministration.getEncounter().getUuid() : null;
         String orderUuid = openmrsMedicationAdministration.getDrugOrder() != null ? openmrsMedicationAdministration.getDrugOrder().getUuid() : null;
-        String drugUuid = openmrsMedicationAdministration.getDrug() != null ? openmrsMedicationAdministration.getDrug().getUuid() : null;
 
         List<MedicationAdministrationPerformerResponse> providers = new java.util.ArrayList<>();
         if (openmrsMedicationAdministration.getPerformers() != null) {
@@ -67,7 +66,7 @@ public class MedicationAdministrationResponse {
                 .orderUuid(orderUuid)
                 .providers(providers)
                 .notes(notes)
-                .drugUuid(drugUuid)
+                .drug(ConversionUtil.convertToRepresentation(openmrsMedicationAdministration.getDrug(), Representation.REF))
                 .dosingInstructions(openmrsMedicationAdministration.getDosingInstructions())
                 .dose(openmrsMedicationAdministration.getDose())
                 .doseUnits(ConversionUtil.convertToRepresentation(openmrsMedicationAdministration.getDoseUnits(), Representation.REF))
