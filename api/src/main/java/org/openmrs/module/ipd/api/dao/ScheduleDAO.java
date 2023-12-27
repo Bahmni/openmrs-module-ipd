@@ -11,8 +11,6 @@ public interface ScheduleDAO {
 	
 	Schedule getSchedule(Integer scheduleId) throws DAOException;
 
-	Schedule getScheduleByUUID(String uuid) throws DAOException;
-	
 	Schedule saveSchedule(Schedule schedule) throws DAOException;
 
 	Schedule getScheduleByVisit(Visit visit) throws DAOException;

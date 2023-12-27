@@ -26,12 +26,6 @@ public class HibernateScheduleDAO implements ScheduleDAO {
 	public Schedule getSchedule(Integer scheduleId) throws DAOException {
 		return sessionFactory.getCurrentSession().get(Schedule.class, scheduleId);
 	}
-
-	@Override
-	public Schedule getScheduleByUUID(String uuid) throws DAOException {
-		Schedule s = (Schedule)this.sessionFactory.getCurrentSession().createQuery("from Schedule s where s.uuid = :uuid").setString("uuid", uuid).uniqueResult();
-		return s;
-	}
 	
 	@Override
 	public Schedule saveSchedule(Schedule schedule) throws DAOException {

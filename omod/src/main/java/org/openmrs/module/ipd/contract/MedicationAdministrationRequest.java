@@ -31,7 +31,6 @@ public class MedicationAdministrationRequest {
     private String siteUuid;
     private Long administeredDateTime;
     private String slotUuid;
-    private String scheduleUuid;
 
     public Date getAdministeredDateTimeAsLocaltime() {
         return this.administeredDateTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.administeredDateTime)): null;

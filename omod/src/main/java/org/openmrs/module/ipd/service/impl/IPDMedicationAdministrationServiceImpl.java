@@ -6,6 +6,9 @@ import ca.uhn.fhir.rest.param.ReferenceOrListParam;
 import ca.uhn.fhir.rest.param.ReferenceParam;
 import org.apache.commons.lang.StringUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.openmrs.Patient;
+import org.openmrs.Visit;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.apiext.FhirMedicationAdministrationService;
 import org.openmrs.module.fhir2.apiext.dao.FhirMedicationAdministrationDao;
 import org.openmrs.module.fhir2.apiext.search.param.MedicationAdministrationSearchParams;
@@ -89,10 +92,11 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
 
     @Override
     public org.hl7.fhir.r4.model.MedicationAdministration saveAdhocMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
-        Schedule schedule = scheduleService.getScheduleByUUID(medicationAdministrationRequest.getScheduleUuid());
-
+        Patient patient = Context.getPatientService().getPatientByUuid(medicationAdministrationRequest.getPatientUuid());
+        Visit visit = Context.getVisitService().getActiveVisitsByPatient(patient).get(0);
+        Schedule schedule = scheduleService.getScheduleByVisit(visit);
         if (schedule == null) {
-            throw new RuntimeException("schedule not found");
+            throw new RuntimeException("Active Schedule not found");
         } else {
             org.hl7.fhir.r4.model.MedicationAdministration medicationAdministration = createMedicationAdministration(medicationAdministrationRequest);
             MedicationAdministration openmrsMedicationAdministration = (MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId());
