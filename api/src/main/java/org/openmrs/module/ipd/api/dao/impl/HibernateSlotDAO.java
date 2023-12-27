@@ -2,8 +2,6 @@ package org.openmrs.module.ipd.api.dao.impl;
 
 import org.hibernate.query.Query;
 import org.openmrs.Concept;
-import org.openmrs.Patient;
-import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;

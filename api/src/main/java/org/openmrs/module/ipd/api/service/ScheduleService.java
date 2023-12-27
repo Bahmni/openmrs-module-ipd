@@ -1,14 +1,11 @@
 package org.openmrs.module.ipd.api.service;
 
-import org.openmrs.Concept;
 import org.openmrs.Visit;
-import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.api.APIException;
 import org.openmrs.api.OpenmrsService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 public interface ScheduleService extends OpenmrsService {

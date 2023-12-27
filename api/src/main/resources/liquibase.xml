@@ -190,14 +190,14 @@
         </sql>
     </changeSet>
 
-<!--    <changeSet id="add_visit_id_202311201530" author="tw">-->
-<!--        <addColumn tableName="ipd_schedule">-->
-<!--            <column name="visit_id" type="int"> <constraints nullable="false"/> </column>-->
-<!--        </addColumn>-->
-<!--        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="visit_id"-->
-<!--                                 constraintName="ipd_schedule_visit_fk"-->
-<!--                                 referencedTableName="visit" referencedColumnNames="visit_id"/>-->
-<!--    </changeSet>-->
+    <changeSet id="add_visit_id_202311201530" author="tw">
+        <addColumn tableName="ipd_schedule">
+            <column name="visit_id" type="int"> <constraints nullable="false"/> </column>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="ipd_schedule" baseColumnNames="visit_id"
+                                 constraintName="ipd_schedule_visit_fk"
+                                 referencedTableName="visit" referencedColumnNames="visit_id"/>
+    </changeSet>
 
     <changeSet id="drop_order_id_ipd_schedule_202311201530" author="tw">
         <dropForeignKeyConstraint baseTableName="ipd_schedule" constraintName="ipd_schedule_order_fk"/>

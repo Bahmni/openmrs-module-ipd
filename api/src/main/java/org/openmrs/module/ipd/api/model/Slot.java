@@ -3,7 +3,10 @@ package org.openmrs.module.ipd.api.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.openmrs.*;
+import org.openmrs.BaseChangeableOpenmrsData;
+import org.openmrs.Order;
+import org.openmrs.Location;
+import org.openmrs.Concept;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

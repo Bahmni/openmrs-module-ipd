@@ -6,7 +6,6 @@ import org.openmrs.Visit;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.ipd.api.dao.ScheduleDAO;
 import org.openmrs.module.ipd.api.model.Schedule;
-import org.openmrs.module.ipd.api.model.Slot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
