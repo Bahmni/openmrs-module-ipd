@@ -101,6 +101,6 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid);
         if(!subjectReference.isPresent())
             return Collections.emptyList();
-        return slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(subjectReference.get(), concept, orderUuids);
+         return slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(subjectReference.get(), concept, orderUuids);
     }
 }
