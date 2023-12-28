@@ -1,22 +1,16 @@
 package org.openmrs.module.ipd.factory;
 
-import org.apache.commons.lang.StringUtils;
-//import org.hl7.fhir.r4.model.MedicationAdministration;
-import org.hl7.fhir.r4.model.Reference;
-import org.hl7.fhir.r4.model.DateTimeType;
-import org.hl7.fhir.r4.model.MarkdownType;
 import org.openmrs.DrugOrder;
-import org.openmrs.Provider;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
 import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationStatusTranslator;
 import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
 import org.openmrs.module.ipd.api.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationPerformer;
-import org.openmrs.module.ipd.contract.*;
-import org.openmrs.module.webservices.rest.web.ConversionUtil;
-import org.openmrs.module.webservices.rest.web.representation.Representation;
+import org.openmrs.module.ipd.contract.MedicationAdministrationNoteRequest;
+import org.openmrs.module.ipd.contract.MedicationAdministrationPerformerRequest;
+import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
+import org.openmrs.module.ipd.contract.MedicationAdministrationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
