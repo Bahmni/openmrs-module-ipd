@@ -34,7 +34,12 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	public Slot getSlot(Integer slotId) throws APIException {
 		return slotDAO.getSlot(slotId);
 	}
-	
+
+	@Override
+	public Slot getSlotByUUID(String uuid) throws APIException {
+		return slotDAO.getSlotByUUID(uuid);
+	}
+
 	@Override
 	public Slot saveSlot(Slot slot) throws APIException {
 		return slotDAO.saveSlot(slot);

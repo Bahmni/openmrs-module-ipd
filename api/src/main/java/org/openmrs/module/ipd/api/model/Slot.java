@@ -79,6 +79,13 @@ public class Slot extends BaseChangeableOpenmrsData {
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private SlotStatus status = SlotStatus.SCHEDULED;
+
+	/**
+	 * The reference of medication administration if the medication is administered
+	 */
+	@OneToOne
+	@JoinColumn(name = "medication_administration_id", referencedColumnName = "medication_administration_id")
+	private MedicationAdministration medicationAdministration;
 }
 
 

@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.openmrs.module.ipd.api.model.Slot.SlotStatus.SCHEDULED;
+
 @Service
 @Transactional
 public class IPDScheduleServiceImpl implements IPDScheduleService {
@@ -69,7 +71,7 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         }
         DrugOrder order = (DrugOrder) orderService.getOrderByUuid(scheduleMedicationRequest.getOrderUuid());
         List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, order);
-        slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order)
+        slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order, null, SCHEDULED, ServiceType.MEDICATION_REQUEST)
                 .forEach(slotService::saveSlot);
 
         return savedSchedule;
