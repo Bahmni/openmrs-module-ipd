@@ -113,7 +113,6 @@ public class SlotTimeCreationService extends BaseOpenmrsService {
                             )
                     ));
 
-            // Assuming you have a Map<LocalDate, List<Long>> called groupedByDateAndEpoch
             List<List<Long>> sortedList = groupedByDateAndEpoch.entrySet().stream()
                     .sorted(Map.Entry.comparingByKey()) // Sort by LocalDate in ascending order
                     .map(Map.Entry::getValue) // Get the list of Longs for each entry
