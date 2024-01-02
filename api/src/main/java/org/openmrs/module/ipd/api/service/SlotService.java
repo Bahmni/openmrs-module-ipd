@@ -28,4 +28,6 @@ public interface SlotService extends OpenmrsService {
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType);
 
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids);
+
+	void voidSlot(Slot slot,String voidReason);
 }

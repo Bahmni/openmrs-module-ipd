@@ -13,4 +13,5 @@ public interface IPDScheduleService {
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, LocalDate forDate);
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType);
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, List<String> orderUuids);
+    Schedule updateMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest);
 }

@@ -23,4 +23,6 @@ public interface SlotDAO {
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType);
 
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids);
+
+	void deleteSlotsByOrderUUID(String orderUuid);
 }

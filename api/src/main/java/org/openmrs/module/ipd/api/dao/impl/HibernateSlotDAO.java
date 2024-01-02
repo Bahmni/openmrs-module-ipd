@@ -83,4 +83,9 @@ public class HibernateSlotDAO implements SlotDAO {
 
 		return query.getResultList();
 	}
+
+	@Override
+	public void deleteSlotsByOrderUUID(String orderUuid) {
+
+	}
 }
