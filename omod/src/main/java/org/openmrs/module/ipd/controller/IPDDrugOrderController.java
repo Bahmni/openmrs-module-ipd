@@ -2,7 +2,7 @@ package org.openmrs.module.ipd.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bahmni.module.bahmnicore.util.BahmniDateUtil;
-import org.openmrs.module.ipd.api.model.IPDDrugOrder;
+import org.openmrs.module.ipd.model.IPDDrugOrder;
 import org.openmrs.module.ipd.contract.IPDDrugOrderResponse;
 import org.openmrs.module.ipd.service.IPDDrugOrderService;
 import org.openmrs.module.webservices.rest.web.RestConstants;

@@ -9,11 +9,10 @@ import org.openmrs.module.bahmniemrapi.drugorder.contract.BahmniDrugOrder;
 import org.openmrs.module.bahmniemrapi.drugorder.contract.BahmniOrderAttribute;
 import org.openmrs.module.bahmniemrapi.drugorder.mapper.BahmniDrugOrderMapper;
 import org.openmrs.module.bahmniemrapi.encountertransaction.contract.BahmniObservation;
-import org.openmrs.module.ipd.api.model.DrugOrderSchedule;
-import org.openmrs.module.ipd.api.model.IPDDrugOrder;
+import org.openmrs.module.ipd.model.DrugOrderSchedule;
+import org.openmrs.module.ipd.model.IPDDrugOrder;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
-import org.openmrs.module.ipd.contract.IPDDrugOrderResponse;
 import org.openmrs.module.ipd.service.IPDDrugOrderService;
 import org.openmrs.module.ipd.service.IPDScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +64,7 @@ public class IPDDrugOrderServiceImpl implements IPDDrugOrderService {
             bahmniDrugOrders=sortDrugOrdersAccordingToTheirSortWeight(bahmniDrugOrders);
             Map<String, DrugOrderSchedule> drugOrderScheduleByOrders = getDrugOrderScheduleForOrders(patientUuid, bahmniDrugOrders);
 
-            return bahmniDrugOrders.stream().map(bahmniDrugOrder -> IPDDrugOrder.createFrom(bahmniDrugOrder,drugOrderScheduleByOrders.get(bahmniDrugOrder.getUuid()))).collect(Collectors.toList());
+            return bahmniDrugOrders.stream().map(bahmniDrugOrder -> IPDDrugOrder.createFrom(bahmniDrugOrder.getDrugOrder(),drugOrderScheduleByOrders.get(bahmniDrugOrder.getUuid()))).collect(Collectors.toList());
 
         } catch (IOException e) {
             throw new RuntimeException("Could not parse drug order", e);

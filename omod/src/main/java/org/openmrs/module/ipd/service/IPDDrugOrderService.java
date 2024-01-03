@@ -1,6 +1,6 @@
 package org.openmrs.module.ipd.service;
 
-import org.openmrs.module.ipd.api.model.IPDDrugOrder;
+import org.openmrs.module.ipd.model.IPDDrugOrder;
 
 import java.util.Date;
 import java.util.List;

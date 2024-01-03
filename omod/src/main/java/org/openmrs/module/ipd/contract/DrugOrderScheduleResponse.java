@@ -1,7 +1,7 @@
 package org.openmrs.module.ipd.contract;
 
 import lombok.*;
-import org.openmrs.module.ipd.api.model.DrugOrderSchedule;
+import org.openmrs.module.ipd.model.DrugOrderSchedule;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 
 import java.util.List;

@@ -2,8 +2,7 @@ package org.openmrs.module.ipd.service.impl;
 
 import org.openmrs.DrugOrder;
 import org.openmrs.api.impl.BaseOpenmrsService;
-import org.openmrs.module.ipd.api.model.DrugOrderSchedule;
-import org.openmrs.module.ipd.api.model.Schedule;
+import org.openmrs.module.ipd.model.DrugOrderSchedule;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.springframework.stereotype.Component;

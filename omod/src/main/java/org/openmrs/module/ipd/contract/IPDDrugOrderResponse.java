@@ -2,7 +2,7 @@ package org.openmrs.module.ipd.contract;
 
 import lombok.*;
 import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction;
-import org.openmrs.module.ipd.api.model.IPDDrugOrder;
+import org.openmrs.module.ipd.model.IPDDrugOrder;
 
 @Getter
 @Setter
@@ -11,14 +11,12 @@ import org.openmrs.module.ipd.api.model.IPDDrugOrder;
 @AllArgsConstructor
 public class IPDDrugOrderResponse {
 
-    private VisitInfoResponse visit;
     private EncounterTransaction.DrugOrder drugOrder;
     private DrugOrderScheduleResponse drugOrderSchedule;
 
     public static IPDDrugOrderResponse createFrom(IPDDrugOrder ipdDrugOrder) {
         IPDDrugOrderResponse ipdDrugOrderResponse= IPDDrugOrderResponse.builder().
-                visit(VisitInfoResponse.createFrom(ipdDrugOrder.getBahmniDrugOrder().getVisit())).
-                drugOrder(ipdDrugOrder.getBahmniDrugOrder().getDrugOrder()).build();
+                drugOrder(ipdDrugOrder.getDrugOrder()).build();
         if (ipdDrugOrder.getDrugOrderSchedule() != null){
                 ipdDrugOrderResponse.setDrugOrderSchedule(DrugOrderScheduleResponse.createFrom(ipdDrugOrder.getDrugOrderSchedule()));
         }

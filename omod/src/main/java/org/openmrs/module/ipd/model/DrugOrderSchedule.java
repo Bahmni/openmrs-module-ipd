@@ -1,6 +1,7 @@
-package org.openmrs.module.ipd.api.model;
+package org.openmrs.module.ipd.model;
 
 import lombok.*;
+import org.openmrs.module.ipd.api.model.Slot;
 
 import java.util.List;
 
