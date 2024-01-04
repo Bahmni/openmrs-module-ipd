@@ -47,7 +47,7 @@ public class HibernateSlotDAO implements SlotDAO {
 	@Override
 	public List<Slot> getSlotsBySubjectReferenceIdAndForDateAndServiceType(Reference subject, LocalDate forDate, Concept serviceType) {
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and YEAR(slot.startDateTime)=:forYear and MONTH(slot.startDateTime)=:forMonth and DAY(slot.startDateTime)=:forDay and slot.serviceType=:serviceType");
+				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and YEAR(slot.startDateTime)=:forYear and MONTH(slot.startDateTime)=:forMonth and DAY(slot.startDateTime)=:forDay and slot.serviceType=:serviceType and slot.voided=0");
 
 		query.setParameter("subject", subject);
 		query.setParameter("forYear", forDate.getYear());
@@ -61,7 +61,7 @@ public class HibernateSlotDAO implements SlotDAO {
 	@Override
 	public List<Slot> getSlotsBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType) {
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and slot.serviceType=:serviceType");
+				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and slot.serviceType=:serviceType and slot.voided=0");
 
 		query.setParameter("subject", subject);
 		query.setParameter("serviceType", serviceType);
@@ -75,7 +75,8 @@ public class HibernateSlotDAO implements SlotDAO {
 				.createQuery("FROM Slot slot " +
 						"WHERE slot.schedule.subject=:subject and " +
 						"slot.serviceType=:serviceType and"
-						+ " slot.order.uuid IN :orderUuids");
+						+ " slot.order.uuid IN :orderUuids and "
+				         + "slot.voided = 0");
 
 		query.setParameter("subject", subject);
 		query.setParameter("serviceType", serviceType);
