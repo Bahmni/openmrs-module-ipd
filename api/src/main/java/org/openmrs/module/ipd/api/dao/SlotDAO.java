@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.api.dao;
 
 import org.openmrs.Concept;
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.api.db.DAOException;
@@ -23,4 +24,6 @@ public interface SlotDAO {
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType);
 
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids);
+
+	List<Slot> getSlotsByPatientAndVisitAndServiceType(Reference subject, Visit visit, Concept serviceType);
 }

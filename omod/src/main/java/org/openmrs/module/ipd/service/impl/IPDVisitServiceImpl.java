@@ -4,7 +4,10 @@ import org.bahmni.module.bahmnicore.service.BahmniDrugOrderService;
 import org.bahmni.module.bahmnicore.service.BahmniObsService;
 import org.openmrs.Concept;
 import org.openmrs.DrugOrder;
+import org.openmrs.Patient;
+import org.openmrs.Visit;
 import org.openmrs.api.ConceptService;
+import org.openmrs.api.VisitService;
 import org.openmrs.module.bahmniemrapi.drugorder.contract.BahmniDrugOrder;
 import org.openmrs.module.bahmniemrapi.drugorder.contract.BahmniOrderAttribute;
 import org.openmrs.module.bahmniemrapi.drugorder.mapper.BahmniDrugOrderMapper;
@@ -13,7 +16,10 @@ import org.openmrs.module.ipd.model.DrugOrderSchedule;
 import org.openmrs.module.ipd.model.IPDDrugOrder;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
-import org.openmrs.module.ipd.service.IPDDrugOrderService;
+import org.openmrs.module.ipd.api.model.*;
+import org.openmrs.module.ipd.api.service.ReferenceService;
+import org.openmrs.module.ipd.api.service.SlotService;
+import org.openmrs.module.ipd.service.IPDVisitService;
 import org.openmrs.module.ipd.service.IPDScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class IPDDrugOrderServiceImpl implements IPDDrugOrderService {
+public class IPDVisitServiceImpl implements IPDVisitService {
 
     private BahmniDrugOrderService drugOrderService;
     private IPDScheduleService ipdScheduleService;
@@ -33,27 +39,39 @@ public class IPDDrugOrderServiceImpl implements IPDDrugOrderService {
     private BahmniObsService bahmniObsService;
     private ConceptService conceptService;
     private BahmniDrugOrderMapper bahmniDrugOrderMapper;
+    private ReferenceService referenceService;
+    private VisitService visitService;
+    private SlotService slotService;
 
     @Autowired
-    public IPDDrugOrderServiceImpl(BahmniDrugOrderService drugOrderService,
-                                   IPDScheduleService ipdScheduleService,
-                                   SlotTimeCreationService slotTimeCreationService,
-                                   BahmniObsService bahmniObsService,
-                                   ConceptService conceptService) {
+    public IPDVisitServiceImpl(BahmniDrugOrderService drugOrderService,
+                               IPDScheduleService ipdScheduleService,
+                               SlotTimeCreationService slotTimeCreationService,
+                               BahmniObsService bahmniObsService,
+                               ConceptService conceptService,
+                               ReferenceService referenceService,
+                               VisitService visitService,
+                               SlotService slotService) {
         this.drugOrderService = drugOrderService;
         this.ipdScheduleService = ipdScheduleService;
         this.slotTimeCreationService = slotTimeCreationService;
         this.bahmniObsService = bahmniObsService;
         this.conceptService = conceptService;
         this.bahmniDrugOrderMapper = new BahmniDrugOrderMapper();
+        this.referenceService = referenceService;
+        this.visitService = visitService;
+        this.slotService = slotService;
     }
 
 
 
     @Override
-    public List<IPDDrugOrder> getPrescribedOrders(List<String> visitUuids, String patientUuid, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
-        List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(visitUuids, patientUuid, includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
-        return getIPDDrugOrders(patientUuid, prescribedDrugOrders);
+    public List<IPDDrugOrder> getPrescribedOrders(String visitUuid, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
+        List<String> visitUuidsList = new ArrayList<>();
+        visitUuidsList.add(visitUuid);
+        Visit visit = visitService.getVisitByUuid(visitUuid);
+        List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(visitUuidsList, visit.getPatient().getUuid(), includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
+        return getIPDDrugOrders(visit.getPatient().getUuid(), prescribedDrugOrders);
     }
 
     private List<IPDDrugOrder> getIPDDrugOrders(String patientUuid, List<DrugOrder> drugOrders) {
@@ -123,5 +141,17 @@ public class IPDDrugOrderServiceImpl implements IPDDrugOrderService {
     private Collection<Concept> getOrdAttributeConcepts() {
         Concept orderAttribute = conceptService.getConceptByName(BahmniOrderAttribute.ORDER_ATTRIBUTES_CONCEPT_SET_NAME);
         return orderAttribute == null ? Collections.EMPTY_LIST : orderAttribute.getSetMembers();
+    }
+
+    @Override
+    public List<Slot> getMedicationSlots(String visitUuid, ServiceType serviceType) {
+        Visit visit = visitService.getVisitByUuid(visitUuid);
+        Concept concept = conceptService.getConceptByName(serviceType.conceptName());
+        Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), visit.getPatient().getUuid());
+
+        if(!subjectReference.isPresent())
+            return Collections.emptyList();
+
+        return slotService.getSlotsByPatientAndVisitAndServiceType(subjectReference.get(), visit, concept);
     }
 }

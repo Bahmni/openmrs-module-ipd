@@ -1,8 +1,8 @@
 package org.openmrs.module.ipd.api.service;
 
 import org.openmrs.Concept;
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.model.Reference;
-import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.api.APIException;
 import org.openmrs.api.OpenmrsService;
@@ -30,4 +30,6 @@ public interface SlotService extends OpenmrsService {
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids);
 
 	void voidSlot(Slot slot,String voidReason);
+
+	List<Slot> getSlotsByPatientAndVisitAndServiceType(Reference subject, Visit visit, Concept serviceType);
 }

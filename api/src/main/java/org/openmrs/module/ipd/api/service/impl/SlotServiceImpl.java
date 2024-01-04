@@ -2,9 +2,9 @@ package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.Concept;
 import org.openmrs.api.context.Context;
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
-import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.api.APIException;
@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -75,4 +73,9 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 		slotDAO.saveSlot(slot);
 	}
 
+
+	@Override
+	public List<Slot> getSlotsByPatientAndVisitAndServiceType(Reference subject, Visit visit, Concept serviceType) {
+		return slotDAO.getSlotsByPatientAndVisitAndServiceType(subject, visit, serviceType);
+	}
 }
