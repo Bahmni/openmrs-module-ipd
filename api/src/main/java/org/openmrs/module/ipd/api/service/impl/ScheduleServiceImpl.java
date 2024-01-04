@@ -1,9 +1,7 @@
 package org.openmrs.module.ipd.api.service.impl;
 
-import org.openmrs.Concept;
 import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.dao.ScheduleDAO;
-import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.service.ScheduleService;
 import org.openmrs.api.APIException;
@@ -13,8 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional

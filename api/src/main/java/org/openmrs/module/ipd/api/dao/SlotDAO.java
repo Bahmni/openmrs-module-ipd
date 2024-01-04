@@ -14,7 +14,9 @@ import java.util.List;
 public interface SlotDAO {
 	
 	Slot getSlot(Integer slotId) throws DAOException;
-	
+
+	Slot getSlotByUUID(String uuid) throws DAOException;
+
 	Slot saveSlot(Slot slot) throws DAOException;
 
     List<Slot> getSlotsBySubjectReferenceIdAndForDateAndServiceType(Reference subject, LocalDate forDate, Concept serviceType);

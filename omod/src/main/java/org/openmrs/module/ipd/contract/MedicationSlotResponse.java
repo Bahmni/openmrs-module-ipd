@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hl7.fhir.r4.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.Slot;
+import org.openmrs.module.ipd.factory.MedicationAdministrationFactory;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 
@@ -23,6 +25,7 @@ public class MedicationSlotResponse {
     private String status;
     private long startTime;
     private Object order;
+    private Object medicationAdministration;
 
     public static MedicationSlotResponse createFrom(Slot slot) {
         return MedicationSlotResponse.builder()
@@ -32,6 +35,7 @@ public class MedicationSlotResponse {
                 .status(slot.getStatus().name())
                 .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
                 .order(ConversionUtil.convertToRepresentation(slot.getOrder(), Representation.FULL))
+                .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
                 .build();
     }
 }
