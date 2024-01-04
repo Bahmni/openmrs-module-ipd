@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -54,5 +55,9 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	@Override
 	public List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) {
 		return slotDAO.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(subject, serviceType, orderUuids);
+	}
+    @Override
+    public List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Concept serviceType) {
+		return slotDAO.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(subject, localStartDate, localEndDate, serviceType);
 	}
 }
