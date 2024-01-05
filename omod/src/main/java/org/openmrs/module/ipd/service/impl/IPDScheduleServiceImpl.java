@@ -105,11 +105,10 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     }
 
     @Override
-    public List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, ServiceType serviceType, LocalDateTime localStartDate, LocalDateTime localEndDate) {
-        Concept concept = conceptService.getConceptByName(serviceType.conceptName());
+    public List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate) {
         Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid);
         if(!subjectReference.isPresent())
             return Collections.emptyList();
-        return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(subjectReference.get(), localStartDate,localEndDate, concept);
+        return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(subjectReference.get(), localStartDate,localEndDate);
     }
 }

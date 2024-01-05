@@ -59,7 +59,7 @@ public class IPDScheduleController extends BaseRestController {
             if (startTime != null && endTime != null) {
                 LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
                 LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
-                List<Slot> slots = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, MEDICATION_REQUEST, localStartDate, localEndDate);
+                List<Slot> slots = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, localStartDate, localEndDate);
                 return new ResponseEntity<>(constructResponse(slots), OK);
             }
             throw new Exception();

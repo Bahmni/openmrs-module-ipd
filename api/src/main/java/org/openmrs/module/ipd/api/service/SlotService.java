@@ -30,5 +30,5 @@ public interface SlotService extends OpenmrsService {
 
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids);
 
-	List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(Reference reference, LocalDateTime localStartDate, LocalDateTime localEndDate, Concept concept);
+	List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(Reference reference, LocalDateTime localStartDate, LocalDateTime localEndDate);
 }
