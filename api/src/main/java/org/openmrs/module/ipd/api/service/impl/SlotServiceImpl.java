@@ -1,6 +1,8 @@
 package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.Concept;
+import org.openmrs.api.context.Context;
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -60,6 +63,21 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	@Override
 	public List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids) {
 		return slotDAO.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(subject, serviceType, orderUuids);
+	}
+
+	@Override
+	public void voidSlot(Slot slot, String voidReason) throws APIException  {
+		slot.setVoided(true);
+		slot.setVoidedBy(Context.getAuthenticatedUser());
+		slot.setDateVoided(new Date());
+		slot.setVoidReason(voidReason);
+		slotDAO.saveSlot(slot);
+	}
+
+
+	@Override
+	public List<Slot> getSlotsByPatientAndVisitAndServiceType(Reference subject, Visit visit, Concept serviceType) {
+		return slotDAO.getSlotsByPatientAndVisitAndServiceType(subject, visit, serviceType);
 	}
     @Override
     public List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate) {

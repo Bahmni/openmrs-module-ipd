@@ -51,6 +51,18 @@ public class IPDScheduleController extends BaseRestController {
         }
     }
 
+    @RequestMapping(value = "type/medication/edit", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<Object> updateMedicationSchedule(@RequestBody ScheduleMedicationRequest scheduleMedicationRequest) {
+        try {
+            Schedule schedule = ipdScheduleService.updateMedicationSchedule(scheduleMedicationRequest);
+            return new ResponseEntity<>(ScheduleMedicationResponse.constructFrom(schedule), OK);
+        } catch (Exception e) {
+            log.error("Runtime error while trying to create new schedule", e);
+            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
+        }
+    }
+
     @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid", "startTime", "endTime"})
     @ResponseBody
     public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid") String patientUuid,

@@ -124,6 +124,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>emrapi-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.bahmni.module</groupId>
+			<artifactId>bahmnicore-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.bahmni.module</groupId>
 			<artifactId>medication-administration-api</artifactId>
 			<scope>provided</scope>

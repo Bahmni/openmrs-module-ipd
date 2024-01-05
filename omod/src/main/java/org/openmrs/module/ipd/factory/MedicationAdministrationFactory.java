@@ -7,10 +7,7 @@ import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTrans
 import org.openmrs.module.ipd.api.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationPerformer;
-import org.openmrs.module.ipd.contract.MedicationAdministrationNoteRequest;
-import org.openmrs.module.ipd.contract.MedicationAdministrationPerformerRequest;
-import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
-import org.openmrs.module.ipd.contract.MedicationAdministrationResponse;
+import org.openmrs.module.ipd.contract.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

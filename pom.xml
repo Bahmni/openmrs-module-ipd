@@ -48,6 +48,8 @@
 		<jacocoVersion>0.7.9</jacocoVersion>
 		<lombokVersion>1.18.26</lombokVersion>
 		<openmrsFhir2Version>1.11.0</openmrsFhir2Version>
+		<bahmniVersion>0.94-SNAPSHOT</bahmniVersion>
+		<emrapi-omod.version>1.32.0</emrapi-omod.version>
 	</properties>
 
 	<build>
@@ -157,6 +159,22 @@
 				<version>${openmrsPlatformVersion}</version>
 				<scope>provided</scope>
 			</dependency>
+
+			<dependency>
+				<groupId>org.openmrs.module</groupId>
+				<artifactId>emrapi-api</artifactId>
+				<version>${emrapi-omod.version}</version>
+				<scope>provided</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.bahmni.module</groupId>
+				<artifactId>bahmnicore-api</artifactId>
+				<version>${bahmniVersion}</version>
+				<scope>provided</scope>
+				<type>jar</type>
+			</dependency>
+
 			<dependency>
 				<groupId>org.openmrs.module</groupId>
 				<artifactId>bedmanagement-api</artifactId>
