@@ -12,11 +12,14 @@ import org.openmrs.module.ipd.model.IPDDrugOrder;
 public class IPDDrugOrderResponse {
 
     private EncounterTransaction.DrugOrder drugOrder;
+    private EncounterTransaction.Provider provider;
     private DrugOrderScheduleResponse drugOrderSchedule;
 
     public static IPDDrugOrderResponse createFrom(IPDDrugOrder ipdDrugOrder) {
         IPDDrugOrderResponse ipdDrugOrderResponse= IPDDrugOrderResponse.builder().
-                drugOrder(ipdDrugOrder.getDrugOrder()).build();
+                drugOrder(ipdDrugOrder.getBahmniDrugOrder().getDrugOrder())
+                .provider(ipdDrugOrder.getBahmniDrugOrder().getProvider())
+                .build();
         if (ipdDrugOrder.getDrugOrderSchedule() != null){
                 ipdDrugOrderResponse.setDrugOrderSchedule(DrugOrderScheduleResponse.createFrom(ipdDrugOrder.getDrugOrderSchedule()));
         }

@@ -82,7 +82,7 @@ public class IPDVisitServiceImpl implements IPDVisitService {
             bahmniDrugOrders=sortDrugOrdersAccordingToTheirSortWeight(bahmniDrugOrders);
             Map<String, DrugOrderSchedule> drugOrderScheduleByOrders = getDrugOrderScheduleForOrders(patientUuid, bahmniDrugOrders);
 
-            return bahmniDrugOrders.stream().map(bahmniDrugOrder -> IPDDrugOrder.createFrom(bahmniDrugOrder.getDrugOrder(),drugOrderScheduleByOrders.get(bahmniDrugOrder.getUuid()))).collect(Collectors.toList());
+            return bahmniDrugOrders.stream().map(bahmniDrugOrder -> IPDDrugOrder.createFrom(bahmniDrugOrder,drugOrderScheduleByOrders.get(bahmniDrugOrder.getUuid()))).collect(Collectors.toList());
 
         } catch (IOException e) {
             throw new RuntimeException("Could not parse drug order", e);

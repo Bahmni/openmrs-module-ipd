@@ -1,6 +1,8 @@
 package org.openmrs.module.ipd.model;
 
 import lombok.*;
+import org.openmrs.Provider;
+import org.openmrs.module.bahmniemrapi.drugorder.contract.BahmniDrugOrder;
 import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction.DrugOrder;
 
 @Getter
@@ -9,12 +11,12 @@ import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction.DrugOrder
 @AllArgsConstructor
 public class IPDDrugOrder {
 
-    private DrugOrder drugOrder;
+    private BahmniDrugOrder bahmniDrugOrder;
     private DrugOrderSchedule drugOrderSchedule;
 
-    public static IPDDrugOrder createFrom(DrugOrder drugOrder,DrugOrderSchedule drugOrderSchedule){
+    public static IPDDrugOrder createFrom(BahmniDrugOrder bahmniDrugOrder,DrugOrderSchedule drugOrderSchedule){
         return IPDDrugOrder.builder().
-                drugOrder(drugOrder).
+                bahmniDrugOrder(bahmniDrugOrder).
                 drugOrderSchedule(drugOrderSchedule).
                 build();
     }
