@@ -25,9 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.openmrs.module.ipd.api.model.Slot.SlotStatus.SCHEDULED;
 
@@ -101,6 +100,18 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid);
         if(!subjectReference.isPresent())
             return Collections.emptyList();
-        return slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(subjectReference.get(), concept, orderUuids);
+         return slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(subjectReference.get(), concept, orderUuids);
     }
+
+    @Override
+    public Schedule updateMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest) {
+        voidExistingMedicationSlotsForOrder(scheduleMedicationRequest.getPatientUuid(),scheduleMedicationRequest.getOrderUuid(),"");
+        return saveMedicationSchedule(scheduleMedicationRequest);
+    }
+
+    private void voidExistingMedicationSlotsForOrder(String patientUuid,String orderUuid,String voidReason){
+        List<Slot> existingSlots = getMedicationSlots(patientUuid,ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{orderUuid})));
+        existingSlots.stream().forEach(slot -> slotService.voidSlot(slot,voidReason));
+    }
+
 }

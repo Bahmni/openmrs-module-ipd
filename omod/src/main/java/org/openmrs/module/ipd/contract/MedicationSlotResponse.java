@@ -38,4 +38,20 @@ public class MedicationSlotResponse {
                 .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
                 .build();
     }
+
+    public static MedicationSlotResponse createFrom(Slot slot, Representation rep) {
+        if (rep.equals(Representation.REF))
+        {
+            return MedicationSlotResponse.builder()
+                    .id(slot.getId())
+                    .uuid(slot.getUuid())
+                    .serviceType(slot.getServiceType().getName().getName())
+                    .status(slot.getStatus().name())
+                    .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
+                    .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
+                    .build();
+        }
+        return MedicationSlotResponse.createFrom(slot);
+
+    }
 }

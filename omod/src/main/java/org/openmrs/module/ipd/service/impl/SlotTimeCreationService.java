@@ -1,22 +1,29 @@
 package org.openmrs.module.ipd.service.impl;
 
 import org.openmrs.DrugOrder;
-import org.openmrs.module.ipd.api.model.Schedule;
+import org.openmrs.api.impl.BaseOpenmrsService;
+import org.openmrs.module.ipd.api.util.DateTimeUtil;
+import org.openmrs.module.ipd.model.DrugOrderSchedule;
+import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.openmrs.module.ipd.contract.ScheduleMedicationRequest.MedicationFrequency.FIXED_SCHEDULE_FREQUENCY;
 import static org.openmrs.module.ipd.contract.ScheduleMedicationRequest.MedicationFrequency.START_TIME_DURATION_FREQUENCY;
 
+@Service
 @Component
-public class SlotTimeCreationService {
+public class SlotTimeCreationService extends BaseOpenmrsService {
+
+    public static final List<String> START_TIME_FREQUENCIES= Arrays.asList(new String[]{"Every Hour", "Every 2 hours", "Every 3 hours", "Every 4 hours", "Every 6 hours", "Every 8 hours", "Every 12 hours", "Once a day", "Nocte (At Night)", "Every 30 minutes", "STAT (Immediately)"});
+
     public List<LocalDateTime> createSlotsStartTimeFrom(ScheduleMedicationRequest request, DrugOrder order) {
         if (request.getSlotStartTimeAsLocaltime() != null && request.getMedicationFrequency() == START_TIME_DURATION_FREQUENCY) {
             return getSlotsStartTimeWithStartTimeDurationFrequency(request, order);
@@ -29,6 +36,7 @@ public class SlotTimeCreationService {
 
     private List<LocalDateTime> getSlotsStartTimeWithFixedScheduleFrequency(ScheduleMedicationRequest request, DrugOrder order) {
         int numberOfSlotsStartTimeToBeCreated = (int) (Math.ceil(order.getQuantity() / order.getDose()));
+
         List<LocalDateTime> slotsStartTime = new ArrayList<>();
 
         if (!CollectionUtils.isEmpty(request.getFirstDaySlotsStartTimeAsLocalTime())) {
@@ -89,5 +97,43 @@ public class SlotTimeCreationService {
             }
         }
         return slotsStartTime;
+    }
+
+    public HashMap<String , DrugOrderSchedule> getDrugOrderScheduledTime(Map<DrugOrder,List<Slot>> slotsByOrder){
+        HashMap<String, DrugOrderSchedule> drugOrderScheduleHash= new HashMap<>();
+        for (DrugOrder drugOrder : slotsByOrder.keySet()) {
+            Double frequencyPerDay = drugOrder.getFrequency().getFrequencyPerDay();
+            String frequency=drugOrder.getFrequency().getName();
+            Map<LocalDate, List<LocalDateTime>> groupedByDateAndEpoch = slotsByOrder.get(drugOrder).stream()
+                    .collect(Collectors.groupingBy(
+                            obj -> obj.getStartDateTime().toLocalDate(),
+                            Collectors.mapping(
+                                    obj -> obj.getStartDateTime(),
+                                    Collectors.toList()
+                            )
+                    ));
+
+            List<List<LocalDateTime>> sortedList = groupedByDateAndEpoch.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey()) // Sort by LocalDate in ascending order
+                    .map(Map.Entry::getValue) // Get the list of Longs for each entry
+                    .collect(Collectors.toList()); // Collect the list of lists into a single ArrayList
+
+            DrugOrderSchedule drugOrderSchedule=new DrugOrderSchedule();
+            if (START_TIME_FREQUENCIES.contains(frequency)){
+                drugOrderSchedule.setSlotStartTime(DateTimeUtil.convertLocalDateTimeToUTCEpoc(sortedList.get(0).get(0)));
+            }
+            else if (sortedList.get(0).size() == frequencyPerDay || (sortedList.size() == 1)) {
+                drugOrderSchedule.setDayWiseSlotsStartTime(sortedList.get(0).stream().map(DateTimeUtil::convertLocalDateTimeToUTCEpoc).collect(Collectors.toList()));
+            } else {
+                drugOrderSchedule.setFirstDaySlotsStartTime(sortedList.get(0).stream().map(DateTimeUtil::convertLocalDateTimeToUTCEpoc).collect(Collectors.toList()));
+                drugOrderSchedule.setRemainingDaySlotsStartTime(sortedList.get(sortedList.size() - 1).stream().map(DateTimeUtil::convertLocalDateTimeToUTCEpoc).collect(Collectors.toList()));
+                if (sortedList.size() > 2) {
+                    drugOrderSchedule.setDayWiseSlotsStartTime(sortedList.get(1).stream().map(DateTimeUtil::convertLocalDateTimeToUTCEpoc).collect(Collectors.toList()));
+                }
+            }
+            drugOrderSchedule.setSlots(slotsByOrder.get(drugOrder));
+            drugOrderScheduleHash.put(drugOrder.getUuid(),drugOrderSchedule);
+        }
+        return drugOrderScheduleHash;
     }
 }

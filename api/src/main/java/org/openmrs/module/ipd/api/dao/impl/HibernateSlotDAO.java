@@ -2,6 +2,7 @@ package org.openmrs.module.ipd.api.dao.impl;
 
 import org.hibernate.query.Query;
 import org.openmrs.Concept;
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
@@ -47,7 +48,7 @@ public class HibernateSlotDAO implements SlotDAO {
 	@Override
 	public List<Slot> getSlotsBySubjectReferenceIdAndForDateAndServiceType(Reference subject, LocalDate forDate, Concept serviceType) {
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and YEAR(slot.startDateTime)=:forYear and MONTH(slot.startDateTime)=:forMonth and DAY(slot.startDateTime)=:forDay and slot.serviceType=:serviceType");
+				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and YEAR(slot.startDateTime)=:forYear and MONTH(slot.startDateTime)=:forMonth and DAY(slot.startDateTime)=:forDay and slot.serviceType=:serviceType and slot.voided=0");
 
 		query.setParameter("subject", subject);
 		query.setParameter("forYear", forDate.getYear());
@@ -61,7 +62,7 @@ public class HibernateSlotDAO implements SlotDAO {
 	@Override
 	public List<Slot> getSlotsBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType) {
 		Query query = sessionFactory.getCurrentSession()
-				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and slot.serviceType=:serviceType");
+				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and slot.serviceType=:serviceType and slot.voided=0");
 
 		query.setParameter("subject", subject);
 		query.setParameter("serviceType", serviceType);
@@ -75,11 +76,24 @@ public class HibernateSlotDAO implements SlotDAO {
 				.createQuery("FROM Slot slot " +
 						"WHERE slot.schedule.subject=:subject and " +
 						"slot.serviceType=:serviceType and"
-						+ " slot.order.uuid IN :orderUuids");
+						+ " slot.order.uuid IN :orderUuids and "
+				         + "slot.voided = 0");
 
 		query.setParameter("subject", subject);
 		query.setParameter("serviceType", serviceType);
 		query.setParameter("orderUuids", orderUuids);
+
+		return query.getResultList();
+	}
+
+	@Override
+	public List<Slot> getSlotsByPatientAndVisitAndServiceType(Reference subject, Visit visit, Concept serviceType) {
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and slot.schedule.visit=:visit and slot.serviceType=:serviceType");
+
+		query.setParameter("subject", subject);
+		query.setParameter("visit", visit);
+		query.setParameter("serviceType", serviceType);
 
 		return query.getResultList();
 	}
