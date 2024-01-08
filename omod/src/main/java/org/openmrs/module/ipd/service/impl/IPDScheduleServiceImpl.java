@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.openmrs.module.ipd.api.model.Slot.SlotStatus.SCHEDULED;
 
@@ -120,6 +119,6 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid);
         if(!subjectReference.isPresent())
             return Collections.emptyList();
-        return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(subjectReference.get(), localStartDate,localEndDate);
+        return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subjectReference.get(), localStartDate,localEndDate);
     }
 }
