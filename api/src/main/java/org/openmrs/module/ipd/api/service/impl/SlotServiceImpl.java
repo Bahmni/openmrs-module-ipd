@@ -81,6 +81,6 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	}
     @Override
     public List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate) {
-		return slotDAO.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(subject, localStartDate, localEndDate);
+		return slotDAO.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subject, localStartDate, localEndDate);
 	}
 }
