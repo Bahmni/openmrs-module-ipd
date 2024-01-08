@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -77,5 +78,9 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	@Override
 	public List<Slot> getSlotsByPatientAndVisitAndServiceType(Reference subject, Visit visit, Concept serviceType) {
 		return slotDAO.getSlotsByPatientAndVisitAndServiceType(subject, visit, serviceType);
+	}
+    @Override
+    public List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate) {
+		return slotDAO.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subject, localStartDate, localEndDate);
 	}
 }

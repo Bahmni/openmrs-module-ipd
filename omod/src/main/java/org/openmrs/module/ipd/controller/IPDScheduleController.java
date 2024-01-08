@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -63,14 +63,18 @@ public class IPDScheduleController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid", "forDate"})
+    @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid", "startTime", "endTime"})
     @ResponseBody
     public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid") String patientUuid,
-                                                           @RequestParam(value = "forDate") long forDate) {
+                                                           @RequestParam(value = "startTime") Long startTime, @RequestParam(value = "endTime") Long endTime) {
         try {
-            LocalDate localDate = convertEpocUTCToLocalTimeZone(forDate).toLocalDate();
-            List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, localDate);
-            return new ResponseEntity<>(constructResponse(slots), OK);
+            if (startTime != null && endTime != null) {
+                LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
+                LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
+                List<Slot> slots = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, localStartDate, localEndDate);
+                return new ResponseEntity<>(constructResponse(slots), OK);
+            }
+            throw new Exception();
         } catch (Exception e) {
             log.error("Runtime error while trying to create new schedule", e);
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);

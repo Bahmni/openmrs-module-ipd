@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -97,4 +98,15 @@ public class HibernateSlotDAO implements SlotDAO {
 
 		return query.getResultList();
 	}
+    @Override
+    public List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate) {
+        Query query = sessionFactory.getCurrentSession()
+                .createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and (slot.startDateTime BETWEEN :startDate and :endDate)");
+
+        query.setParameter("subject", subject);
+        query.setParameter("startDate", localStartDate);
+        query.setParameter("endDate", localEndDate);
+
+        return query.getResultList();
+    }
 }

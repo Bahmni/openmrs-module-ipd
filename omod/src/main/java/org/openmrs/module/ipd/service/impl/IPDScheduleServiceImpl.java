@@ -114,4 +114,12 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         existingSlots.stream().forEach(slot -> slotService.voidSlot(slot,voidReason));
     }
 
+
+    @Override
+    public List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate) {
+        Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid);
+        if(!subjectReference.isPresent())
+            return Collections.emptyList();
+        return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrameAndServiceType(subjectReference.get(), localStartDate,localEndDate);
+    }
 }
