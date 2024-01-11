@@ -129,10 +129,10 @@ public class SlotServiceImplTest {
         LocalDateTime endTime = startTime.plusHours(8);
         Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
 
-        Mockito.when(slotDAO.getSlotsBySubjectAndAdministeredTimeFrame(patientReference, startTime, endTime)).thenReturn(slots);
+        Mockito.when(slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime)).thenReturn(slots);
 
-        slotService.getSlotsBySubjectReferenceAndAdministeredTime(patientReference,startTime,endTime);
+        slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(patientReference,startTime,endTime);
 
-        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectAndAdministeredTimeFrame(patientReference, startTime, endTime);
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime);
     }
 }

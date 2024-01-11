@@ -30,6 +30,6 @@ public interface SlotDAO {
 
 	List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate);
 
-	List<Slot> getSlotsBySubjectAndAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate);
+	List<Slot> getSlotsBySubjectIncludingAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate);
 
 }

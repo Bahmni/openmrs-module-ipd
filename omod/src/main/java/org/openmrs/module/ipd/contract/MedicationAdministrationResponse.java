@@ -4,6 +4,7 @@ import lombok.*;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationPerformer;
+import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 
@@ -32,7 +33,7 @@ public class MedicationAdministrationResponse {
     private Object doseUnits;
     private Object route;
     private Object site;
-    private Date administeredDateTime;
+    private Long administeredDateTime;
 
     public static MedicationAdministrationResponse createFrom(org.openmrs.module.ipd.api.model.MedicationAdministration openmrsMedicationAdministration) {
         if (openmrsMedicationAdministration == null) {
@@ -58,7 +59,7 @@ public class MedicationAdministrationResponse {
         }
         return MedicationAdministrationResponse.builder()
                 .uuid(openmrsMedicationAdministration.getUuid())
-                .administeredDateTime(openmrsMedicationAdministration.getAdministeredDateTime())
+                .administeredDateTime(DateTimeUtil.convertDateToUTCEpoc(openmrsMedicationAdministration.getAdministeredDateTime()))
                 .status(status)
                 .statusReason(statusReason)
                 .patientUuid(patientUuid)

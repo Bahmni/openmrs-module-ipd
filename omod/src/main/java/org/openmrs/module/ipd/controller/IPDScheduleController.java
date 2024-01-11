@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -74,12 +75,8 @@ public class IPDScheduleController extends BaseRestController {
             if (startTime != null && endTime != null) {
                 LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
                 LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
-                List<Slot> slots = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, localStartDate, localEndDate,false);
-
-                if (view!=null & IPDConstants.IPD_VIEW_DRUG_CHART.equals(view)){
-                    List<Slot> slotsAdministered = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, localStartDate, localEndDate,true);
-                    return new ResponseEntity<>(constructResponseDrugView(slots,slotsAdministered,startTime,endTime), OK);
-                }
+                Boolean considerAdministeredTime = view!=null & IPDConstants.IPD_VIEW_DRUG_CHART.equals(view);
+                List<Slot> slots = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, localStartDate, localEndDate,considerAdministeredTime);
                 return new ResponseEntity<>(constructResponse(slots), OK);
             }
             throw new Exception();
@@ -110,30 +107,9 @@ public class IPDScheduleController extends BaseRestController {
         }
     }
 
-
     private List<MedicationScheduleResponse> constructResponse(List<Slot> slots) {
         Map<Schedule, List<Slot>> slotsBySchedule = slots.stream().collect(Collectors.groupingBy(Slot::getSchedule));
         return slotsBySchedule.entrySet().stream().map(entry -> createFrom(entry.getKey(), entry.getValue())).collect(Collectors.toList());
-    }
-
-    private List<MedicationScheduleResponse> constructResponseDrugView(List<Slot> slots,List<Slot> slotsAdministered,Long startTime,Long endTime) {
-        slotsAdministered.removeAll(slots);
-        slots.addAll(slotsAdministered);
-        Map<Schedule, List<Slot>> slotsBySchedule = slots.stream().collect(Collectors.groupingBy(Slot::getSchedule));
-        return slotsBySchedule.entrySet().stream()
-                .map(entry -> {
-                    List<Slot> filteredList = entry.getValue().stream()
-                            .filter(slot ->
-                                    slot == null ||
-                                            slot.getMedicationAdministration() == null ||
-                                            DateTimeUtil.isGivenTimeFallInRange(slot.getMedicationAdministration().getAdministeredDateTime().getTime()/1000,startTime,endTime)
-                            )
-                            .collect(Collectors.toList());
-
-                    return createFrom(entry.getKey(), filteredList);
-                })
-                .collect(Collectors.toList());
-
     }
 
 }

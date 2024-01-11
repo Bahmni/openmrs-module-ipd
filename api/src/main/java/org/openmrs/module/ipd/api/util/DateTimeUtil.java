@@ -16,14 +16,12 @@ public class DateTimeUtil {
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
-    public static Date convertLocalDateTimeDate(LocalDateTime localDateTime) {
-        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    public static Long convertDateToUTCEpoc(Date date) {
+        if (date == null) return null;
+        return date.toInstant().toEpochMilli();
     }
 
-    public static Boolean isGivenTimeFallInRange(Long time,Long startTime,Long endTime){
-        if (time == null){
-            return false;
-        }
-        return time >= startTime && time <= endTime;
+    public static Date convertLocalDateTimeDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }

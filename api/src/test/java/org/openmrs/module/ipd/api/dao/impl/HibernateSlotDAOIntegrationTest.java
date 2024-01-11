@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
 
@@ -266,36 +265,65 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
 
         Schedule savedSchedule = scheduleDAO.saveSchedule(schedule);
 
-        LocalDateTime slotStartTime = LocalDateTime.now();
+        LocalDateTime startTime = LocalDateTime.now();
+        LocalDateTime slot1StartTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime slot2StartTime = LocalDateTime.now().plusDays(-1);
+        LocalDateTime medicationAdministeredTime= LocalDateTime.now().plusHours(3);
+        LocalDateTime medicationAdministeredTime2= LocalDateTime.now().plusDays(3);
+
 
         MedicationAdministration medicationAdministration=new MedicationAdministration();
         medicationAdministration.setStatus(testConcept);
-        medicationAdministration.setAdministeredDateTime(DateTimeUtil.convertLocalDateTimeDate(slotStartTime.plusHours(1)));
+        medicationAdministration.setAdministeredDateTime(DateTimeUtil.convertLocalDateTimeDate(medicationAdministeredTime));
         MedicationAdministration savedMedicationAdministration= medicationAdministrationDao.createOrUpdate(medicationAdministration);
+
+        MedicationAdministration medicationAdministration2=new MedicationAdministration();
+        medicationAdministration2.setStatus(testConcept);
+        medicationAdministration2.setAdministeredDateTime(DateTimeUtil.convertLocalDateTimeDate(medicationAdministeredTime2));
+        MedicationAdministration savedMedicationAdministration2= medicationAdministrationDao.createOrUpdate(medicationAdministration2);
 
         Slot slot1 = new Slot();
         slot1.setSchedule(savedSchedule);
         slot1.setServiceType(testConcept);
-        slot1.setStartDateTime(slotStartTime);
+        slot1.setStartDateTime(slot1StartTime);
         slot1.setOrder(drugOrder);
 
         Slot slot2 = new Slot();
         slot2.setSchedule(savedSchedule);
         slot2.setServiceType(testConcept);
-        slot2.setStartDateTime(slotStartTime.plusDays(-1));
+        slot2.setStartDateTime(slot2StartTime);
         slot2.setMedicationAdministration(savedMedicationAdministration);
         slot2.setOrder(drugOrder2);
 
+        Slot slot3 = new Slot();
+        slot3.setSchedule(savedSchedule);
+        slot3.setServiceType(testConcept);
+        slot3.setStartDateTime(slot2StartTime);
+        slot3.setOrder(drugOrder);
+
+        Slot slot4 = new Slot();
+        slot4.setSchedule(savedSchedule);
+        slot4.setServiceType(testConcept);
+        slot4.setStartDateTime(slot1StartTime);
+        slot4.setMedicationAdministration(savedMedicationAdministration2);
+        slot4.setOrder(drugOrder);
+
         Slot savedSlot1 = slotDAO.saveSlot(slot1);
         Slot savedSlot2 = slotDAO.saveSlot(slot2);
+        Slot savedSlot3 = slotDAO.saveSlot(slot3);
+        Slot savedSlot4 = slotDAO.saveSlot(slot4);
 
-        List<Slot> slotsBySubjectReferenceIdAndServiceType = slotDAO.getSlotsBySubjectAndAdministeredTimeFrame(patientReference,slotStartTime,slotStartTime.plusHours(6));
 
-        Assertions.assertEquals(1, slotsBySubjectReferenceIdAndServiceType.size());
+        List<Slot> slotsBySubjectReferenceIdAndServiceType = slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference,startTime,startTime.plusHours(6));
+
+        Assertions.assertEquals(2, slotsBySubjectReferenceIdAndServiceType.size());
 
         sessionFactory.getCurrentSession().delete(savedMedicationAdministration);
+        sessionFactory.getCurrentSession().delete(savedMedicationAdministration2);
         sessionFactory.getCurrentSession().delete(savedSlot1);
         sessionFactory.getCurrentSession().delete(savedSlot2);
+        sessionFactory.getCurrentSession().delete(savedSlot3);
+        sessionFactory.getCurrentSession().delete(savedSlot4);
         sessionFactory.getCurrentSession().delete(savedSchedule);
 
     }
