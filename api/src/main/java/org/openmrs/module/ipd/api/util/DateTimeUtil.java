@@ -15,4 +15,15 @@ public class DateTimeUtil {
     public static LocalDateTime convertDateToLocalDateTime(Date date) {
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
+
+    public static Date convertLocalDateTimeDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static Boolean isGivenTimeFallInRange(Long time,Long startTime,Long endTime){
+        if (time == null){
+            return false;
+        }
+        return time >= startTime && time <= endTime;
+    }
 }

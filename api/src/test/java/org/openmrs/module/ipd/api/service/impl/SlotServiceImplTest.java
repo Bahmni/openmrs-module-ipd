@@ -15,6 +15,7 @@ import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.Slot;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -118,5 +119,20 @@ public class SlotServiceImplTest {
         slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids);
 
         Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids);
+    }
+
+    @Test
+    public void shouldInvokeGetSlotsBySubjectReferenceAndAdministeredTimeWithGivenTimeFrame() {
+
+        List<Slot> slots = new ArrayList<>();
+        LocalDateTime startTime= LocalDateTime.now();
+        LocalDateTime endTime = startTime.plusHours(8);
+        Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
+
+        Mockito.when(slotDAO.getSlotsBySubjectAndAdministeredTimeFrame(patientReference, startTime, endTime)).thenReturn(slots);
+
+        slotService.getSlotsBySubjectReferenceAndAdministeredTime(patientReference,startTime,endTime);
+
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectAndAdministeredTimeFrame(patientReference, startTime, endTime);
     }
 }

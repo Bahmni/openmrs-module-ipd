@@ -13,6 +13,7 @@ import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.ScheduleService;
 import org.openmrs.module.ipd.api.service.SlotService;
+import org.openmrs.module.ipd.api.translators.MedicationAdministrationToSlotStatusTranslator;
 import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
 import org.openmrs.module.ipd.factory.MedicationAdministrationFactory;
@@ -39,13 +40,15 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     private SlotService slotService;
     private ScheduleService scheduleService;
     private FhirMedicationAdministrationDao fhirMedicationAdministrationDao;
+    private MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator;
 
     @Autowired
     public IPDMedicationAdministrationServiceImpl(FhirMedicationAdministrationService fhirMedicationAdministrationService,
                                                   MedicationAdministrationTranslator medicationAdministrationTranslator,
                                                   MedicationAdministrationFactory medicationAdministrationFactory,
                                                   SlotFactory slotFactory, SlotService slotService, ScheduleService scheduleService,
-                                                  FhirMedicationAdministrationDao fhirMedicationAdministrationDao) {
+                                                  FhirMedicationAdministrationDao fhirMedicationAdministrationDao,
+                                                  MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator) {
         this.fhirMedicationAdministrationService = fhirMedicationAdministrationService;
         this.medicationAdministrationTranslator = medicationAdministrationTranslator;
         this.medicationAdministrationFactory = medicationAdministrationFactory;
@@ -53,6 +56,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         this.slotService = slotService;
         this.scheduleService = scheduleService;
         this.fhirMedicationAdministrationDao = fhirMedicationAdministrationDao;
+        this.medicationAdministrationToSlotStatusTranslator=medicationAdministrationToSlotStatusTranslator;
     }
 
     private org.hl7.fhir.r4.model.MedicationAdministration createMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
@@ -68,17 +72,15 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         } else {
             if (slot.getMedicationAdministration() != null) {
                 return fhirMedicationAdministrationService.get(slot.getMedicationAdministration().getUuid());
-            } else if (!StringUtils.isBlank(medicationAdministrationRequest.getUuid())) {
-                return fhirMedicationAdministrationService.get(medicationAdministrationRequest.getUuid());
-            } else {
-                org.hl7.fhir.r4.model.MedicationAdministration medicationAdministration = createMedicationAdministration(medicationAdministrationRequest);
-                if (medicationAdministration.getStatus().equals(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED)) {
-                    slot.setStatus(Slot.SlotStatus.COMPLETED);
-                }
-                slot.setMedicationAdministration((MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId()));
-                slotService.saveSlot(slot);
-                return medicationAdministration;
             }
+            if (!StringUtils.isBlank(medicationAdministrationRequest.getUuid())) {
+                return fhirMedicationAdministrationService.get(medicationAdministrationRequest.getUuid());
+            }
+            org.hl7.fhir.r4.model.MedicationAdministration medicationAdministration = createMedicationAdministration(medicationAdministrationRequest);
+            slot.setStatus(medicationAdministrationToSlotStatusTranslator.toSlotStatus(medicationAdministration.getStatus()));
+            slot.setMedicationAdministration((MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId()));
+            slotService.saveSlot(slot);
+            return medicationAdministration;
         }
     }
 

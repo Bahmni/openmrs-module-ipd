@@ -22,9 +22,9 @@ public class Slot extends BaseChangeableOpenmrsData {
 	
 	public enum SlotStatus {
 		SCHEDULED,
-		MISSED,
+		NOT_DONE,
 		COMPLETED,
-		CANCELLED
+		STOPPED
 	}
 	
 	@EqualsAndHashCode.Include

@@ -8,6 +8,8 @@ import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.hibernate.SessionFactory;
 import org.openmrs.api.db.DAOException;
+import org.openmrs.module.ipd.api.util.DateTimeUtil;
+import org.openmrs.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,4 +111,16 @@ public class HibernateSlotDAO implements SlotDAO {
 
         return query.getResultList();
     }
+
+	@Override
+	public List<Slot> getSlotsBySubjectAndAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate) {
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and slot.medicationAdministration is not null and (slot.medicationAdministration.administeredDateTime BETWEEN :startDate and :endDate)");
+
+		query.setParameter("subject", subject);
+		query.setParameter("startDate", DateTimeUtil.convertLocalDateTimeDate(localStartDate));
+		query.setParameter("endDate", DateTimeUtil.convertLocalDateTimeDate(localEndDate));
+
+		return query.getResultList();
+	}
 }
