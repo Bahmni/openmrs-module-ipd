@@ -33,7 +33,6 @@ public class MedicationAdministrationRequest {
     private String slotUuid;
 
     public Date getAdministeredDateTimeAsLocaltime() {
-        return this.administeredDateTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.administeredDateTime)): null;
+        return this.administeredDateTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.administeredDateTime)): new Date();
     }
-
 }

@@ -16,11 +16,6 @@ public class DateTimeUtil {
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
-    public static Long convertDateToUTCEpoc(Date date) {
-        if (date == null) return null;
-        return date.toInstant().toEpochMilli();
-    }
-
     public static Date convertLocalDateTimeDate(LocalDateTime localDateTime) {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }

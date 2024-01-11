@@ -33,7 +33,7 @@ public class MedicationAdministrationResponse {
     private Object doseUnits;
     private Object route;
     private Object site;
-    private Long administeredDateTime;
+    private Date administeredDateTime;
 
     public static MedicationAdministrationResponse createFrom(org.openmrs.module.ipd.api.model.MedicationAdministration openmrsMedicationAdministration) {
         if (openmrsMedicationAdministration == null) {
@@ -59,7 +59,7 @@ public class MedicationAdministrationResponse {
         }
         return MedicationAdministrationResponse.builder()
                 .uuid(openmrsMedicationAdministration.getUuid())
-                .administeredDateTime(DateTimeUtil.convertDateToUTCEpoc(openmrsMedicationAdministration.getAdministeredDateTime()))
+                .administeredDateTime(openmrsMedicationAdministration.getAdministeredDateTime())
                 .status(status)
                 .statusReason(statusReason)
                 .patientUuid(patientUuid)

@@ -118,8 +118,8 @@ public class HibernateSlotDAO implements SlotDAO {
 				.createQuery("SELECT slot FROM Slot slot " +
 						"LEFT JOIN slot.medicationAdministration medAdmin " +
 						"WHERE (slot.schedule.subject = :subject) AND " +
-						"((slot.startDateTime BETWEEN :startDateTime AND :endDateTime) AND " +
-						"(medAdmin.administeredDateTime BETWEEN :startDate AND :endDate or medAdmin is null) OR " +
+						"(((slot.startDateTime BETWEEN :startDateTime AND :endDateTime) AND " +
+						"(medAdmin.administeredDateTime BETWEEN :startDate AND :endDate or medAdmin is null)) OR " +
 						"(medAdmin is not null AND " +
 						"(medAdmin.administeredDateTime BETWEEN :startDate AND :endDate)))");
 
