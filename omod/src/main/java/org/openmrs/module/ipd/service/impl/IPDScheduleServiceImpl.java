@@ -127,7 +127,7 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
 
     @Override
     public void handlePostProcessEncounterTransaction(Encounter encounter, EncounterTransaction encounterTransaction) {
-        if (Boolean.valueOf(Context.getAdministrationService().getGlobalProperty("bahmni.ipd.allowSlotStopOnDrugOrderStop","false"))) {
+        if (Boolean.valueOf(Context.getAdministrationService().getGlobalProperty("bahmni-ipd.allowSlotStopOnDrugOrderStop","false"))) {
             handleDrugOrderStop(encounterTransaction);
         }
     }
