@@ -61,9 +61,9 @@ public class MedicationAdministrationFactory {
         medicationAdministration.setDrug(Context.getConceptService().getDrugByUuid(request.getDrugUuid()));
         medicationAdministration.setDosingInstructions(request.getDosingInstructions());
         medicationAdministration.setDose(request.getDose());
-        medicationAdministration.setDoseUnits(Context.getConceptService().getConceptByUuid(request.getDoseUnitsUuid()));
-        medicationAdministration.setRoute(Context.getConceptService().getConceptByUuid(request.getRouteUuid()));
-        medicationAdministration.setSite(Context.getConceptService().getConceptByUuid(request.getSiteUuid()));
+        medicationAdministration.setDoseUnits(Context.getConceptService().getConceptByName(request.getDoseUnits()));
+        medicationAdministration.setRoute(Context.getConceptService().getConceptByName(request.getRoute()));
+        medicationAdministration.setSite(Context.getConceptService().getConceptByName(request.getSite()));
 
         return medicationAdministration;
     }

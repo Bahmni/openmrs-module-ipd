@@ -16,7 +16,9 @@ import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.module.ipd.api.translators.MedicationAdministrationToSlotStatusTranslator;
 import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
+import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.openmrs.module.ipd.factory.MedicationAdministrationFactory;
+import org.openmrs.module.ipd.factory.ScheduleFactory;
 import org.openmrs.module.ipd.factory.SlotFactory;
 import org.openmrs.module.ipd.service.IPDMedicationAdministrationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     private ScheduleService scheduleService;
     private FhirMedicationAdministrationDao fhirMedicationAdministrationDao;
     private MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator;
+    private ScheduleFactory scheduleFactory;
 
     @Autowired
     public IPDMedicationAdministrationServiceImpl(FhirMedicationAdministrationService fhirMedicationAdministrationService,
@@ -48,7 +51,8 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
                                                   MedicationAdministrationFactory medicationAdministrationFactory,
                                                   SlotFactory slotFactory, SlotService slotService, ScheduleService scheduleService,
                                                   FhirMedicationAdministrationDao fhirMedicationAdministrationDao,
-                                                  MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator) {
+                                                  MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator,
+                                                  ScheduleFactory scheduleFactory) {
         this.fhirMedicationAdministrationService = fhirMedicationAdministrationService;
         this.medicationAdministrationTranslator = medicationAdministrationTranslator;
         this.medicationAdministrationFactory = medicationAdministrationFactory;
@@ -57,6 +61,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         this.scheduleService = scheduleService;
         this.fhirMedicationAdministrationDao = fhirMedicationAdministrationDao;
         this.medicationAdministrationToSlotStatusTranslator=medicationAdministrationToSlotStatusTranslator;
+        this.scheduleFactory = scheduleFactory;
     }
 
     private org.hl7.fhir.r4.model.MedicationAdministration createMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
@@ -90,18 +95,20 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         Visit visit = Context.getVisitService().getActiveVisitsByPatient(patient).get(0);
         Schedule schedule = scheduleService.getScheduleByVisit(visit);
         if (schedule == null) {
-            throw new RuntimeException("Active Schedule not found");
-        } else {
-            org.hl7.fhir.r4.model.MedicationAdministration medicationAdministration = createMedicationAdministration(medicationAdministrationRequest);
-            MedicationAdministration openmrsMedicationAdministration = (MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId());
-            List<LocalDateTime> slotsStartTime = new ArrayList<>();
-            slotsStartTime.add(DateTimeUtil.convertEpocUTCToLocalTimeZone(medicationAdministrationRequest.getAdministeredDateTime()));
-            ServiceType serviceType = openmrsMedicationAdministration.getDrugOrder() == null ? ServiceType.EMERGENCY_MEDICATION_REQUEST : ServiceType.AS_NEEDED_MEDICATION_REQUEST;
-            slotFactory.createSlotsForMedicationFrom(schedule, slotsStartTime, openmrsMedicationAdministration.getDrugOrder(),
-                            openmrsMedicationAdministration, Slot.SlotStatus.COMPLETED, serviceType)
-                    .forEach(slotService::saveSlot);
-            return medicationAdministration;
+            ScheduleMedicationRequest scheduleMedicationRequest = new ScheduleMedicationRequest();
+            scheduleMedicationRequest.setPatientUuid(medicationAdministrationRequest.getPatientUuid());
+            scheduleMedicationRequest.setProviderUuid(medicationAdministrationRequest.getProviders().get(0).getUuid());
+            schedule = scheduleService.saveSchedule(scheduleFactory.createScheduleForMedicationFrom(scheduleMedicationRequest, visit));
         }
+        org.hl7.fhir.r4.model.MedicationAdministration medicationAdministration = createMedicationAdministration(medicationAdministrationRequest);
+        MedicationAdministration openmrsMedicationAdministration = (MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId());
+        List<LocalDateTime> slotsStartTime = new ArrayList<>();
+        slotsStartTime.add(DateTimeUtil.convertEpocUTCToLocalTimeZone(medicationAdministrationRequest.getAdministeredDateTime()));
+        ServiceType serviceType = openmrsMedicationAdministration.getDrugOrder() == null ? ServiceType.EMERGENCY_MEDICATION_REQUEST : ServiceType.AS_NEEDED_MEDICATION_REQUEST;
+        slotFactory.createSlotsForMedicationFrom(schedule, slotsStartTime, openmrsMedicationAdministration.getDrugOrder(),
+                        openmrsMedicationAdministration, Slot.SlotStatus.COMPLETED, serviceType)
+                .forEach(slotService::saveSlot);
+        return medicationAdministration;
     }
 
 }

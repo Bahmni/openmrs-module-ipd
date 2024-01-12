@@ -3,6 +3,7 @@ package org.openmrs.module.ipd.contract;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 import org.openmrs.module.ipd.api.util.DateTimeUtil;
 
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertEpocUTCToLocalTimeZone;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
