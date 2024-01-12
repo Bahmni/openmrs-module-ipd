@@ -35,4 +35,6 @@ public interface SlotService extends OpenmrsService {
 	List<Slot> getSlotsByPatientAndVisitAndServiceType(Reference subject, Visit visit, Concept serviceType);
 
 	List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(Reference reference, LocalDateTime localStartDate, LocalDateTime localEndDate);
+
+	List<Slot> getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate);
 }
