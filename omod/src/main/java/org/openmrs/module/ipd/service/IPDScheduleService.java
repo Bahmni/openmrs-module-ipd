@@ -1,5 +1,6 @@
 package org.openmrs.module.ipd.service;
 
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
@@ -15,5 +16,5 @@ public interface IPDScheduleService {
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType);
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, List<String> orderUuids);
     Schedule updateMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest);
-    List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate);
+    List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit);
 }
