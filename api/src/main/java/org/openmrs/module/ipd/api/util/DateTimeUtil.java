@@ -15,4 +15,8 @@ public class DateTimeUtil {
     public static LocalDateTime convertDateToLocalDateTime(Date date) {
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
+
+    public static Date convertLocalDateTimeDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
 }

@@ -8,6 +8,7 @@ import org.openmrs.api.PatientService;
 import org.openmrs.api.VisitService;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.Slot;
+import org.openmrs.module.ipd.api.util.IPDConstants;
 import org.openmrs.module.ipd.api.service.ScheduleService;
 import org.openmrs.module.ipd.contract.MedicationScheduleResponse;
 import org.openmrs.module.ipd.contract.MedicationSlotResponse;
@@ -78,14 +79,16 @@ public class IPDScheduleController extends BaseRestController {
     @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid", "startTime", "endTime"})
     @ResponseBody
     public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid") String patientUuid,
-                                                           @RequestParam(value = "startTime") Long startTime, @RequestParam(value = "endTime") Long endTime) {
+                                                           @RequestParam(value = "startTime") Long startTime, @RequestParam(value = "endTime") Long endTime,
+                                                           @RequestParam(value = "view", required = false) String view) {
         try {
             if (startTime != null && endTime != null) {
                 LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
                 LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
+                Boolean considerAdministeredTime = view!=null & IPDConstants.IPD_VIEW_DRUG_CHART.equals(view);
                 Patient patient = patientService.getPatientByUuid(patientUuid);
                 Visit visit = visitService.getActiveVisitsByPatient(patient).get(0);
-                List<Slot> slots = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, localStartDate, localEndDate, visit);
+                List<Slot> slots = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, localStartDate, localEndDate,considerAdministeredTime, visit);
                 return new ResponseEntity<>(constructResponse(slots, visit), OK);
             }
             throw new Exception();
@@ -125,4 +128,5 @@ public class IPDScheduleController extends BaseRestController {
         Map<Schedule, List<Slot>> slotsBySchedule = slots.stream().collect(Collectors.groupingBy(Slot::getSchedule));
         return slotsBySchedule.entrySet().stream().map(entry -> createFrom(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
+
 }

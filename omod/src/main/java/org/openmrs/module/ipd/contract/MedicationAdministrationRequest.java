@@ -26,14 +26,13 @@ public class MedicationAdministrationRequest {
     private String drugUuid;
     private String dosingInstructions;
     private Double dose;
-    private String doseUnitsUuid;
-    private String routeUuid;
-    private String siteUuid;
+    private String doseUnits;
+    private String route;
+    private String site;
     private Long administeredDateTime;
     private String slotUuid;
 
     public Date getAdministeredDateTimeAsLocaltime() {
-        return this.administeredDateTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.administeredDateTime)): null;
+        return this.administeredDateTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.administeredDateTime)): new Date();
     }
-
 }

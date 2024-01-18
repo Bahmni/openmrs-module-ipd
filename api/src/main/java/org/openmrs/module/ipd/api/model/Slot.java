@@ -22,9 +22,9 @@ public class Slot extends BaseChangeableOpenmrsData {
 	
 	public enum SlotStatus {
 		SCHEDULED,
-		MISSED,
+		NOT_DONE,
 		COMPLETED,
-		CANCELLED
+		STOPPED
 	}
 	
 	@EqualsAndHashCode.Include
@@ -89,6 +89,10 @@ public class Slot extends BaseChangeableOpenmrsData {
 
 	@Column(name = "comments")
 	private String notes;
+
+	public Boolean isStopped() {
+		return this.status !=null && this.status == SlotStatus.STOPPED;
+	}
 }
 
 
