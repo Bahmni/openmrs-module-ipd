@@ -69,7 +69,7 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         }
         DrugOrder order = (DrugOrder) orderService.getOrderByUuid(scheduleMedicationRequest.getOrderUuid());
         List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, order);
-        slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order, null, SCHEDULED, ServiceType.MEDICATION_REQUEST)
+        slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order, null, SCHEDULED, ServiceType.MEDICATION_REQUEST, scheduleMedicationRequest.getComments())
                 .forEach(slotService::saveSlot);
 
         return savedSchedule;
@@ -115,14 +115,14 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
 
 
     @Override
-    public List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate,Boolean considerAdministeredTime) {
+    public List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate, Boolean considerAdministeredTime, Visit visit) {
         Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid);
         if(!subjectReference.isPresent())
             return Collections.emptyList();
         if (considerAdministeredTime) {
             return slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(subjectReference.get(), localStartDate, localEndDate);
         }
-        return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subjectReference.get(), localStartDate,localEndDate);
+        return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subjectReference.get(), localStartDate,localEndDate, visit);
     }
 
     @Override

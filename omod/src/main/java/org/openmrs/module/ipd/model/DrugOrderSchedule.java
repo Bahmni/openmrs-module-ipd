@@ -17,5 +17,5 @@ public class DrugOrderSchedule {
     private List<Long> remainingDaySlotsStartTime;
     private Long slotStartTime;
     private List<Slot> slots;
-
+    private String notes;
 }

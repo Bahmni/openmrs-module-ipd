@@ -26,6 +26,7 @@ public class MedicationSlotResponse {
     private long startTime;
     private Object order;
     private Object medicationAdministration;
+    private String notes;
 
     public static MedicationSlotResponse createFrom(Slot slot) {
         return MedicationSlotResponse.builder()
@@ -36,6 +37,7 @@ public class MedicationSlotResponse {
                 .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
                 .order(ConversionUtil.convertToRepresentation(slot.getOrder(), Representation.FULL))
                 .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
+                .notes(slot.getNotes())
                 .build();
     }
 
@@ -49,6 +51,7 @@ public class MedicationSlotResponse {
                     .status(slot.getStatus().name())
                     .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
                     .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
+                    .notes(slot.getNotes())
                     .build();
         }
         return MedicationSlotResponse.createFrom(slot);

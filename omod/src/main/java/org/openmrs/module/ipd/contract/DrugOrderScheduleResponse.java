@@ -16,6 +16,7 @@ public class DrugOrderScheduleResponse {
     private List<Long> remainingDaySlotsStartTime;
     private Long slotStartTime;
     private Boolean medicationAdministrationStarted;
+    private String notes;
 
     public static DrugOrderScheduleResponse createFrom(DrugOrderSchedule drugOrderSchedule){
         return DrugOrderScheduleResponse.builder().
@@ -24,6 +25,7 @@ public class DrugOrderScheduleResponse {
                 remainingDaySlotsStartTime(drugOrderSchedule.getRemainingDaySlotsStartTime()).
                 slotStartTime(drugOrderSchedule.getSlotStartTime()).
                 medicationAdministrationStarted(drugOrderSchedule.getSlots().stream().anyMatch(slot -> slot.getMedicationAdministration() != null)).
+                notes(drugOrderSchedule.getNotes()).
                 build();
     }
 }

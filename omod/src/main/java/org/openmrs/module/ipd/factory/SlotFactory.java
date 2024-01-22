@@ -37,7 +37,7 @@ public class SlotFactory {
 
     public List<Slot> createSlotsForMedicationFrom(Schedule savedSchedule, List<LocalDateTime> slotsStartTime,
                                                    Order drugOrder, MedicationAdministration medicationAdministration,
-                                                   Slot.SlotStatus status, ServiceType serviceType) {
+                                                   Slot.SlotStatus status, ServiceType serviceType, String comments) {
 
         return slotsStartTime.stream().map(slotStartTime -> {
             Slot slot = new Slot();
@@ -57,6 +57,7 @@ public class SlotFactory {
             slot.setStartDateTime(slotStartTime);
             slot.setStatus(status);
             slot.setMedicationAdministration(medicationAdministration);
+            slot.setNotes(comments);
             return slot;
         }).collect(Collectors.toList());
     }

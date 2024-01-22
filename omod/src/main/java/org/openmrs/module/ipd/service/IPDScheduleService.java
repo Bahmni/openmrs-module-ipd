@@ -1,5 +1,6 @@
 package org.openmrs.module.ipd.service;
 
+import org.openmrs.Visit;
 import org.openmrs.Encounter;
 import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction;
 import org.openmrs.module.ipd.api.model.Schedule;
@@ -17,6 +18,6 @@ public interface IPDScheduleService {
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType);
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, List<String> orderUuids);
     Schedule updateMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest);
-    List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate,Boolean considerAdministeredTime);
+    List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate,Boolean considerAdministeredTime, Visit visit);
     void handlePostProcessEncounterTransaction(Encounter encounter, EncounterTransaction encounterTransaction);
 }

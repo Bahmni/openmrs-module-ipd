@@ -87,6 +87,9 @@ public class Slot extends BaseChangeableOpenmrsData {
 	@JoinColumn(name = "medication_administration_id", referencedColumnName = "medication_administration_id")
 	private MedicationAdministration medicationAdministration;
 
+	@Column(name = "comments")
+	private String notes;
+
 	public Boolean isStopped() {
 		return this.status !=null && this.status == SlotStatus.STOPPED;
 	}
