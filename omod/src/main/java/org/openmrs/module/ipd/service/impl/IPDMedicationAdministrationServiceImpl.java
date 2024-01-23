@@ -104,7 +104,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         if (schedule == null) {
             ScheduleMedicationRequest scheduleMedicationRequest = new ScheduleMedicationRequest();
             scheduleMedicationRequest.setPatientUuid(medicationAdministrationRequest.getPatientUuid());
-            scheduleMedicationRequest.setProviderUuid(medicationAdministrationRequest.getProviders().get(0).getUuid());
+            scheduleMedicationRequest.setProviderUuid(medicationAdministrationRequest.getProviders().get(0).getProviderUuid());
             schedule = scheduleService.saveSchedule(scheduleFactory.createScheduleForMedicationFrom(scheduleMedicationRequest, visit));
         }
         org.hl7.fhir.r4.model.MedicationAdministration medicationAdministration = createMedicationAdministration(medicationAdministrationRequest);

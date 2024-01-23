@@ -1,13 +1,12 @@
 package org.openmrs.module.ipd.service.impl;
 
-import org.openmrs.Concept;
-import org.openmrs.DrugOrder;
-import org.openmrs.Patient;
-import org.openmrs.Visit;
+import org.openmrs.*;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.VisitService;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.ServiceType;
@@ -26,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.openmrs.module.ipd.api.model.Slot.SlotStatus.SCHEDULED;
 
@@ -123,5 +123,30 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
             return slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(subjectReference.get(), localStartDate, localEndDate);
         }
         return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subjectReference.get(), localStartDate,localEndDate);
+    }
+
+    @Override
+    public void handlePostProcessEncounterTransaction(Encounter encounter, EncounterTransaction encounterTransaction) {
+        if (Boolean.valueOf(Context.getAdministrationService().getGlobalProperty("bahmni-ipd.allowSlotStopOnDrugOrderStop","false"))) {
+            handleDrugOrderStop(encounterTransaction);
+        }
+    }
+
+    private void handleDrugOrderStop(EncounterTransaction encounterTransaction){
+        List<EncounterTransaction.DrugOrder> stoppedDrugOrders = encounterTransaction.getDrugOrders().stream().filter(drugOrder -> drugOrder.getDateStopped() !=null).collect(Collectors.toList());
+        String patientUuid = encounterTransaction.getPatientUuid();
+        for (EncounterTransaction.DrugOrder drugOrder : stoppedDrugOrders) {
+            List<Slot> existingSlots = getMedicationSlots(patientUuid,ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{drugOrder.getPreviousOrderUuid()})));
+            if (existingSlots == null || existingSlots.isEmpty()) {
+                continue;
+            }
+            boolean atleastOneMedicationAdministered = existingSlots.stream().anyMatch(slot -> slot.getMedicationAdministration() != null);
+            if (atleastOneMedicationAdministered){ // Mark status of non administered slots to stopped
+                existingSlots.stream().forEach(slot -> { if ((slot.getMedicationAdministration() ==null) && !slot.isStopped())  {slot.setStatus(Slot.SlotStatus.STOPPED); slotService.saveSlot(slot);}});
+            } else { // Void all slots
+                existingSlots.stream().forEach(slot -> slotService.voidSlot(slot, ""));
+            }
+        }
+
     }
 }
