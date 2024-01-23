@@ -68,4 +68,18 @@ public class IPDMedicationAdministrationController extends BaseRestController {
         }
     }
 
+    @RequestMapping(value = "/adhocMedicationAdministrations/{medicationAdministrationUuid}", method = RequestMethod.PUT)
+    @ResponseBody
+    public ResponseEntity<Object> createScheduledMedicationAdministration(
+            @PathVariable("medicationAdministrationUuid") String medicationAdministrationUuid,
+            @RequestBody MedicationAdministrationRequest medicationAdministrationRequest) {
+        try {
+            MedicationAdministration medicationAdministration = ipdMedicationAdministrationService.updateAdhocMedicationAdministration(medicationAdministrationUuid,medicationAdministrationRequest);
+            return new ResponseEntity(medicationAdministrationFactory.mapMedicationAdministrationToResponse(medicationAdministration),OK);
+        } catch (Exception e) {
+            log.error("Runtime error while trying to update new medicationAdministration", e);
+            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
+        }
+    }
+
 }

@@ -90,6 +90,13 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     }
 
     @Override
+    public org.hl7.fhir.r4.model.MedicationAdministration updateAdhocMedicationAdministration(String uuid, MedicationAdministrationRequest medicationAdministrationRequest) {
+        MedicationAdministration medicationAdministration = medicationAdministrationFactory.mapRequestToMedicationAdministration(medicationAdministrationRequest,
+                                                                                            (MedicationAdministration) fhirMedicationAdministrationDao.get(uuid));
+        return fhirMedicationAdministrationService.update(uuid,medicationAdministrationTranslator.toFhirResource(medicationAdministration));
+    }
+
+    @Override
     public org.hl7.fhir.r4.model.MedicationAdministration saveAdhocMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
         Patient patient = Context.getPatientService().getPatientByUuid(medicationAdministrationRequest.getPatientUuid());
         Visit visit = Context.getVisitService().getActiveVisitsByPatient(patient).get(0);
