@@ -25,7 +25,7 @@ public class DrugOrderScheduleResponse {
                 remainingDaySlotsStartTime(drugOrderSchedule.getRemainingDaySlotsStartTime()).
                 slotStartTime(drugOrderSchedule.getSlotStartTime()).
                 medicationAdministrationStarted(drugOrderSchedule.getSlots().stream().anyMatch(slot -> slot.getMedicationAdministration() != null)).
-                notes(drugOrderSchedule.getNotes()).
+                notes(drugOrderSchedule.getSlots().get(0).getNotes()).
                 build();
     }
 }
