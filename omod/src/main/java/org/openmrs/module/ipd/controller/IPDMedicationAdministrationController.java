@@ -70,7 +70,7 @@ public class IPDMedicationAdministrationController extends BaseRestController {
 
     @RequestMapping(value = "/adhocMedicationAdministrations/{medicationAdministrationUuid}", method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<Object> createScheduledMedicationAdministration(
+    public ResponseEntity<Object> updateAdhocMedicationAdministration(
             @PathVariable("medicationAdministrationUuid") String medicationAdministrationUuid,
             @RequestBody MedicationAdministrationRequest medicationAdministrationRequest) {
         try {
