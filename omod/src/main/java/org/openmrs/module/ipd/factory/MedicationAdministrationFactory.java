@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -29,21 +30,36 @@ public class MedicationAdministrationFactory {
         this.medicationAdministrationStatusTranslator = medicationAdministrationStatusTranslator;
     }
 
-    public MedicationAdministration mapRequestToMedicationAdministration(MedicationAdministrationRequest request, MedicationAdministration medicationAdministration) {
+    public MedicationAdministration mapRequestToMedicationAdministration(MedicationAdministrationRequest request, MedicationAdministration existingMedicationAdministration) {
 
-        medicationAdministration.setAdministeredDateTime(request.getAdministeredDateTimeAsLocaltime());
-        medicationAdministration.setStatus(medicationAdministrationStatusTranslator.toOpenmrsType(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus())));
-        medicationAdministration.setPatient(Context.getPatientService().getPatientByUuid(request.getPatientUuid()));
-        medicationAdministration.setEncounter(Context.getEncounterService().getEncounterByUuid(request.getEncounterUuid()));
-        medicationAdministration.setDrugOrder((DrugOrder) Context.getOrderService().getOrderByUuid(request.getOrderUuid()));
-
+        MedicationAdministration medicationAdministration = new MedicationAdministration();
+        if (existingMedicationAdministration ==null ||  existingMedicationAdministration.getId() == null) {
+            medicationAdministration.setAdministeredDateTime(request.getAdministeredDateTimeAsLocaltime());
+            medicationAdministration.setStatus(medicationAdministrationStatusTranslator.toOpenmrsType(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus())));
+            medicationAdministration.setPatient(Context.getPatientService().getPatientByUuid(request.getPatientUuid()));
+            medicationAdministration.setEncounter(Context.getEncounterService().getEncounterByUuid(request.getEncounterUuid()));
+            medicationAdministration.setDrugOrder((DrugOrder) Context.getOrderService().getOrderByUuid(request.getOrderUuid()));
+            medicationAdministration.setDrug(Context.getConceptService().getDrugByUuid(request.getDrugUuid()));
+            medicationAdministration.setDosingInstructions(request.getDosingInstructions());
+            medicationAdministration.setDose(request.getDose());
+            medicationAdministration.setDoseUnits(Context.getConceptService().getConceptByName(request.getDoseUnits()));
+            medicationAdministration.setRoute(Context.getConceptService().getConceptByName(request.getRoute()));
+            medicationAdministration.setSite(Context.getConceptService().getConceptByName(request.getSite()));
+        }
+        else {
+            medicationAdministration.setUuid(existingMedicationAdministration.getUuid());
+        }
         List<MedicationAdministrationPerformer> providers = new ArrayList<>();
         if (request.getProviders() != null) {
             for (MedicationAdministrationPerformerRequest performer : request.getProviders()) {
                 MedicationAdministrationPerformer newProvider = new MedicationAdministrationPerformer();
+                newProvider.setUuid(performer.getUuid());
                 newProvider.setActor(Context.getProviderService().getProviderByUuid(performer.getProviderUuid()));
                 newProvider.setFunction(Context.getConceptService().getConceptByName(performer.getFunction()));
                 providers.add(newProvider);
+            }
+            if (existingMedicationAdministration !=null && existingMedicationAdministration.getPerformers() !=null){
+                providers.addAll(existingMedicationAdministration.getPerformers());
             }
         }
         medicationAdministration.setPerformers(new HashSet<>(providers));
@@ -51,20 +67,17 @@ public class MedicationAdministrationFactory {
         if (request.getNotes() != null) {
             for (MedicationAdministrationNoteRequest note : request.getNotes()) {
                 MedicationAdministrationNote newNote = new MedicationAdministrationNote();
+                newNote.setUuid(note.getUuid());
                 newNote.setAuthor(Context.getProviderService().getProviderByUuid(note.getAuthorUuid()));
                 newNote.setText(note.getText());
                 newNote.setRecordedTime(note.getRecordedTimeAsLocaltime());
                 notes.add(newNote);
             }
+            if (existingMedicationAdministration !=null && existingMedicationAdministration.getNotes() !=null){
+                notes.addAll(existingMedicationAdministration.getNotes());
+            }
         }
         medicationAdministration.setNotes(new HashSet<>(notes));
-        medicationAdministration.setDrug(Context.getConceptService().getDrugByUuid(request.getDrugUuid()));
-        medicationAdministration.setDosingInstructions(request.getDosingInstructions());
-        medicationAdministration.setDose(request.getDose());
-        medicationAdministration.setDoseUnits(Context.getConceptService().getConceptByName(request.getDoseUnits()));
-        medicationAdministration.setRoute(Context.getConceptService().getConceptByName(request.getRoute()));
-        medicationAdministration.setSite(Context.getConceptService().getConceptByName(request.getSite()));
-
         return medicationAdministration;
     }
 
