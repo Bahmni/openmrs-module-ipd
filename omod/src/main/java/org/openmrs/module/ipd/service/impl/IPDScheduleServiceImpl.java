@@ -14,6 +14,7 @@ import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.ReferenceService;
 import org.openmrs.module.ipd.api.service.ScheduleService;
 import org.openmrs.module.ipd.api.service.SlotService;
+import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.openmrs.module.ipd.factory.ScheduleFactory;
 import org.openmrs.module.ipd.factory.SlotFactory;
@@ -142,7 +143,9 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
             }
             boolean atleastOneMedicationAdministered = existingSlots.stream().anyMatch(slot -> slot.getMedicationAdministration() != null);
             if (atleastOneMedicationAdministered){ // Mark status of non administered slots to stopped
-                existingSlots.stream().forEach(slot -> { if ((slot.getMedicationAdministration() ==null) && !slot.isStopped())  {slot.setStatus(Slot.SlotStatus.STOPPED); slotService.saveSlot(slot);}});
+                existingSlots.stream().forEach(slot -> {
+                    if ((slot.getMedicationAdministration() == null) && !slot.isStopped() && (DateTimeUtil.convertDateToLocalDateTime(drugOrder.getDateStopped())
+                            .compareTo(slot.getStartDateTime())) < 0)  {slot.setStatus(Slot.SlotStatus.STOPPED); slotService.saveSlot(slot);}});
             } else { // Void all slots
                 existingSlots.stream().forEach(slot -> slotService.voidSlot(slot, ""));
             }
