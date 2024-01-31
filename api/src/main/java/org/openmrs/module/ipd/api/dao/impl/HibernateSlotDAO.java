@@ -119,7 +119,7 @@ public class HibernateSlotDAO implements SlotDAO {
 		Query query = sessionFactory.getCurrentSession()
 				.createQuery("SELECT slot FROM Slot slot " +
 						"LEFT JOIN slot.medicationAdministration medAdmin " +
-						"WHERE (slot.schedule.subject = :subject) AND " +
+						"WHERE (slot.schedule.subject = :subject) AND slot.voided = 0 AND " +
 						"(((slot.startDateTime BETWEEN :startDateTime AND :endDateTime) AND " +
 						"(medAdmin.administeredDateTime BETWEEN :startDate AND :endDate or medAdmin is null)) OR " +
 						"(medAdmin is not null AND " +
