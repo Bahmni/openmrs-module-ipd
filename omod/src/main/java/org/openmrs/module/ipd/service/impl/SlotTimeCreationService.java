@@ -27,7 +27,10 @@ public class SlotTimeCreationService extends BaseOpenmrsService {
     public List<LocalDateTime> createSlotsStartTimeFrom(ScheduleMedicationRequest request, DrugOrder order) {
         if (request.getSlotStartTimeAsLocaltime() != null && request.getMedicationFrequency() == START_TIME_DURATION_FREQUENCY) {
             return getSlotsStartTimeWithStartTimeDurationFrequency(request, order);
-        } else if (!CollectionUtils.isEmpty(request.getDayWiseSlotsStartTimeAsLocalTime()) && request.getMedicationFrequency() == FIXED_SCHEDULE_FREQUENCY) {
+        } else if ((!CollectionUtils.isEmpty(request.getFirstDaySlotsStartTimeAsLocalTime()) ||
+                !CollectionUtils.isEmpty(request.getDayWiseSlotsStartTimeAsLocalTime()) ||
+                !CollectionUtils.isEmpty(request.getRemainingDaySlotsStartTimeAsLocalTime()))
+                        && request.getMedicationFrequency() == FIXED_SCHEDULE_FREQUENCY) {
             return getSlotsStartTimeWithFixedScheduleFrequency(request, order);
         }
 
@@ -38,7 +41,6 @@ public class SlotTimeCreationService extends BaseOpenmrsService {
         int numberOfSlotsStartTimeToBeCreated = (int) (Math.ceil(order.getQuantity() / order.getDose()));
 
         List<LocalDateTime> slotsStartTime = new ArrayList<>();
-
         if (!CollectionUtils.isEmpty(request.getFirstDaySlotsStartTimeAsLocalTime())) {
             List<LocalDateTime> slotsToBeAddedForFirstDay = numberOfSlotsStartTimeToBeCreated < request.getFirstDaySlotsStartTimeAsLocalTime().size()
                 ? request.getFirstDaySlotsStartTimeAsLocalTime().subList(0, numberOfSlotsStartTimeToBeCreated)
@@ -48,26 +50,26 @@ public class SlotTimeCreationService extends BaseOpenmrsService {
             numberOfSlotsStartTimeToBeCreated -= slotsToBeAddedForFirstDay.size();
         }
 
-        if (!CollectionUtils.isEmpty(request.getDayWiseSlotsStartTimeAsLocalTime()) && numberOfSlotsStartTimeToBeCreated > 0) {
 
-            List<LocalDateTime> initialSlotsToBeAddedForSecondDay = numberOfSlotsStartTimeToBeCreated < request.getDayWiseSlotsStartTimeAsLocalTime().size()
-                    ? request.getDayWiseSlotsStartTimeAsLocalTime().subList(0, numberOfSlotsStartTimeToBeCreated)
-                    : request.getDayWiseSlotsStartTimeAsLocalTime();
+        List<LocalDateTime> remainingDaySlotsStartTime = request.getRemainingDaySlotsStartTimeAsLocalTime();
+        if (!CollectionUtils.isEmpty(remainingDaySlotsStartTime) && numberOfSlotsStartTimeToBeCreated > 0) {
+            List<LocalDateTime> slotsToBeAddedForRemainingDay = numberOfSlotsStartTimeToBeCreated < remainingDaySlotsStartTime.size()
+                    ? remainingDaySlotsStartTime.subList(0, numberOfSlotsStartTimeToBeCreated)
+                    : remainingDaySlotsStartTime;
+            numberOfSlotsStartTimeToBeCreated -= slotsToBeAddedForRemainingDay.size();
+            slotsStartTime.addAll(slotsToBeAddedForRemainingDay);
+        }
+
+        List<LocalDateTime> nextSlotsStartTime = request.getDayWiseSlotsStartTimeAsLocalTime();
+        if (!CollectionUtils.isEmpty(nextSlotsStartTime) && numberOfSlotsStartTimeToBeCreated > 0) {
+            List<LocalDateTime> initialSlotsToBeAddedForSecondDay = numberOfSlotsStartTimeToBeCreated < nextSlotsStartTime.size()
+                    ? nextSlotsStartTime.subList(0, numberOfSlotsStartTimeToBeCreated)
+                    : nextSlotsStartTime;
             slotsStartTime.addAll(initialSlotsToBeAddedForSecondDay);
             numberOfSlotsStartTimeToBeCreated -= initialSlotsToBeAddedForSecondDay.size();
-
-            List<LocalDateTime> nextSlotsStartTime = request.getDayWiseSlotsStartTimeAsLocalTime();
-            List<LocalDateTime> remainingDaySlotsStartTime = request.getRemainingDaySlotsStartTimeAsLocalTime();
             while (numberOfSlotsStartTimeToBeCreated > 0) {
                 nextSlotsStartTime = nextSlotsStartTime.stream().map(slotStartTime -> slotStartTime.plusHours(24)).collect(Collectors.toList());
-                if (!CollectionUtils.isEmpty(remainingDaySlotsStartTime) && numberOfSlotsStartTimeToBeCreated <= remainingDaySlotsStartTime.size()){
-                    List<LocalDateTime> slotsToBeAddedForRemainingDay = numberOfSlotsStartTimeToBeCreated < remainingDaySlotsStartTime.size()
-                            ? remainingDaySlotsStartTime.subList(0, numberOfSlotsStartTimeToBeCreated)
-                            : remainingDaySlotsStartTime;
-                    numberOfSlotsStartTimeToBeCreated -= slotsToBeAddedForRemainingDay.size();
-                    slotsStartTime.addAll(slotsToBeAddedForRemainingDay);
-                }
-                else if (numberOfSlotsStartTimeToBeCreated >= nextSlotsStartTime.size()) {
+                if (numberOfSlotsStartTimeToBeCreated >= nextSlotsStartTime.size()) {
                     slotsStartTime.addAll(nextSlotsStartTime);
                     numberOfSlotsStartTimeToBeCreated -= nextSlotsStartTime.size();
                 } else {
