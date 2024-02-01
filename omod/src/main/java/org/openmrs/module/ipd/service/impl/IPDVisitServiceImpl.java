@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional
@@ -70,15 +71,25 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         List<String> visitUuidsList = new ArrayList<>();
         visitUuidsList.add(visitUuid);
         Visit visit = visitService.getVisitByUuid(visitUuid);
+        // Logic to fetch immediate preceded Visit's drug orders as well as part of current Visit drug order list as doctors tend to convert OPD to IPD immediately on emergency situations.
+        String precededVisitUuid= getImmediatePrecededVisit(visit.getPatient(),visitUuid);
+        if (precededVisitUuid!=null){
+            visitUuidsList.add(precededVisitUuid);
+        }
         List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(visitUuidsList, visit.getPatient().getUuid(), includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
-        return getIPDDrugOrders(visit.getPatient().getUuid(), prescribedDrugOrders);
+        return getIPDDrugOrders(visit.getPatient().getUuid(), prescribedDrugOrders,visit);
     }
 
-    private List<IPDDrugOrder> getIPDDrugOrders(String patientUuid, List<DrugOrder> drugOrders) {
+    private List<IPDDrugOrder> getIPDDrugOrders(String patientUuid, List<DrugOrder> drugOrders,Visit currentVisit) {
         Map<String, DrugOrder> drugOrderMap = drugOrderService.getDiscontinuedDrugOrders(drugOrders);
+        // filter drug orders where its stop date is after current visit start Date
+        List<DrugOrder> drugOrdersFiltered = drugOrders.stream()
+                .filter(drugOrder -> drugOrder.getEffectiveStopDate() == null || drugOrder.getEffectiveStopDate().after(currentVisit.getStartDatetime()))
+                .collect(Collectors.toList());
+
         try {
             Collection<BahmniObservation> orderAttributeObs = bahmniObsService.observationsFor(patientUuid, getOrdAttributeConcepts(), null, null, false, null, null, null);
-            List<BahmniDrugOrder> bahmniDrugOrders = bahmniDrugOrderMapper.mapToResponse(drugOrders, orderAttributeObs, drugOrderMap , null);
+            List<BahmniDrugOrder> bahmniDrugOrders = bahmniDrugOrderMapper.mapToResponse(drugOrdersFiltered, orderAttributeObs, drugOrderMap , null);
             bahmniDrugOrders=sortDrugOrdersAccordingToTheirSortWeight(bahmniDrugOrders);
             Map<String, DrugOrderSchedule> drugOrderScheduleByOrders = getDrugOrderScheduleForOrders(patientUuid, bahmniDrugOrders);
 
@@ -153,5 +164,24 @@ public class IPDVisitServiceImpl implements IPDVisitService {
             return Collections.emptyList();
 
         return slotService.getSlotsByPatientAndVisitAndServiceType(subjectReference.get(), visit, concept);
+    }
+
+    private String getImmediatePrecededVisit(Patient patient,String currentVisitUuid){
+        String previousVisitUuid=null;
+        List<Visit> visits= visitService.getVisitsByPatient(patient);
+        List<Visit> sortedVisits = visits.stream()
+                .sorted(Comparator.comparing(Visit::getStartDatetime).reversed())
+                .collect(Collectors.toList());
+
+        int currentVisitIndex = IntStream.range(0, sortedVisits.size())
+                .filter(i -> sortedVisits.get(i).getUuid().equals(currentVisitUuid))
+                .findFirst()
+                .orElse(-1);
+
+        if (currentVisitIndex != -1 && currentVisitIndex + 1 < sortedVisits.size()) {
+            previousVisitUuid = sortedVisits.get(currentVisitIndex + 1).getUuid();
+        }
+
+        return previousVisitUuid;
     }
 }
