@@ -276,4 +276,28 @@
         </sql>
     </changeSet>
 
+    <changeSet id="add_as_needed_placeholder_concept_202402021421" author="Bahmni">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept where short_name='AsNeededPlaceholder' and description='AsNeededPlaceholder';
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM concept_name where name ='AsNeededPlaceholder';
+            </sqlCheck>
+        </preConditions>
+        <comment>Add concept for As Needed Medication Request</comment>
+        <sql>
+            insert into concept (retired, short_name, description, datatype_id, class_id, is_set, creator, date_created,
+            changed_by, date_changed, uuid)
+            values (0, 'AsNeededPlaceholder', 'AsNeededPlaceholder',
+            (select concept_datatype_id from concept_datatype where name = 'Text'),
+            (select concept_class_id from concept_class where name = 'Misc'),
+            0, 1, now(), 1, now(), uuid());
+            insert into concept_name (concept_id, name, locale, locale_preferred, creator, date_created,
+            concept_name_type, voided, uuid)
+            values ((select concept_id from concept where short_name='AsNeededPlaceholder'),
+            'AsNeededPlaceholder', 'en', 1, 1, now(), 'FULLY_SPECIFIED', 0, uuid());
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

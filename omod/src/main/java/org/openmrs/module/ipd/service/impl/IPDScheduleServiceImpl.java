@@ -69,9 +69,15 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
             savedSchedule = scheduleService.saveSchedule(schedule);
         }
         DrugOrder order = (DrugOrder) orderService.getOrderByUuid(scheduleMedicationRequest.getOrderUuid());
+        if(scheduleMedicationRequest.getServiceType().equals(ServiceType.MEDICATION_REQUEST)){
         List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, order);
         slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order, null, SCHEDULED, ServiceType.MEDICATION_REQUEST, scheduleMedicationRequest.getComments())
                 .forEach(slotService::saveSlot);
+        }
+        else if (scheduleMedicationRequest.getServiceType().equals(ServiceType.AS_NEEDED_PLACEHOLDER)){
+            Slot slot = slotFactory.createAsNeededPlaceholderSlot(savedSchedule, order, scheduleMedicationRequest.getComments());
+            slotService.saveSlot(slot);
+        }
 
         return savedSchedule;
     }

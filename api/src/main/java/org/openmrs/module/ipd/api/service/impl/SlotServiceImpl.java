@@ -1,10 +1,12 @@
 package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.Concept;
+import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
 import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
+import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.api.APIException;
@@ -27,12 +29,16 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	private static final Logger log = LoggerFactory.getLogger(SlotServiceImpl.class);
 	
 	private final SlotDAO slotDAO;
+	private ConceptService conceptService;
 
 	@Autowired
-	public SlotServiceImpl(SlotDAO slotDAO) {
+	public SlotServiceImpl(SlotDAO slotDAO, ConceptService conceptService) {
+
 		this.slotDAO = slotDAO;
+		this.conceptService = conceptService;
 	}
-	
+
+
 	@Override
 	@Transactional(readOnly = true)
 	public Slot getSlot(Integer slotId) throws APIException {
@@ -81,7 +87,8 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	}
     @Override
     public List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit){
-		return slotDAO.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subject, localStartDate, localEndDate, visit);
+		Concept asNeededPlaceholderServiceType = conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
+		return slotDAO.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subject, localStartDate, localEndDate, visit, asNeededPlaceholderServiceType);
 	}
 
 	@Override

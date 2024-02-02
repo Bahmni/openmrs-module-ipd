@@ -12,6 +12,7 @@ import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.SlotService;
+import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -66,4 +67,25 @@ public class SlotFactory {
        return slotService.getSlotByUUID(uuid);
     }
 
+    public Slot createAsNeededPlaceholderSlot(Schedule savedSchedule, Order drugOrder, String comments) {
+        Slot slot = new Slot();
+
+        String patientUuid = savedSchedule.getSubject().getTargetUuid();
+        Patient patient = patientService.getPatientByUuid(patientUuid);
+        BedDetails bedAssignmentDetailsByPatient = bedManagementService.getBedAssignmentDetailsByPatient(patient);
+        if(bedAssignmentDetailsByPatient != null){
+            slot.setLocation(bedAssignmentDetailsByPatient.getPhysicalLocation());
+        }
+
+        Concept medicationRequestServiceType = conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
+        slot.setServiceType(medicationRequestServiceType);
+
+        slot.setOrder(drugOrder);
+        slot.setSchedule(savedSchedule);
+        slot.setStartDateTime(DateTimeUtil.convertDateToLocalDateTime(drugOrder.getEffectiveStartDate()));
+        slot.setEndDateTime(DateTimeUtil.convertDateToLocalDateTime(drugOrder.getEffectiveStopDate()));
+        slot.setStatus(Slot.SlotStatus.SCHEDULED);
+        slot.setNotes(comments);
+        return slot;
+    }
 }

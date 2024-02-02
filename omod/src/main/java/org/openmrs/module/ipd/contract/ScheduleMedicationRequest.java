@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
+import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.util.DateTimeUtil;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class ScheduleMedicationRequest {
     private List<Long> dayWiseSlotsStartTime;
     private List<Long> remainingDaySlotsStartTime;
     private MedicationFrequency medicationFrequency;
+    private ServiceType serviceType;
 
     public enum MedicationFrequency {
         START_TIME_DURATION_FREQUENCY,
