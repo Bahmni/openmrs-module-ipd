@@ -69,6 +69,10 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
             savedSchedule = scheduleService.saveSchedule(schedule);
         }
         DrugOrder order = (DrugOrder) orderService.getOrderByUuid(scheduleMedicationRequest.getOrderUuid());
+        List<Slot> existingSlots = getMedicationSlots(patient.getUuid(),ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{order.getUuid()})));
+        if (existingSlots !=null && !existingSlots.isEmpty()) {
+            throw new RuntimeException("Slots already created for this drug order");
+        }
         List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, order);
         slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order, null, SCHEDULED, ServiceType.MEDICATION_REQUEST, scheduleMedicationRequest.getComments())
                 .forEach(slotService::saveSlot);
