@@ -108,8 +108,8 @@ public class HibernateSlotDAO implements SlotDAO {
         query.setParameter("subject", subject);
         query.setParameter("startDate", localStartDate);
         query.setParameter("endDate", localEndDate);
-		query.setParameter("visit", visit);
-
+		// TODO: Check with product on this use case for a permanent handling on visit based drug order view & uncomment
+		//query.setParameter("visit", visit);
 
         return query.getResultList();
     }
