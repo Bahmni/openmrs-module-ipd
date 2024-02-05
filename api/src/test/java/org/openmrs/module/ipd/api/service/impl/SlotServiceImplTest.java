@@ -9,6 +9,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
 import org.openmrs.Patient;
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
@@ -128,11 +129,12 @@ public class SlotServiceImplTest {
         LocalDateTime startTime= LocalDateTime.now();
         LocalDateTime endTime = startTime.plusHours(8);
         Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
+        Visit visit = new Visit(123);
 
-        Mockito.when(slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime)).thenReturn(slots);
+        Mockito.when(slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime, visit)).thenReturn(slots);
 
-        slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(patientReference,startTime,endTime);
+        slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(patientReference,startTime,endTime,visit);
 
-        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime);
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime, visit);
     }
 }

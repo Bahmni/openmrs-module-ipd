@@ -125,7 +125,7 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         if(!subjectReference.isPresent())
             return Collections.emptyList();
         if (considerAdministeredTime) {
-            return slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(subjectReference.get(), localStartDate, localEndDate);
+            return slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(subjectReference.get(), localStartDate, localEndDate, visit);
         }
         return slotService.getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(subjectReference.get(), localStartDate,localEndDate, visit);
     }
