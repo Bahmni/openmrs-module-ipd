@@ -101,15 +101,15 @@ public class HibernateSlotDAO implements SlotDAO {
 		return query.getResultList();
 	}
     @Override
-    public List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit, Concept concept){
+    public List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit, Concept serviceType){
         Query query = sessionFactory.getCurrentSession()
-                .createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and ((slot.startDateTime BETWEEN :startDate and :endDate) or (slot.serviceType = :concept)) and slot.voided=0 and slot.schedule.visit=:visit");
+                .createQuery("FROM Slot slot WHERE slot.schedule.subject=:subject and ((slot.startDateTime BETWEEN :startDate and :endDate) or (slot.serviceType = :serviceType)) and slot.voided=0 and slot.schedule.visit=:visit");
 
         query.setParameter("subject", subject);
         query.setParameter("startDate", localStartDate);
         query.setParameter("endDate", localEndDate);
 		query.setParameter("visit", visit);
-		query.setParameter("concept", concept);
+		query.setParameter("serviceType", serviceType);
 
         return query.getResultList();
     }
