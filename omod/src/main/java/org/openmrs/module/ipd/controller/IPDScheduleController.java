@@ -7,6 +7,7 @@ import org.openmrs.Visit;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.VisitService;
 import org.openmrs.module.ipd.api.model.Schedule;
+import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.util.IPDConstants;
 import org.openmrs.module.ipd.api.service.ScheduleService;
@@ -82,7 +83,7 @@ public class IPDScheduleController extends BaseRestController {
                                                            @RequestParam(value = "startTime") Long startTime, @RequestParam(value = "endTime") Long endTime,
                                                            @RequestParam(value = "view", required = false) String view) {
         try {
-            if (startTime != null && endTime != null) {
+;            if (startTime != null && endTime != null) {
                 LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
                 LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
                 Boolean considerAdministeredTime = view!=null & IPDConstants.IPD_VIEW_DRUG_CHART.equals(view);
@@ -101,13 +102,18 @@ public class IPDScheduleController extends BaseRestController {
     @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid"})
     @ResponseBody
     public ResponseEntity<Object> getMedicationSlotsByOrderUuids(@RequestParam(value = "patientUuid") String patientUuid,
+                                                                 @RequestParam(value = "serviceType", required = false) ServiceType serviceType,
                                                                  @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
         try {
             List<Slot> slots;
             if (orderUuids == null || orderUuids.isEmpty()) {
-                slots = ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST);
+                slots =
+                        serviceType == null ? ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST) :
+                                ipdScheduleService.getMedicationSlots(patientUuid, serviceType);
             } else {
-                slots = ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, orderUuids);
+                slots =
+                        serviceType == null ? ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, orderUuids) :
+                                ipdScheduleService.getMedicationSlots(patientUuid, serviceType, orderUuids);
             }
             List<MedicationSlotResponse> medicationResponses = slots.stream()
                     .map(MedicationSlotResponse::createFrom)

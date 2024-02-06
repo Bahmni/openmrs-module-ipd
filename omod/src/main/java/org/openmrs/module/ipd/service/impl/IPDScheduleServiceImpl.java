@@ -69,13 +69,19 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
             savedSchedule = scheduleService.saveSchedule(schedule);
         }
         DrugOrder order = (DrugOrder) orderService.getOrderByUuid(scheduleMedicationRequest.getOrderUuid());
-        List<Slot> existingSlots = getMedicationSlots(patient.getUuid(),ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{order.getUuid()})));
-        if (existingSlots !=null && !existingSlots.isEmpty()) {
-            throw new RuntimeException("Slots already created for this drug order");
+        if(scheduleMedicationRequest.getServiceType().equals(ServiceType.MEDICATION_REQUEST)){
+            List<Slot> existingSlots = getMedicationSlots(patient.getUuid(),ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{order.getUuid()})));
+            if (existingSlots !=null && !existingSlots.isEmpty()) {
+                throw new RuntimeException("Slots already created for this drug order");
+            }
+            List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, order);
+            slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order, null, SCHEDULED, ServiceType.MEDICATION_REQUEST, scheduleMedicationRequest.getComments())
+                    .forEach(slotService::saveSlot);
         }
-        List<LocalDateTime> slotsStartTime = slotTimeCreationService.createSlotsStartTimeFrom(scheduleMedicationRequest, order);
-        slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order, null, SCHEDULED, ServiceType.MEDICATION_REQUEST, scheduleMedicationRequest.getComments())
-                .forEach(slotService::saveSlot);
+        else if (scheduleMedicationRequest.getServiceType().equals(ServiceType.AS_NEEDED_PLACEHOLDER)){
+            Slot slot = slotFactory.createAsNeededPlaceholderSlot(savedSchedule, order, scheduleMedicationRequest.getComments());
+            slotService.saveSlot(slot);
+        }
 
         return savedSchedule;
     }
