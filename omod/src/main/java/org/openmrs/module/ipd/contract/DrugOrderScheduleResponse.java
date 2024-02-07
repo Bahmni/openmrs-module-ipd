@@ -28,7 +28,7 @@ public class DrugOrderScheduleResponse {
                 remainingDaySlotsStartTime(drugOrderSchedule.getRemainingDaySlotsStartTime()).
                 slotStartTime(drugOrderSchedule.getSlotStartTime()).
                 medicationAdministrationStarted(drugOrderSchedule.getSlots().stream().anyMatch(slot -> slot.getMedicationAdministration() != null)).
-                pendingSlotsAvailable(drugOrderSchedule.getSlots().stream().anyMatch(slot -> (LocalDateTime.now().isAfter(slot.getStartDateTime()) && slot.getStatus().equals(Slot.SlotStatus.SCHEDULED)))).
+                pendingSlotsAvailable(drugOrderSchedule.getSlots().stream().anyMatch(slot -> (LocalDateTime.now().isBefore(slot.getStartDateTime()) && slot.getStatus().equals(Slot.SlotStatus.SCHEDULED)))).
                 notes(drugOrderSchedule.getSlots().get(0).getNotes()).
                 build();
     }
