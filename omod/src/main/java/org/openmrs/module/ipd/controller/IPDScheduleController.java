@@ -81,14 +81,14 @@ public class IPDScheduleController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<Object> getMedicationSlotsByDate(@RequestParam(value = "patientUuid") String patientUuid,
                                                            @RequestParam(value = "startTime") Long startTime, @RequestParam(value = "endTime") Long endTime,
+                                                           @RequestParam(value = "visitUuid") String visitUuid,
                                                            @RequestParam(value = "view", required = false) String view) {
         try {
 ;            if (startTime != null && endTime != null) {
                 LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
                 LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
                 Boolean considerAdministeredTime = view!=null & IPDConstants.IPD_VIEW_DRUG_CHART.equals(view);
-                Patient patient = patientService.getPatientByUuid(patientUuid);
-                Visit visit = visitService.getActiveVisitsByPatient(patient).get(0);
+                Visit visit = visitService.getVisitByUuid(visitUuid);
                 List<Slot> slots = ipdScheduleService.getMedicationSlotsForTheGivenTimeFrame(patientUuid, localStartDate, localEndDate,considerAdministeredTime, visit);
                 return new ResponseEntity<>(constructResponse(slots, visit), OK);
             }

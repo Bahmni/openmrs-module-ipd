@@ -3,7 +3,11 @@ package org.openmrs.module.ipd.api.dao.impl;
 import org.hibernate.SessionFactory;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.openmrs.*;
+import org.openmrs.Concept;
+import org.openmrs.DrugOrder;
+import org.openmrs.Patient;
+import org.openmrs.Visit;
+import org.openmrs.VisitType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.apiext.dao.FhirMedicationAdministrationDao;
 import org.openmrs.module.ipd.api.BaseIntegrationTest;
@@ -251,6 +255,12 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         DrugOrder drugOrder2 = (DrugOrder) Context.getOrderService().getOrderByUuid("921de0a3-05c4-444a-be03-e01b4c4b9143");
         Reference patientReference = new Reference(Patient.class.getTypeName(), "2c33920f-7aa6-0000-998a-60412d8ff7d5");
         Reference providerReference = new Reference(Patient.class.getTypeName(), "d869ad24-d2a0-4747-a888-fe55048bb7ce");
+
+        Visit visit = new Visit(1);
+        visit.setPatient(new Patient(123));
+        visit.setStartDatetime(new Date());
+        visit.setVisitType(new VisitType(321));
+
         Concept testConcept = Context.getConceptService().getConceptByName("UNKNOWN");
         LocalDateTime startDate = DateTimeUtil.convertDateToLocalDateTime(drugOrder.getEffectiveStartDate());
         LocalDateTime endDate = DateTimeUtil.convertDateToLocalDateTime(drugOrder.getEffectiveStopDate());
@@ -261,6 +271,7 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         schedule.setStartDate(startDate);
         schedule.setEndDate(endDate);
         schedule.setServiceType(testConcept);
+        schedule.setVisit(visit);
 
         Schedule savedSchedule = scheduleDAO.saveSchedule(schedule);
 
@@ -313,7 +324,7 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         Slot savedSlot4 = slotDAO.saveSlot(slot4);
 
 
-        List<Slot> slotsBySubjectReferenceIdAndServiceType = slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference,startTime,startTime.plusHours(6));
+        List<Slot> slotsBySubjectReferenceIdAndServiceType = slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference,startTime,startTime.plusHours(6),visit);
 
         Assertions.assertEquals(2, slotsBySubjectReferenceIdAndServiceType.size());
 
@@ -324,6 +335,7 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         sessionFactory.getCurrentSession().delete(savedSlot3);
         sessionFactory.getCurrentSession().delete(savedSlot4);
         sessionFactory.getCurrentSession().delete(savedSchedule);
+        sessionFactory.getCurrentSession().delete(visit);
 
     }
 

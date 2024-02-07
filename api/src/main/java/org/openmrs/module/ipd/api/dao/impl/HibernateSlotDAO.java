@@ -115,17 +115,18 @@ public class HibernateSlotDAO implements SlotDAO {
     }
 
 	@Override
-	public List<Slot> getSlotsBySubjectIncludingAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate) {
+	public List<Slot> getSlotsBySubjectIncludingAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit) {
 		Query query = sessionFactory.getCurrentSession()
 				.createQuery("SELECT slot FROM Slot slot " +
 						"LEFT JOIN slot.medicationAdministration medAdmin " +
-						"WHERE (slot.schedule.subject = :subject) AND slot.voided = 0 AND " +
+						"WHERE (slot.schedule.subject = :subject) AND slot.voided = 0 AND slot.schedule.visit=:visit AND " +
 						"(((slot.startDateTime BETWEEN :startDateTime AND :endDateTime) AND " +
 						"(medAdmin.administeredDateTime BETWEEN :startDate AND :endDate or medAdmin is null)) OR " +
 						"(medAdmin is not null AND " +
 						"(medAdmin.administeredDateTime BETWEEN :startDate AND :endDate)))");
 
 		query.setParameter("subject", subject);
+		query.setParameter("visit", visit);
 		query.setParameter("startDateTime", localStartDate);
 		query.setParameter("endDateTime", localEndDate);
 		query.setParameter("startDate", DateTimeUtil.convertLocalDateTimeDate(localStartDate));
