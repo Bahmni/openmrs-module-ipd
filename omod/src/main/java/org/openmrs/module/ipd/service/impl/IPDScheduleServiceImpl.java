@@ -69,7 +69,8 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
             savedSchedule = scheduleService.saveSchedule(schedule);
         }
         DrugOrder order = (DrugOrder) orderService.getOrderByUuid(scheduleMedicationRequest.getOrderUuid());
-        if(scheduleMedicationRequest.getServiceType().equals(ServiceType.MEDICATION_REQUEST)){
+        ServiceType serviceType = scheduleMedicationRequest.getServiceType() !=null ? scheduleMedicationRequest.getServiceType() : ServiceType.MEDICATION_REQUEST;
+        if(serviceType.equals(ServiceType.MEDICATION_REQUEST)){
             List<Slot> existingSlots = getMedicationSlots(patient.getUuid(),ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{order.getUuid()})));
             if (existingSlots !=null && !existingSlots.isEmpty()) {
                 throw new RuntimeException("Slots already created for this drug order");
@@ -78,7 +79,7 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
             slotFactory.createSlotsForMedicationFrom(savedSchedule, slotsStartTime, order, null, SCHEDULED, ServiceType.MEDICATION_REQUEST, scheduleMedicationRequest.getComments())
                     .forEach(slotService::saveSlot);
         }
-        else if (scheduleMedicationRequest.getServiceType().equals(ServiceType.AS_NEEDED_PLACEHOLDER)){
+        else if (serviceType.equals(ServiceType.AS_NEEDED_PLACEHOLDER)){
             Slot slot = slotFactory.createAsNeededPlaceholderSlot(savedSchedule, order, scheduleMedicationRequest.getComments());
             slotService.saveSlot(slot);
         }
