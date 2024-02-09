@@ -105,9 +105,14 @@ public class IPDVisitServiceImpl implements IPDVisitService {
                 .map(BahmniDrugOrder::getUuid)
                 .collect(Collectors.toList());
         List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, ServiceType.MEDICATION_REQUEST,orderUuids);
+        List<Slot> prnSlots = ipdScheduleService.getMedicationSlots(patientUuid, ServiceType.AS_NEEDED_MEDICATION_REQUEST,orderUuids);
+        slots.addAll(prnSlots);
         Map<DrugOrder, List<Slot>> groupedByOrders = slots.stream()
                 .collect(Collectors.groupingBy(slot -> (DrugOrder) slot.getOrder()));
+
         Map<String, DrugOrderSchedule> drugOrderScheduleByOrders = slotTimeCreationService.getDrugOrderScheduledTime(groupedByOrders);
+
+
         return drugOrderScheduleByOrders;
     }
 
