@@ -105,7 +105,10 @@ public class SlotTimeCreationService extends BaseOpenmrsService {
         HashMap<String, DrugOrderSchedule> drugOrderScheduleHash= new HashMap<>();
         for (DrugOrder drugOrder : slotsByOrder.keySet()) {
             DrugOrderSchedule drugOrderSchedule = new DrugOrderSchedule();
-            if (!drugOrder.getAsNeeded()) {
+            if (drugOrder.getAsNeeded()){
+                drugOrderSchedule.setSlotStartTime(DateTimeUtil.convertLocalDateTimeToUTCEpoc(slotsByOrder.get(drugOrder).get(0).getStartDateTime()));
+            }
+            else {
                 Double frequencyPerDay = drugOrder.getFrequency().getFrequencyPerDay();
                 String frequency = drugOrder.getFrequency().getName();
                 Map<LocalDate, List<LocalDateTime>> groupedByDateAndEpoch = slotsByOrder.get(drugOrder).stream()
