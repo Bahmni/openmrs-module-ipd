@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import org.hibernate.query.Query;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -47,9 +49,9 @@ public class HibernateWardDAO implements WardDAO {
             return query.getResultList();
         }
         catch (Exception ex){
-            System.out.println("Exception trace " + ex.getStackTrace());
+            log.error("Exception at WardDAO getAdmittedPatients ",ex.getStackTrace());
         }
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -66,9 +68,9 @@ public class HibernateWardDAO implements WardDAO {
             query.setParameter("location", location);
             return (WardPatientsSummary) query.getSingleResult();
         } catch (Exception e) {
-            System.out.println("Exception getPatientStats "+ e.getStackTrace()); // Handle any exception that occurs during query execution
+            log.error("Exception at WardDAO getAdmittedPatients ",e.getStackTrace());
         }
-        return null;
+        return new WardPatientsSummary();
     }
 
 }
