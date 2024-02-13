@@ -5,6 +5,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.bedmanagement.AdmissionLocation;
 import org.openmrs.module.bedmanagement.service.BedManagementService;
 import org.openmrs.module.ipd.api.model.IPDWardPatientDetails;
+import org.openmrs.module.ipd.api.model.PatientStats;
 import org.openmrs.module.ipd.api.service.WardService;
 import org.openmrs.module.ipd.service.IPDWardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,8 @@ public class IPDWardServiceImpl implements IPDWardService {
     }
 
     @Override
-    public List<AdmissionLocation> getIPDWards() {
-        return Context.getService(BedManagementService.class).getAdmissionLocations();
+    public PatientStats getIPDWardsStats() {
+        return null;
     }
 
     @Override

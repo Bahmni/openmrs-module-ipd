@@ -33,11 +33,11 @@ public class IPDWardController extends BaseRestController {
         this.ipdWardService = ipdWardService;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "{wardUuid}/summary",method = RequestMethod.GET)
     @ResponseBody
-    public List<IPDWardResponse> getIPDWards () throws ParseException {
-        List<AdmissionLocation> admissionLocations= ipdWardService.getIPDWards();
-        return admissionLocations.stream().map(IPDWardResponse::createFrom).collect(Collectors.toList());
+    public ResponseEntity<Object> getIPDWardStats () throws ParseException {
+        PatientStats patientStats= ipdWardService.getIPDWardsStats();
+        return new ResponseEntity<>(PatientStatsResponse.createFrom(patientStats), OK);
     }
 
     @RequestMapping(value = "{wardUuid}/patients", method = RequestMethod.GET)

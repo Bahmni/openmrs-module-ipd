@@ -39,7 +39,8 @@ public class HibernateWardDAO implements WardDAO {
                     "LEFT JOIN org.openmrs.Order o on o.encounter = e " +
                     "LEFT JOIN Slot s on s.order = o " +
                     "where assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location  " +
-                    "GROUP BY assignment.patient, v");
+                    "GROUP BY assignment.patient, v " +
+                    "ORDER BY assignment.startDatetime desc");
 
             query.setParameter("location", location);
             return query.getResultList();
