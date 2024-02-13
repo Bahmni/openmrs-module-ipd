@@ -1,14 +1,11 @@
 package org.openmrs.module.ipd.service;
 
-import org.openmrs.module.bedmanagement.AdmissionLocation;
 import org.openmrs.module.ipd.api.model.IPDWardPatientDetails;
-import org.openmrs.module.ipd.api.model.PatientStats;
-
-import java.util.List;
+import org.openmrs.module.ipd.api.model.WardPatientsSummary;
 
 public interface IPDWardService {
 
-    PatientStats getIPDWardsStats();
+    WardPatientsSummary getIPDWardPatientSummary(String wardUuid);
 
     IPDWardPatientDetails getIPDPatientByWard(String wardUuid,Integer offset,Integer limit);
 

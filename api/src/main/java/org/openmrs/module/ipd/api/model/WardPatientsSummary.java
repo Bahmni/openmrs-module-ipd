@@ -9,8 +9,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Setter
 @Getter
-public class PatientStats {
-    private Integer totalPatients = 0;
+public class WardPatientsSummary {
+    private Long totalPatients = 0L;
 
     // to be added in future
 //    private Integer myPatients;

@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 public class IPDWardPatientDetailsResponse {
 
     private List<AdmittedPatientResponse> admittedPatients;
-    private Integer totalPatients;
+    private Long totalPatients;
 
 
     public static IPDWardPatientDetailsResponse createFrom(IPDWardPatientDetails ipdWardPatientDetails) {
         return IPDWardPatientDetailsResponse.builder().
                 admittedPatients(ipdWardPatientDetails.getActivePatients().stream().map(AdmittedPatientResponse::createFrom).collect(Collectors.toList())).
-                totalPatients(ipdWardPatientDetails.getIpdWardPatientStats().getTotalPatients()).
+                totalPatients(ipdWardPatientDetails.getIpdWardWardPatientsSummary().getTotalPatients()).
                 build();
     }
 }

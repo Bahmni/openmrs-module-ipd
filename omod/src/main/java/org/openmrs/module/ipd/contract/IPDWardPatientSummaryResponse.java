@@ -11,7 +11,7 @@ import org.openmrs.module.ipd.api.model.WardPatientsSummary;
 @Builder
 public class IPDWardPatientSummaryResponse {
 
-    private Integer totalPatients;
+    private Long totalPatients;
 
     public static IPDWardPatientSummaryResponse createFrom(WardPatientsSummary wardPatientsSummary){
         return IPDWardPatientSummaryResponse.builder().

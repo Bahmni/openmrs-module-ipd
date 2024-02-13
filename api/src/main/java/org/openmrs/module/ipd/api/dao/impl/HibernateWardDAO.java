@@ -5,6 +5,7 @@ import org.hibernate.SessionFactory;
 import org.openmrs.Location;
 import org.openmrs.module.ipd.api.dao.WardDAO;
 import org.openmrs.module.ipd.api.model.AdmittedPatient;
+import org.openmrs.module.ipd.api.model.WardPatientsSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,25 @@ public class HibernateWardDAO implements WardDAO {
         }
         catch (Exception ex){
             System.out.println("Exception trace " + ex.getStackTrace());
+        }
+        return null;
+    }
+
+    @Override
+    public WardPatientsSummary getWardPatientSummary(Location location) {
+        Session session = this.sessionFactory.getCurrentSession();
+        try {
+            Query query = session.createQuery(
+                    "select NEW org.openmrs.module.ipd.api.model.WardPatientsSummary(COUNT(assignment)) " +
+                            "from org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
+                            "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
+                            "JOIN org.openmrs.Location l on locmap.location = l " +
+                            "JOIN org.openmrs.Visit v on v.patient = assignment.patient " +
+                            "where assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location");
+            query.setParameter("location", location);
+            return (WardPatientsSummary) query.getSingleResult();
+        } catch (Exception e) {
+            System.out.println("Exception getPatientStats "+ e.getStackTrace()); // Handle any exception that occurs during query execution
         }
         return null;
     }

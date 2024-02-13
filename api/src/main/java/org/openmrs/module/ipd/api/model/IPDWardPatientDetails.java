@@ -12,6 +12,6 @@ import java.util.List;
 public class IPDWardPatientDetails  {
 
     private List<AdmittedPatient> activePatients;
-    private PatientStats ipdWardPatientStats;
+    private WardPatientsSummary ipdWardWardPatientsSummary;
 
 }

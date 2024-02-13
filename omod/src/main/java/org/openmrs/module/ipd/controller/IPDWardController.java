@@ -1,8 +1,6 @@
 package org.openmrs.module.ipd.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.openmrs.Location;
-import org.openmrs.module.bedmanagement.AdmissionLocation;
 import org.openmrs.module.ipd.api.model.*;
 import org.openmrs.module.ipd.contract.*;
 import org.openmrs.module.ipd.service.IPDWardService;
@@ -15,8 +13,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
@@ -35,14 +31,14 @@ public class IPDWardController extends BaseRestController {
 
     @RequestMapping(value = "{wardUuid}/summary",method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Object> getIPDWardStats () throws ParseException {
-        PatientStats patientStats= ipdWardService.getIPDWardsStats();
-        return new ResponseEntity<>(PatientStatsResponse.createFrom(patientStats), OK);
+    public ResponseEntity<Object> getIPDWardPatientStats (@PathVariable("wardUuid") String wardUuid) throws ParseException {
+        WardPatientsSummary wardPatientsSummary = ipdWardService.getIPDWardPatientSummary(wardUuid);
+        return new ResponseEntity<>(IPDWardPatientSummaryResponse.createFrom(wardPatientsSummary), OK);
     }
 
     @RequestMapping(value = "{wardUuid}/patients", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Object> createMedicationSchedule(@PathVariable("wardUuid") String wardUuid,
+    public ResponseEntity<Object> getIPDWardPatient(@PathVariable("wardUuid") String wardUuid,
                                                            @RequestParam(value = "offset") Integer offset,
                                                            @RequestParam (value = "limit") Integer limit) throws ParseException {
         try {
