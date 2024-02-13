@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.Concept;
+import org.openmrs.Order;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
 import org.openmrs.Visit;
@@ -94,5 +95,19 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	@Override
 	public List<Slot> getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit) {
 		return slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(subject, localStartDate, localEndDate, visit);
+	}
+
+	@Override
+	public List<Slot> getSlotsForPatientListByTime(List<String> patientUuidList, LocalDateTime localStartDate, LocalDateTime localEndDate) {
+		return slotDAO.getSlotsForPatientListByTime(patientUuidList, localStartDate, localEndDate);
+	}
+
+	@Override
+	public List<Slot> getImmediatePreviousSlotsForPatientListByTime(List<String> patientUuidList, LocalDateTime localStartDate) {
+		return slotDAO.getImmediatePreviousSlotsForPatientListByTime(patientUuidList, localStartDate);
+	}
+
+	public List<Object[]> getSlotDurationForPatientsByOrder(List<Order> orders, List<Concept> serviceTypes) {
+		return slotDAO.getSlotDurationForPatientsByOrder(orders, serviceTypes);
 	}
 }
