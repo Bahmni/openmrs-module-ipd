@@ -2,6 +2,7 @@ package org.openmrs.module.ipd.api.dao.impl;
 
 import org.hibernate.query.Query;
 import org.openmrs.Concept;
+import org.openmrs.Order;
 import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
@@ -132,6 +133,85 @@ public class HibernateSlotDAO implements SlotDAO {
 		query.setParameter("startDate", DateTimeUtil.convertLocalDateTimeDate(localStartDate));
 		query.setParameter("endDate", DateTimeUtil.convertLocalDateTimeDate(localEndDate));
 
+		return query.getResultList();
+	}
+
+	@Override
+	public List<Slot> getSlotsForPatientListByTime(List<String> patientUuidList, LocalDateTime localStartDate, LocalDateTime localEndDate) {
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("SELECT slot FROM Slot slot \n" +
+						"INNER JOIN slot.schedule.subject reference \n" +
+						"INNER JOIN slot.schedule.visit visit \n" +
+						"WHERE (slot.startDateTime BETWEEN :startDate and :endDate) \n" +
+						"and slot.voided=0 \n" +
+						"and visit.stopDatetime is NULL \n" +
+						"and reference.type = 'org.openmrs.Patient' \n" +
+						"and reference.targetUuid in (:patientUuidList)");
+
+		query.setParameterList("patientUuidList", patientUuidList);
+		query.setParameter("startDate", localStartDate);
+		query.setParameter("endDate", localEndDate);
+
+		return query.getResultList();
+	}
+
+	@Override
+	public List<Slot> getImmediatePreviousSlotsForPatientListByTime(List<String> patientUuidList, LocalDateTime localStartDate) {
+		String maxDateTimeSubquery = "SELECT s.order, MAX(s.startDateTime) AS maxStartDateTime " +
+				"FROM Slot s " +
+				"INNER JOIN s.schedule.subject reference " +
+				"INNER JOIN s.schedule.visit visit " +
+				"WHERE s.startDateTime < :startDate " +
+				"AND s.voided = 0 " +
+				"AND visit.stopDatetime IS NULL " +
+				"AND reference.type = 'org.openmrs.Patient' " +
+				"AND reference.targetUuid IN (:patientUuidList) " +
+				"GROUP BY s.order";
+
+		String latestPreviousSlotsQuery = "SELECT slot " +
+				"FROM Slot slot " +
+				"INNER JOIN slot.schedule.subject reference " +
+				"INNER JOIN slot.schedule.visit visit " +
+				"WHERE slot.startDateTime < :startDate " +
+				"AND slot.voided = 0 " +
+				"AND visit.stopDatetime IS NULL " +
+				"AND reference.type = 'org.openmrs.Patient' " +
+				"AND reference.targetUuid IN (:patientUuidList) " +
+				"AND (slot.order, slot.startDateTime) IN " +
+				"( " + maxDateTimeSubquery + " ) ";
+
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery(latestPreviousSlotsQuery);
+
+		query.setParameterList("patientUuidList", patientUuidList);
+		query.setParameter("startDate", localStartDate);
+
+		return query.getResultList();
+	}
+
+	@Override
+	public List<Object[]> getSlotDurationForPatientsByOrder(List<Order> orders, List<Concept> serviceTypes) {
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("SELECT \n" +
+						"    slot.order AS order,\n" +
+						"    MIN(slot.startDateTime) AS minStartDateTime,\n" +
+						"    MAX(slot.startDateTime) AS maxStartDateTime\n" +
+						"FROM\n" +
+						"    Slot slot\n" +
+						"INNER JOIN\n" +
+						"    slot.schedule.subject reference\n" +
+						"INNER JOIN\n" +
+						"	 slot.schedule.visit visit \n" +
+						"WHERE\n" +
+						"    slot.voided = 0\n" +
+						"    AND slot.serviceType IN (:serviceTypes)\n" +
+						"	 AND visit.stopDatetime is NULL \n" +
+						"    AND slot.order IN (:orders)\n" +
+						"GROUP BY\n" +
+						"    slot.order");
+
+		query.setParameterList("orders", orders);
+		query.setParameterList("serviceTypes", serviceTypes);
 		return query.getResultList();
 	}
 }

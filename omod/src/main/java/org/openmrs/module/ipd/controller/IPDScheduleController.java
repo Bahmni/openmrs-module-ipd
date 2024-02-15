@@ -13,8 +13,10 @@ import org.openmrs.module.ipd.api.util.IPDConstants;
 import org.openmrs.module.ipd.api.service.ScheduleService;
 import org.openmrs.module.ipd.contract.MedicationScheduleResponse;
 import org.openmrs.module.ipd.contract.MedicationSlotResponse;
+import org.openmrs.module.ipd.contract.PatientMedicationSummaryResponse;
 import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.openmrs.module.ipd.contract.ScheduleMedicationResponse;
+import org.openmrs.module.ipd.model.PatientMedicationSummary;
 import org.openmrs.module.ipd.service.IPDScheduleService;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.RestUtil;
@@ -122,6 +124,28 @@ public class IPDScheduleController extends BaseRestController {
             return new ResponseEntity<>(medicationResponses, OK);
         } catch (Exception e) {
             log.error("Runtime error while trying to retrieve schedules created by patient", e);
+            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(value = "type/medication/patientsMedicationSummary", method = RequestMethod.GET, params = {"patientUuids", "startTime", "endTime"})
+    @ResponseBody
+    public ResponseEntity<Object> getSlotsForPatientsAndTime(@RequestParam(value = "patientUuids") List<String> patientUuidList,
+                                                             @RequestParam(value = "startTime") Long startTime,
+                                                             @RequestParam(value = "endTime") Long endTime,
+                                                             @RequestParam(value = "includePreviousSlot",required = false) Boolean includePreviousSlot,
+                                                             @RequestParam(value = "includeSlotDuration",required = false) Boolean includeSlotDuration) {
+        try {
+            if (startTime != null && endTime != null) {
+                LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
+                LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
+                List<PatientMedicationSummary> patientMedicationSummaries = ipdScheduleService.getSlotsForPatientListByTime(patientUuidList,
+                        localStartDate, localEndDate, includePreviousSlot, includeSlotDuration);
+                return new ResponseEntity<>(patientMedicationSummaries.stream().map(PatientMedicationSummaryResponse::createFrom).collect(Collectors.toList()), OK);
+            }
+            throw new Exception();
+        } catch (Exception e) {
+            log.error("Runtime error while fetching patient medication summaries", e);
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
         }
     }

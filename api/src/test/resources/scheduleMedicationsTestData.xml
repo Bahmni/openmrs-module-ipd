@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <location location_id="2" name="General Ward" description="General Ward" creator="1" retired="0" retired_by=" 0"  uuid="8d6c993e-c2cc-11de-7921-0010c6affd0f" date_created="2015-09-22 00:00:00" />
+
+    <encounter_type encounter_type_id="1" name="REG" description="Some desc" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="759799ab-c9a5-435e-b671-77773ada74e4"/>
+    <encounter_type encounter_type_id="2" name="Admission" description="Some desc 2" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="4ee21921-01cc-4720-a6bf-a61a17c4d05b"/>
+
+    <person person_id="1001" gender="M" dead="false" creator="1" birthdate_estimated="0" date_created="2008-08-15 15:57:09.0" voided="false" void_reason="" uuid="75e04d42-3ca8-11e3-bf2b-0800271c1b75"/>
+    <patient patient_id="1001" creator="1" date_created="2005-09-22 00:00:00.0" changed_by="1" date_changed="2008-08-18 12:29:59.0" voided="false" void_reason=""/>
+    <person_name person_name_id="1" preferred="true" person_id="1001" prefix="" given_name="Abc" middle_name="" family_name="Def" family_name_suffix="" creator="1" date_created="2005-09-22 00:00:00.0" voided="false" void_reason="" uuid="399e3a7b-6482-409d-94ce-c87bb3ca3cca"/>
+
+    <visit visit_id="1" date_started="2024-01-27 00:00:00" date_created="2024-01-22 00:00:00" patient_id="1001" visit_type_id="1" location_id="2" creator="1" changed_by="1" voided_by="1" uuid="84d8b838-1111-11e3-b47b-c6959a448789" voided="0"/>
+    <encounter encounter_id="1" encounter_type="2" patient_id="1001" visit_id="1" location_id="2" encounter_datetime="2024-01-27 00:00:00.0" creator="1" date_created="2024-02-01 14:09:05.0" voided="false" uuid="b12798aa-f5f4-11e3-b47b-c6959a448567"/>
+
+    <concept concept_id="100" retired="false" datatype_id="3" class_id="11" is_set="false" creator="1" date_created="2024-01-27 15:48:00.0" version="" uuid="0abca361-f6bf-49cc-97de-b2f37f099122"/>
+    <orders order_id="1" order_type_id="15" patient_id="1001" encounter_id="1" urgency="ROUTINE" concept_id="100" orderer="1" care_setting="1" order_action="NEW" order_number="1" instructions="non-expiring" date_activated="2024-01-27 00:00:00.0" scheduled_date="2024-01-27 00:00:00.0" creator="1" date_created="2024-01-27 12:20:22.5" voided="false" uuid="6d0ae386-707a-4629-9850-f15206e63ab0"/>
+
+    <drug_order order_id="1" drug_inventory_id="3" dose="125.0" dispense_as_written="true" as_needed="false" frequency="2"/>
+
+    <ipd_reference reference_id="1" target_type="org.openmrs.Provider" target_uuid="c1c26908-3f10-11e4-adec-0800271c1b75" creator="1" date_created="2024-01-27 15:48:00.0" name="org.openmrs.Provider/c1c26908-3f10-11e4-adec-0800271c1b75" retired="false" uuid="a4119c8a-9804-495a-b557-49b89dcccf01" />
+    <ipd_reference reference_id="2" target_type="org.openmrs.Patient" target_uuid="75e04d42-3ca8-11e3-bf2b-0800271c1b75" creator="1" date_created="2024-01-27 15:48:00.0" name="org.openmrs.Patient/75e04d42-3ca8-11e3-bf2b-0800271c1b75" retired="false" uuid="a4119c8a-9804-495a-b557-49b89dcccf02" />
+
+    <concept concept_id="101" retired="false" datatype_id="3" class_id="11" is_set="false" creator="1" date_created="2024-01-27 15:48:00.0" version="" uuid="0abca361-f6bf-49cc-97de-b2f37f099123"/>
+    <concept_name concept_id="101" name="MedicationRequest" locale="en" creator="1" date_created="2024-01-27 15:48:00.0" concept_name_id="1" voided="false" uuid="5d2d4cb7-955b-4837-80f7-0ebb94092a01" concept_name_type="FULLY_SPECIFIED" locale_preferred="1"/>
+
+    <concept concept_id="102" retired="false" datatype_id="3" class_id="11" is_set="false" creator="1" date_created="2024-01-27 15:48:00.0" version="" uuid="0abca361-f6bf-49cc-97de-b2f37f099124"/>
+    <concept_name concept_id="102" name="EmergencyMedicationRequest" locale="en" creator="1" date_created="2024-01-27 15:48:00.0" concept_name_id="2" voided="false" uuid="5d2d4cb7-955b-4837-80f7-0ebb94092a02" concept_name_type="FULLY_SPECIFIED" locale_preferred="1"/>
+
+    <ipd_schedule schedule_id="1" uuid="23255323d-e887-4485-bc19-756cdbf00001" subject_reference_id="2" actor_reference_id="1" service_type_id="101" active="true" start_date="2024-01-27 15:48:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" visit_id="1"/>
+
+    <concept concept_id="103" retired="false" datatype_id="4" class_id="11" is_set="false" creator="1" date_created="2024-01-27 15:48:00.0" version="" uuid="0abca361-f6bf-49cc-97de-b2f37f099125"/>
+    <medication_administration medication_administration_id="1" uuid="23255323d-e887-4485-bc19-756cdbf10101" status="103" creator="1" date_created="2024-01-27 20:00:00.0" voided="false"/>
+    <medication_administration medication_administration_id="2" uuid="23255323d-e887-4485-bc19-756cdbf10102" status="103" creator="1" date_created="2024-01-28 14:00:00.0" voided="false"/>
+
+    <ipd_slot slot_id="1" uuid="23255323d-e887-4485-bc19-756cdbf00101" service_type_id="101" schedule_id="1" status="COMPLETED" start_date_time="2024-01-27 20:00:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" order_id="1" medication_administration_id="1"/>
+    <ipd_slot slot_id="2" uuid="23255323d-e887-4485-bc19-756cdbf00102" service_type_id="101" schedule_id="1" status="SCHEDULED" start_date_time="2024-01-28 08:00:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" order_id="1"/>
+    <ipd_slot slot_id="3" uuid="23255323d-e887-4485-bc19-756cdbf00103" service_type_id="101" schedule_id="1" status="SCHEDULED" start_date_time="2024-01-28 20:00:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" order_id="1"/>
+    <ipd_slot slot_id="4" uuid="23255323d-e887-4485-bc19-756cdbf00104" service_type_id="101" schedule_id="1" status="SCHEDULED" start_date_time="2024-01-29 08:00:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" order_id="1"/>
+    <ipd_slot slot_id="5" uuid="23255323d-e887-4485-bc19-756cdbf00105" service_type_id="102" schedule_id="1" status="COMPLETED" start_date_time="2024-01-28 14:00:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" medication_administration_id="2"/>
+
+</dataset>

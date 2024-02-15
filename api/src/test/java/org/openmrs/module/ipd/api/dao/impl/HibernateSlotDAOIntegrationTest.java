@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.openmrs.Concept;
 import org.openmrs.DrugOrder;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.Visit;
 import org.openmrs.VisitType;
@@ -21,6 +22,7 @@ import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -427,5 +429,56 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         sessionFactory.getCurrentSession().delete(savedSchedule);
         sessionFactory.getCurrentSession().delete(visit);
 
+    }
+
+    @Test
+    public void shouldGetSlotsForPatientListByTime() {
+        executeDataSet("scheduleMedicationsTestData.xml");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startTime = LocalDateTime.parse("2024-01-28 11:00:00", formatter);
+        LocalDateTime endTime = LocalDateTime.parse("2024-01-29 11:00:00", formatter);
+        List<String> patientUuids = new ArrayList<>();
+        patientUuids.add("75e04d42-3ca8-11e3-bf2b-0800271c1b75");
+
+        List<Slot> slotsForPatientListByTime = slotDAO.getSlotsForPatientListByTime(patientUuids, startTime, endTime);
+
+        Assertions.assertEquals(3, slotsForPatientListByTime.size());
+    }
+
+    @Test
+    public void shouldGetImmediatePreviousSlotsForPatientListByTime() {
+        executeDataSet("scheduleMedicationsTestData.xml");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startTime = LocalDateTime.parse("2024-01-28 11:00:00", formatter);
+        List<String> patientUuids = new ArrayList<>();
+        patientUuids.add("75e04d42-3ca8-11e3-bf2b-0800271c1b75");
+
+        List<Slot> previousSlots = slotDAO.getImmediatePreviousSlotsForPatientListByTime(patientUuids, startTime);
+
+        Assertions.assertEquals(1, previousSlots.size());
+    }
+
+    @Test
+    public void shouldGetSlotDurationForPatientsByOrder() {
+        executeDataSet("scheduleMedicationsTestData.xml");
+
+        List<Order> orders = new ArrayList<>();
+        Order order = Context.getOrderService().getOrderByUuid("6d0ae386-707a-4629-9850-f15206e63ab0");
+        orders.add(order);
+        List<Concept> serviceTypes = new ArrayList<>();
+        serviceTypes.add(Context.getConceptService().getConceptByName("MedicationRequest"));
+
+        List<Object[]> slotsDuration = slotDAO.getSlotDurationForPatientsByOrder(orders, serviceTypes);
+
+        Assertions.assertEquals(1, slotsDuration.size());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startTime = LocalDateTime.parse("2024-01-27 20:00:00", formatter);
+        LocalDateTime endTime = LocalDateTime.parse("2024-01-29 08:00:00", formatter);
+
+        Assertions.assertEquals(startTime, slotsDuration.get(0)[1]);
+        Assertions.assertEquals(endTime, slotsDuration.get(0)[2]);
     }
 }

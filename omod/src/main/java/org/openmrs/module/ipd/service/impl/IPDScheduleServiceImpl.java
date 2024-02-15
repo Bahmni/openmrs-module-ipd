@@ -18,6 +18,8 @@ import org.openmrs.module.ipd.api.util.DateTimeUtil;
 import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.openmrs.module.ipd.factory.ScheduleFactory;
 import org.openmrs.module.ipd.factory.SlotFactory;
+import org.openmrs.module.ipd.model.PrescribedOrderSlotSummary;
+import org.openmrs.module.ipd.model.PatientMedicationSummary;
 import org.openmrs.module.ipd.service.IPDScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -142,6 +144,85 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         if (Boolean.valueOf(Context.getAdministrationService().getGlobalProperty("bahmni-ipd.allowSlotStopOnDrugOrderStop","false"))) {
             handleDrugOrderStop(encounterTransaction);
         }
+    }
+
+    @Override
+    public List<PatientMedicationSummary> getSlotsForPatientListByTime(List<String> patientUuidList,
+                                                                       LocalDateTime localStartDate,
+                                                                       LocalDateTime localEndDate,
+                                                                       Boolean includePreviousSlot,
+                                                                       Boolean includeSlotDuration) {
+        List<Slot> slots = slotService.getSlotsForPatientListByTime(patientUuidList, localStartDate, localEndDate);
+
+        List<Slot> previousSlots = null;
+        if (includePreviousSlot == true) {
+            previousSlots = slotService.getImmediatePreviousSlotsForPatientListByTime(patientUuidList, localStartDate);
+        }
+
+        List<Object[]> slotsDuration = null;
+        if (includeSlotDuration == true) {
+            List<Order> orders = slots.stream()
+                    .map(Slot::getOrder)
+                    .filter(order -> order != null)
+                    .distinct()
+                    .collect(Collectors.toList());
+            List<Concept> serviceTypes = new ArrayList<>();
+            serviceTypes.add(Context.getConceptService().getConceptByName(ServiceType.MEDICATION_REQUEST.conceptName()));
+            serviceTypes.add(Context.getConceptService().getConceptByName(ServiceType.AS_NEEDED_MEDICATION_REQUEST.conceptName()));
+
+            slotsDuration = slotService.getSlotDurationForPatientsByOrder(orders, serviceTypes);
+        }
+
+        return groupSlotsByMedicationsAndPatients(slots, previousSlots, slotsDuration);
+    }
+
+    private List<PatientMedicationSummary> groupSlotsByMedicationsAndPatients(List<Slot> currentSlots,
+                                                                              List<Slot> previousSlots,
+                                                                              List<Object[]> slotsDuration) {
+
+        Map<String, Map<String, List<Slot>>> groupedSlots = currentSlots.stream()
+                .collect(Collectors.groupingBy(
+                        slot -> slot.getSchedule().getSubject().getTargetUuid(),
+                        Collectors.groupingBy(
+                                slot -> slot.getOrder() != null ? slot.getOrder().getUuid() : "emergencyMedications"
+                        )
+                ));
+
+        List<PatientMedicationSummary> patientMedicationsList = groupedSlots.entrySet().stream()
+                .map(entry -> {
+                    PatientMedicationSummary patientMedicationSummary = new PatientMedicationSummary();
+                    patientMedicationSummary.setPatientUuid(entry.getKey());
+                    List<PrescribedOrderSlotSummary> prescribedOrderSlotsSummaryList = entry.getValue().entrySet().stream()
+                            .filter(subEntry -> subEntry.getKey() != null)
+                            .map(subEntry -> {
+                                PrescribedOrderSlotSummary prescribedOrderSlotSummary = new PrescribedOrderSlotSummary();
+                                prescribedOrderSlotSummary.setOrderUuid(subEntry.getKey());
+                                prescribedOrderSlotSummary.setCurrentSlots(subEntry.getValue());
+                                if (previousSlots != null) {
+                                    prescribedOrderSlotSummary.setPreviousSlot(previousSlots.stream()
+                                            .filter(slot -> slot.getOrder().getUuid().equals(subEntry.getKey()))
+                                            .findFirst()
+                                            .orElse(null));
+                                }
+                                if (slotsDuration != null) {
+                                    Object[] durationObj = slotsDuration.stream()
+                                            .filter(item -> ((Order) item[0]).getUuid().equals(subEntry.getKey()))
+                                            .findFirst()
+                                            .orElse(null);
+                                    prescribedOrderSlotSummary.setInitialSlotStartTime(DateTimeUtil.convertLocalDateTimeToUTCEpoc((LocalDateTime) durationObj[1]));
+                                    prescribedOrderSlotSummary.setFinalSlotStartTime(DateTimeUtil.convertLocalDateTimeToUTCEpoc((LocalDateTime) durationObj[2]));
+                                }
+                                return prescribedOrderSlotSummary;
+                            })
+                            .collect(Collectors.toList());
+                    patientMedicationSummary.setPrescribedOrderSlots(prescribedOrderSlotsSummaryList);
+                    patientMedicationSummary.setEmergencyMedicationSlots(entry.getValue().get("emergencyMedications"));
+
+                    return patientMedicationSummary;
+                })
+                .collect(Collectors.toList());
+
+        return patientMedicationsList;
     }
 
     private void handleDrugOrderStop(EncounterTransaction encounterTransaction){
