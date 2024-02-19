@@ -8,7 +8,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
+import org.openmrs.Order;
 import org.openmrs.Patient;
+import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
@@ -128,11 +130,63 @@ public class SlotServiceImplTest {
         LocalDateTime startTime= LocalDateTime.now();
         LocalDateTime endTime = startTime.plusHours(8);
         Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
+        Visit visit = new Visit(123);
 
-        Mockito.when(slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime)).thenReturn(slots);
+        Mockito.when(slotDAO.getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime, visit)).thenReturn(slots);
 
-        slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(patientReference,startTime,endTime);
+        slotService.getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(patientReference,startTime,endTime,visit);
 
-        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime);
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectIncludingAdministeredTimeFrame(patientReference, startTime, endTime, visit);
+    }
+
+    @Test
+    public void shouldInvokeGetSlotsForPatientListByTime() {
+        List<Slot> slots = new ArrayList<>();
+        LocalDateTime startTime= LocalDateTime.now();
+        LocalDateTime endTime = startTime.plusHours(3);
+        List<String> patientUuids = new ArrayList<>();
+        patientUuids.add("patientUuid1");
+        patientUuids.add("patientUuid2");
+
+        Mockito.when(slotDAO.getSlotsForPatientListByTime(patientUuids, startTime, endTime)).thenReturn(slots);
+        slotService.getSlotsForPatientListByTime(patientUuids, startTime, endTime);
+
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsForPatientListByTime(patientUuids, startTime, endTime);
+    }
+
+    @Test
+    public void shouldInvokeGetImmediatePreviousSlotsForPatientListByTime() {
+        List<Slot> slots = new ArrayList<>();
+        LocalDateTime startTime= LocalDateTime.now();
+        List<String> patientUuids = new ArrayList<>();
+        patientUuids.add("patientUuid1");
+        patientUuids.add("patientUuid2");
+
+        Mockito.when(slotDAO.getImmediatePreviousSlotsForPatientListByTime(patientUuids, startTime)).thenReturn(slots);
+        slotService.getImmediatePreviousSlotsForPatientListByTime(patientUuids, startTime);
+
+        Mockito.verify(slotDAO, Mockito.times(1)).getImmediatePreviousSlotsForPatientListByTime(patientUuids, startTime);
+    }
+
+    @Test
+    public void shouldInvokeGetSlotDurationForPatientsByOrder() {
+        List<Object[]> slotDurationObjects = new ArrayList<>();
+        List<Order> orders = new ArrayList<>();
+        Order order = new Order();
+        order.setUuid("orderUuid1");
+        orders.add(order);
+        order = new Order();
+        order.setUuid("orderUuid2");
+        orders.add(order);
+
+        List<Concept> serviceTypes = new ArrayList<>();
+        Concept concept = new Concept();
+        concept.setUuid("serviceType1");
+        serviceTypes.add(concept);
+
+        Mockito.when(slotDAO.getSlotDurationForPatientsByOrder(orders, serviceTypes)).thenReturn(slotDurationObjects);
+        slotService.getSlotDurationForPatientsByOrder(orders, serviceTypes);
+
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotDurationForPatientsByOrder(orders, serviceTypes);
     }
 }

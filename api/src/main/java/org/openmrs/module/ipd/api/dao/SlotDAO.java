@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.api.dao;
 
 import org.openmrs.Concept;
+import org.openmrs.Order;
 import org.openmrs.Visit;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Slot;
@@ -30,6 +31,11 @@ public interface SlotDAO {
 
 	List<Slot> getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit, Concept serviceType);
 
-	List<Slot> getSlotsBySubjectIncludingAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate);
+	List<Slot> getSlotsBySubjectIncludingAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit);
 
+	List<Slot> getSlotsForPatientListByTime(List<String> patientUuidList, LocalDateTime localStartDate, LocalDateTime localEndDate);
+
+	List<Slot> getImmediatePreviousSlotsForPatientListByTime(List<String> patientUuidList, LocalDateTime localStartDate);
+
+	List<Object[]> getSlotDurationForPatientsByOrder(List<Order> orders, List<Concept> serviceTypes);
 }
