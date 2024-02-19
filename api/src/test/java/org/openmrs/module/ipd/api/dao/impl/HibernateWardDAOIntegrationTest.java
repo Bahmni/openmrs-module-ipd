@@ -20,7 +20,7 @@ public class HibernateWardDAOIntegrationTest extends BaseIntegrationTest {
 
     @Test
     public void shouldGetAdmittedPatients() {
-        List<AdmittedPatient> assignments= wardDAO.getAdmittedPatients(null);
+        List<AdmittedPatient> assignments= wardDAO.getAdmittedPatientsByLocation(null,null,null);
 
     }
 }

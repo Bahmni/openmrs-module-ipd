@@ -5,7 +5,6 @@ import org.openmrs.api.LocationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.WardDAO;
 import org.openmrs.module.ipd.api.model.AdmittedPatient;
-import org.openmrs.module.ipd.api.model.IPDWardPatientDetails;
 import org.openmrs.module.ipd.api.model.WardPatientsSummary;
 import org.openmrs.module.ipd.api.service.WardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,22 +33,15 @@ public class WardServiceImpl implements WardService {
     }
 
     @Override
-    public IPDWardPatientDetails getWardPatientsByUuid(String wardUuid, Integer offset, Integer limit) {
+    public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid, Integer offset, Integer limit) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        List<AdmittedPatient> activePatients= wardDAO.getAdmittedPatients(location);
-        if (activePatients==null){
-            return new IPDWardPatientDetails(new ArrayList<>(),new WardPatientsSummary());
-        }
-        offset = Math.min(offset, activePatients.size());
-        limit = Math.min(limit, activePatients.size() - offset);
-
-        WardPatientsSummary wardPatientsSummary = computePatientStats(activePatients);
-        return new IPDWardPatientDetails(activePatients.subList(offset, offset + limit), wardPatientsSummary);
+        return wardDAO.getAdmittedPatientsByLocation(location,offset,limit);
     }
 
-    private WardPatientsSummary computePatientStats(List<AdmittedPatient> activePatients){
-        WardPatientsSummary wardPatientsSummary =new WardPatientsSummary();
-        wardPatientsSummary.setTotalPatients(activePatients !=null ? activePatients.size() : 0L);
-        return wardPatientsSummary;
+    @Override
+    public List<AdmittedPatient> searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue, Integer offset, Integer limit) {
+        Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
+        return  wardDAO.searchAdmittedPatients(location,searchKeys,searchValue,offset,limit);
     }
+
 }

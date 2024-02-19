@@ -18,8 +18,8 @@ public class AdmittedPatientResponse {
 
     public static AdmittedPatientResponse createFrom(AdmittedPatient admittedPatient) {
         return AdmittedPatientResponse.builder().
-                patientDetails(ConversionUtil.convertToRepresentation(admittedPatient.getPatient(), Representation.DEFAULT)).
-                bedDetails(ConversionUtil.convertToRepresentation(admittedPatient.getBed(),Representation.REF)).
+                patientDetails(ConversionUtil.convertToRepresentation(admittedPatient.getBedPatientAssignment().getPatient(), Representation.DEFAULT)).
+                bedDetails(ConversionUtil.convertToRepresentation(admittedPatient.getBedPatientAssignment().getBed(),Representation.REF)).
                 newTreatments(admittedPatient.getNewTreatments()).build();
     }
 }
