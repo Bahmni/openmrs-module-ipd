@@ -74,68 +74,6 @@ public class HibernateWardDAO implements WardDAO {
         return new WardPatientsSummary();
     }
 
-//    @Override
-//    public List<AdmittedPatient> searchAdmittedPatients(Location location, List<String> searchKeys, String searchValue) {
-//        Session session = this.sessionFactory.getCurrentSession();
-//        try {
-//            String selectQuery= "select NEW org.openmrs.module.ipd.api.model.AdmittedPatient(assignment," +
-//                    "(COUNT(DISTINCT o.orderId) - COUNT (DISTINCT s.order.orderId)))" +
-//                    "from org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
-//                    "JOIN org.openmrs.Visit v on v.patient = assignment.patient " +
-//                    "JOIN org.openmrs.Patient p on assignment.patient = p " +
-//                    "JOIN org.openmrs.Person pr on pr.personId=p.patientId " +
-//                    "JOIN org.openmrs.Encounter e on e.visit = v " +
-//                    "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
-//                    "JOIN org.openmrs.Location l on locmap.location = l " +
-//                    "LEFT JOIN org.openmrs.Order o on o.encounter = e " +
-//                    "LEFT JOIN Slot s on s.order = o ";
-//
-//            String additionalJoins="";
-//
-//            String whereClause = "where (assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location)";
-//            if (searchKeys !=null && !searchKeys.isEmpty()) {
-//                whereClause=whereClause.concat("and (");
-//                for (int i=0;i<searchKeys.size();i++) {
-//                    if (searchKeys.get(i).equals("bedNumber")){
-//                        whereClause=whereClause.concat(" assignment.bed.bedNumber LIKE :bedNumber ");
-//                        whereClause= appendORIfMoreSearchKeysPresent(i,searchKeys.size(),whereClause);
-//                    }
-//                    if (searchKeys.get(i).equals("patientIdentifier")){
-//                        additionalJoins=additionalJoins.concat(" JOIN p.identifiers pi ");
-//                        whereClause=whereClause.concat(" pi.identifier LIKE :patientIdentifier ");
-//                        whereClause=appendORIfMoreSearchKeysPresent(i,searchKeys.size(),whereClause);
-//                    }
-//                    if (searchKeys.get(i).equals("patientName")){
-//                        additionalJoins=additionalJoins.concat(" JOIN pr.names prn ");
-//                        whereClause=whereClause.concat(" (prn.givenName LIKE :patientName or prn.middleName LIKE :patientName or prn.familyName LIKE :patientName) ");
-//                        whereClause=appendORIfMoreSearchKeysPresent(i,searchKeys.size(),whereClause);
-//                    }
-//                }
-//                whereClause=whereClause.concat(" ) ");
-//            }
-//
-//            String groupBy= " GROUP BY assignment.patient, v ORDER BY assignment.startDatetime desc ";
-//
-//            Query query = session.createQuery(selectQuery+additionalJoins+whereClause+groupBy);
-//
-//            query.setParameter("location", location);
-//            if (searchKeys.contains("bedNumber")){
-//                query.setParameter("bedNumber","%" + searchValue + "%");
-//            }
-//            if(searchKeys.contains("patientIdentifier")){
-//                query.setParameter("patientIdentifier","%" + searchValue + "%");
-//            }
-//            if(searchKeys.contains("patientName")){
-//                query.setParameter("patientName","%" + searchValue + "%");
-//            }
-//            return query.getResultList();
-//        }
-//        catch (Exception ex){
-//            log.error("Exception at WardDAO searching ",ex.getMessage());
-//        }
-//        return new ArrayList<>();
-//    }
-
     @Override
     public List<AdmittedPatient> searchAdmittedPatients(Location location, List<String> searchKeys, String searchValue,Integer offset,Integer limit) {
         try {
