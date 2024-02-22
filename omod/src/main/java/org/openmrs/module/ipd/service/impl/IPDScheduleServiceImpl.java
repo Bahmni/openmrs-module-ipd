@@ -155,12 +155,12 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         List<Slot> slots = slotService.getSlotsForPatientListByTime(patientUuidList, localStartDate, localEndDate);
 
         List<Slot> previousSlots = null;
-        if (includePreviousSlot == true) {
+        if (Boolean.TRUE.equals(includePreviousSlot)) {
             previousSlots = slotService.getImmediatePreviousSlotsForPatientListByTime(patientUuidList, localStartDate);
         }
 
         List<Object[]> slotsDuration = null;
-        if (includeSlotDuration == true) {
+        if (Boolean.TRUE.equals(includeSlotDuration)) {
             List<Order> orders = slots.stream()
                     .map(Slot::getOrder)
                     .filter(order -> order != null)
