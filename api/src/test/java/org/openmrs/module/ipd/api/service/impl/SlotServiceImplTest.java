@@ -6,11 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.openmrs.Concept;
-import org.openmrs.ConceptName;
-import org.openmrs.Order;
-import org.openmrs.Patient;
-import org.openmrs.Visit;
+import org.openmrs.*;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.Schedule;
@@ -19,6 +15,7 @@ import org.openmrs.module.ipd.api.model.Slot;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -100,8 +97,15 @@ public class SlotServiceImplTest {
 
     @Test
     public void shouldInvokeGetSlotsByForReferenceAndServiceTypeAndOrderUuidsWithGivenScheduleId() {
+
+        Visit visit = new Visit(1);
+        visit.setPatient(new Patient(123));
+        visit.setStartDatetime(new Date());
+        visit.setVisitType(new VisitType(321));
+
         Schedule expectedSchedule = new Schedule();
         expectedSchedule.setId(1);
+        expectedSchedule.setVisit(visit);
         List<Slot> slots = new ArrayList<>();
 
         LocalDate today = LocalDate.now();
@@ -116,11 +120,11 @@ public class SlotServiceImplTest {
 
         Reference patientReference = new Reference(Patient.class.getTypeName(), "patientUuid");
 
-        Mockito.when(slotDAO.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids)).thenReturn(slots);
+        Mockito.when(slotDAO.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids,visit)).thenReturn(slots);
 
-        slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids);
+        slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids,visit);
 
-        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids);
+        Mockito.verify(slotDAO, Mockito.times(1)).getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, medicationRequestConcept, orderUuids,visit);
     }
 
     @Test

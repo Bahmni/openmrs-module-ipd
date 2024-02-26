@@ -73,7 +73,7 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
         DrugOrder order = (DrugOrder) orderService.getOrderByUuid(scheduleMedicationRequest.getOrderUuid());
         ServiceType serviceType = scheduleMedicationRequest.getServiceType() !=null ? scheduleMedicationRequest.getServiceType() : ServiceType.MEDICATION_REQUEST;
         if(serviceType.equals(ServiceType.MEDICATION_REQUEST)){
-            List<Slot> existingSlots = getMedicationSlots(patient.getUuid(),ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{order.getUuid()})));
+            List<Slot> existingSlots = getMedicationSlots(patient.getUuid(),ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{order.getUuid()})),visit);
             if (existingSlots !=null && !existingSlots.isEmpty()) {
                 throw new RuntimeException("Slots already created for this drug order");
             }
@@ -108,12 +108,12 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     }
 
     @Override
-    public List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, List<String> orderUuids) {
+    public List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, List<String> orderUuids,Visit visit) {
         Concept concept = conceptService.getConceptByName(serviceType.conceptName());
         Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid);
         if(!subjectReference.isPresent())
             return Collections.emptyList();
-         return slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(subjectReference.get(), concept, orderUuids);
+         return slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(subjectReference.get(), concept, orderUuids,visit);
     }
 
     @Override
@@ -123,7 +123,9 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     }
 
     private void voidExistingMedicationSlotsForOrder(String patientUuid,String orderUuid,String voidReason){
-        List<Slot> existingSlots = getMedicationSlots(patientUuid,ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{orderUuid})));
+        Patient patient = patientService.getPatientByUuid(patientUuid);
+        Visit visit = visitService.getActiveVisitsByPatient(patient).get(0);
+        List<Slot> existingSlots = getMedicationSlots(patientUuid,ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{orderUuid})),visit);
         existingSlots.stream().forEach(slot -> slotService.voidSlot(slot,voidReason));
     }
 
@@ -228,8 +230,9 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
     private void handleDrugOrderStop(EncounterTransaction encounterTransaction){
         List<EncounterTransaction.DrugOrder> stoppedDrugOrders = encounterTransaction.getDrugOrders().stream().filter(drugOrder -> drugOrder.getDateStopped() !=null).collect(Collectors.toList());
         String patientUuid = encounterTransaction.getPatientUuid();
+        Visit visit=Context.getVisitService().getVisitByUuid(encounterTransaction.getVisitUuid());
         for (EncounterTransaction.DrugOrder drugOrder : stoppedDrugOrders) {
-            List<Slot> existingSlots = getMedicationSlots(patientUuid,ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{drugOrder.getPreviousOrderUuid()})));
+            List<Slot> existingSlots = getMedicationSlots(patientUuid,ServiceType.MEDICATION_REQUEST,new ArrayList<>(Arrays.asList(new String[]{drugOrder.getPreviousOrderUuid()})),visit);
             if (existingSlots == null || existingSlots.isEmpty()) {
                 continue;
             }

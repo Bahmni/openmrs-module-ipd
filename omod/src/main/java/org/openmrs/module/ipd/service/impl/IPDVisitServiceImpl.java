@@ -91,7 +91,7 @@ public class IPDVisitServiceImpl implements IPDVisitService {
             Collection<BahmniObservation> orderAttributeObs = bahmniObsService.observationsFor(patientUuid, getOrdAttributeConcepts(), null, null, false, null, null, null);
             List<BahmniDrugOrder> bahmniDrugOrders = bahmniDrugOrderMapper.mapToResponse(drugOrdersFiltered, orderAttributeObs, drugOrderMap , null);
             bahmniDrugOrders=sortDrugOrdersAccordingToTheirSortWeight(bahmniDrugOrders);
-            Map<String, DrugOrderSchedule> drugOrderScheduleByOrders = getDrugOrderScheduleForOrders(patientUuid, bahmniDrugOrders);
+            Map<String, DrugOrderSchedule> drugOrderScheduleByOrders = getDrugOrderScheduleForOrders(patientUuid, bahmniDrugOrders,currentVisit);
 
             return bahmniDrugOrders.stream().map(bahmniDrugOrder -> IPDDrugOrder.createFrom(bahmniDrugOrder,drugOrderScheduleByOrders.get(bahmniDrugOrder.getUuid()))).collect(Collectors.toList());
 
@@ -100,12 +100,12 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         }
     }
 
-    private Map<String, DrugOrderSchedule> getDrugOrderScheduleForOrders(String patientUuid, List<BahmniDrugOrder> bahmniDrugOrders) {
+    private Map<String, DrugOrderSchedule> getDrugOrderScheduleForOrders(String patientUuid, List<BahmniDrugOrder> bahmniDrugOrders,Visit visit) {
         List<String> orderUuids = bahmniDrugOrders.stream()
                 .map(BahmniDrugOrder::getUuid)
                 .collect(Collectors.toList());
-        List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, ServiceType.MEDICATION_REQUEST,orderUuids);
-        List<Slot> prnSlots = ipdScheduleService.getMedicationSlots(patientUuid, ServiceType.AS_NEEDED_MEDICATION_REQUEST,orderUuids);
+        List<Slot> slots = ipdScheduleService.getMedicationSlots(patientUuid, ServiceType.MEDICATION_REQUEST,orderUuids,visit);
+        List<Slot> prnSlots = ipdScheduleService.getMedicationSlots(patientUuid, ServiceType.AS_NEEDED_MEDICATION_REQUEST,orderUuids,visit);
         slots.addAll(prnSlots);
         Map<DrugOrder, List<Slot>> groupedByOrders = slots.stream()
                 .collect(Collectors.groupingBy(slot -> (DrugOrder) slot.getOrder()));

@@ -102,31 +102,31 @@ public class IPDScheduleController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid"})
-    @ResponseBody
-    public ResponseEntity<Object> getMedicationSlotsByOrderUuids(@RequestParam(value = "patientUuid") String patientUuid,
-                                                                 @RequestParam(value = "serviceType", required = false) ServiceType serviceType,
-                                                                 @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
-        try {
-            List<Slot> slots;
-            if (orderUuids == null || orderUuids.isEmpty()) {
-                slots =
-                        serviceType == null ? ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST) :
-                                ipdScheduleService.getMedicationSlots(patientUuid, serviceType);
-            } else {
-                slots =
-                        serviceType == null ? ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, orderUuids) :
-                                ipdScheduleService.getMedicationSlots(patientUuid, serviceType, orderUuids);
-            }
-            List<MedicationSlotResponse> medicationResponses = slots.stream()
-                    .map(MedicationSlotResponse::createFrom)
-                    .collect(Collectors.toList());
-            return new ResponseEntity<>(medicationResponses, OK);
-        } catch (Exception e) {
-            log.error("Runtime error while trying to retrieve schedules created by patient", e);
-            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
-        }
-    }
+//    @RequestMapping(value = "type/medication", method = RequestMethod.GET, params = {"patientUuid"})
+//    @ResponseBody
+//    public ResponseEntity<Object> getMedicationSlotsByOrderUuids(@RequestParam(value = "patientUuid") String patientUuid,
+//                                                                 @RequestParam(value = "serviceType", required = false) ServiceType serviceType,
+//                                                                 @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
+//        try {
+//            List<Slot> slots;
+//            if (orderUuids == null || orderUuids.isEmpty()) {
+//                slots =
+//                        serviceType == null ? ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST) :
+//                                ipdScheduleService.getMedicationSlots(patientUuid, serviceType);
+//            } else {
+//                slots =
+//                        serviceType == null ? ipdScheduleService.getMedicationSlots(patientUuid, MEDICATION_REQUEST, orderUuids) :
+//                                ipdScheduleService.getMedicationSlots(patientUuid, serviceType, orderUuids);
+//            }
+//            List<MedicationSlotResponse> medicationResponses = slots.stream()
+//                    .map(MedicationSlotResponse::createFrom)
+//                    .collect(Collectors.toList());
+//            return new ResponseEntity<>(medicationResponses, OK);
+//        } catch (Exception e) {
+//            log.error("Runtime error while trying to retrieve schedules created by patient", e);
+//            return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
+//        }
+//    }
 
     @RequestMapping(value = "type/medication/patientsMedicationSummary", method = RequestMethod.GET, params = {"patientUuids", "startTime", "endTime"})
     @ResponseBody

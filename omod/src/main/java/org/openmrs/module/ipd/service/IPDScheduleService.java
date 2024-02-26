@@ -17,7 +17,7 @@ public interface IPDScheduleService {
     Schedule saveMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest);
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, LocalDate forDate);
     List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType);
-    List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, List<String> orderUuids);
+    List<Slot> getMedicationSlots(String patientUuid, ServiceType serviceType, List<String> orderUuids,Visit visit);
     Schedule updateMedicationSchedule(ScheduleMedicationRequest scheduleMedicationRequest);
     List<Slot> getMedicationSlotsForTheGivenTimeFrame(String patientUuid, LocalDateTime localStartDate, LocalDateTime localEndDate,Boolean considerAdministeredTime, Visit visit);
     void handlePostProcessEncounterTransaction(Encounter encounter, EncounterTransaction encounterTransaction);

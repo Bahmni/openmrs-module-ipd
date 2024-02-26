@@ -164,11 +164,17 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         LocalDateTime startDate = DateTimeUtil.convertDateToLocalDateTime(drugOrder.getEffectiveStartDate());
         LocalDateTime endDate = DateTimeUtil.convertDateToLocalDateTime(drugOrder.getEffectiveStopDate());
 
+        Visit visit = new Visit(1);
+        visit.setPatient(new Patient(123));
+        visit.setStartDatetime(new Date());
+        visit.setVisitType(new VisitType(321));
+
         Schedule schedule = new Schedule();
         schedule.setSubject(patientReference);
         schedule.setActor(providerReference);
         schedule.setStartDate(startDate);
         schedule.setEndDate(endDate);
+        schedule.setVisit(visit);
         schedule.setServiceType(testConcept);
 
         Schedule savedSchedule = scheduleDAO.saveSchedule(schedule);
@@ -193,7 +199,7 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         List<String> orderUuidList = new ArrayList<>();
         orderUuidList.add(orderUuid);
 
-        List<Slot> slotsBySubjectReferenceIdAndServiceTypeAndOrderUuids = slotDAO.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, testConcept, orderUuidList);
+        List<Slot> slotsBySubjectReferenceIdAndServiceTypeAndOrderUuids = slotDAO.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(patientReference, testConcept, orderUuidList,visit);
 
         Assertions.assertEquals(1, slotsBySubjectReferenceIdAndServiceTypeAndOrderUuids.size());
 

@@ -25,7 +25,7 @@ public interface SlotDAO {
 
 	List<Slot> getSlotsBySubjectReferenceIdAndServiceType(Reference subject, Concept serviceType);
 
-	List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids);
+	List<Slot> getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(Reference subject, Concept serviceType, List<String> orderUuids,Visit visit);
 
 	List<Slot> getSlotsByPatientAndVisitAndServiceType(Reference subject, Visit visit, Concept serviceType);
 
