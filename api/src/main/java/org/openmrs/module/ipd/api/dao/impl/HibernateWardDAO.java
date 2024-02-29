@@ -29,7 +29,7 @@ public class HibernateWardDAO implements WardDAO {
     }
 
     @Override
-    public List<AdmittedPatient> getAdmittedPatientsByLocation(Location location,Integer offset,Integer limit) {
+    public List<AdmittedPatient> getAdmittedPatientsByLocation(Location location) {
         Session session = this.sessionFactory.getCurrentSession();
         try {
             Query query = session.createQuery("select NEW org.openmrs.module.ipd.api.model.AdmittedPatient(assignment," +
@@ -46,7 +46,7 @@ public class HibernateWardDAO implements WardDAO {
                     "ORDER BY assignment.startDatetime desc");
 
             query.setParameter("location", location);
-            query.setFirstResult(offset).setMaxResults(limit);
+
             return query.getResultList();
         }
         catch (Exception ex){
@@ -75,7 +75,7 @@ public class HibernateWardDAO implements WardDAO {
     }
 
     @Override
-    public List<AdmittedPatient> searchAdmittedPatients(Location location, List<String> searchKeys, String searchValue,Integer offset,Integer limit) {
+    public List<AdmittedPatient> searchAdmittedPatients(Location location, List<String> searchKeys, String searchValue) {
         try {
             Session session = sessionFactory.getCurrentSession();
 
@@ -105,7 +105,6 @@ public class HibernateWardDAO implements WardDAO {
             // Set parameters
             query.setParameter("location", location);
             setQueryParameters(query, searchKeys, searchValue);
-            query.setFirstResult(offset).setMaxResults(limit);
 
             return query.getResultList();
         } catch (Exception ex) {
