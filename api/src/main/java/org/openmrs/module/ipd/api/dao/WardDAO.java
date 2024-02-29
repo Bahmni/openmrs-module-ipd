@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface WardDAO {
 
-    List<AdmittedPatient> searchAdmittedPatients(Location location,List<String> searchKeys,String searchValue,Integer offset,Integer limit);
+    List<AdmittedPatient> searchAdmittedPatients(Location location,List<String> searchKeys,String searchValue);
 
-    List<AdmittedPatient> getAdmittedPatientsByLocation(Location location,Integer offset,Integer limit);
+    List<AdmittedPatient> getAdmittedPatientsByLocation(Location location);
 
     WardPatientsSummary getWardPatientSummary(Location location);
 

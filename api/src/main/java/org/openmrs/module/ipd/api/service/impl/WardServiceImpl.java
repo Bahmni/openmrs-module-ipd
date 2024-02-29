@@ -33,15 +33,15 @@ public class WardServiceImpl implements WardService {
     }
 
     @Override
-    public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid, Integer offset, Integer limit) {
+    public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return wardDAO.getAdmittedPatientsByLocation(location,offset,limit);
+        return wardDAO.getAdmittedPatientsByLocation(location);
     }
 
     @Override
-    public List<AdmittedPatient> searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue, Integer offset, Integer limit) {
+    public List<AdmittedPatient> searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return  wardDAO.searchAdmittedPatients(location,searchKeys,searchValue,offset,limit);
+        return  wardDAO.searchAdmittedPatients(location,searchKeys,searchValue);
     }
 
 }

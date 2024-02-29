@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
@@ -44,8 +43,8 @@ public class IPDWardController extends BaseRestController {
                                                            @RequestParam(value = "offset") Integer offset,
                                                            @RequestParam (value = "limit") Integer limit) throws ParseException {
         try {
-            List<AdmittedPatient> admittedPatients = ipdWardService.getIPDPatientByWard(wardUuid,offset,limit);
-            return new ResponseEntity<>(admittedPatients.stream().map(AdmittedPatientResponse::createFrom).collect(Collectors.toList()), OK);
+            IPDPatientDetails ipdPatientDetails = ipdWardService.getIPDPatientByWard(wardUuid,offset,limit);
+            return new ResponseEntity<>(IPDPatientDetailsResponse.createFrom(ipdPatientDetails), OK);
         } catch (Exception e) {
             log.error("Runtime error while trying to create new schedule", e);
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
@@ -60,8 +59,8 @@ public class IPDWardController extends BaseRestController {
                                                        @RequestParam(value = "searchKeys") List<String> searchKeys,
                                                        @RequestParam(value = "searchValue") String searchValue) throws ParseException {
         try {
-            List<AdmittedPatient> admittedPatients = ipdWardService.searchIPDPatientsInWard(wardUuid,searchKeys,searchValue,offset,limit);
-            return new ResponseEntity<>(admittedPatients.stream().map(AdmittedPatientResponse::createFrom).collect(Collectors.toList()), OK);
+            IPDPatientDetails ipdPatientDetails = ipdWardService.searchIPDPatientsInWard(wardUuid,searchKeys,searchValue,offset,limit);
+            return new ResponseEntity<>(IPDPatientDetailsResponse.createFrom(ipdPatientDetails), OK);
         } catch (Exception e) {
             log.error("Runtime error while trying to create new schedule", e);
             return new ResponseEntity<>(RestUtil.wrapErrorResponse(e, e.getMessage()), BAD_REQUEST);
