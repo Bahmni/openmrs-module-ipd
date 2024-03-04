@@ -24,6 +24,7 @@ public class MedicationSlotResponse {
     private String serviceType;
     private String status;
     private long startTime;
+    private long endTime;
     private Object order;
     private Object medicationAdministration;
     private String notes;
@@ -35,6 +36,7 @@ public class MedicationSlotResponse {
                 .serviceType(slot.getServiceType().getName().getName())
                 .status(slot.getStatus().name())
                 .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
+                .endTime(convertLocalDateTimeToUTCEpoc(slot.getEndDateTime()))
                 .order(ConversionUtil.convertToRepresentation(slot.getOrder(), Representation.FULL))
                 .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
                 .notes(slot.getNotes())
