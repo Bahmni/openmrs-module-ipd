@@ -5,9 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hl7.fhir.r4.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.Slot;
-import org.openmrs.module.ipd.factory.MedicationAdministrationFactory;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 
@@ -30,31 +28,36 @@ public class MedicationSlotResponse {
     private String notes;
 
     public static MedicationSlotResponse createFrom(Slot slot) {
-        return MedicationSlotResponse.builder()
+        MedicationSlotResponseBuilder builder =  MedicationSlotResponse.builder()
                 .id(slot.getId())
                 .uuid(slot.getUuid())
                 .serviceType(slot.getServiceType().getName().getName())
                 .status(slot.getStatus().name())
                 .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
-                .endTime(convertLocalDateTimeToUTCEpoc(slot.getEndDateTime()))
                 .order(ConversionUtil.convertToRepresentation(slot.getOrder(), Representation.FULL))
                 .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
-                .notes(slot.getNotes())
-                .build();
+                .notes(slot.getNotes());
+        if(slot.getEndDateTime() != null) {
+            builder.endTime(convertLocalDateTimeToUTCEpoc(slot.getEndDateTime()));
+        }
+        return builder.build();
     }
 
     public static MedicationSlotResponse createFrom(Slot slot, Representation rep) {
         if (rep.equals(Representation.REF))
         {
-            return MedicationSlotResponse.builder()
+            MedicationSlotResponseBuilder builder = MedicationSlotResponse.builder()
                     .id(slot.getId())
                     .uuid(slot.getUuid())
                     .serviceType(slot.getServiceType().getName().getName())
                     .status(slot.getStatus().name())
                     .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
                     .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
-                    .notes(slot.getNotes())
-                    .build();
+                    .notes(slot.getNotes());
+            if(slot.getEndDateTime() != null) {
+                builder.endTime(convertLocalDateTimeToUTCEpoc(slot.getEndDateTime()));
+            }
+            return builder.build();
         }
         return MedicationSlotResponse.createFrom(slot);
 
