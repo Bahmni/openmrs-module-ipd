@@ -300,4 +300,94 @@
         </sql>
     </changeSet>
 
+    <changeSet id="care_team_202402271255" author="Bahmni">
+        <preConditions onFail="MARK_RAN" onFailMessage="Table care team already exists">
+            <not>
+                <tableExists tableName="care_team" />
+            </not>
+        </preConditions>
+        <comment>Creating care_team table</comment>
+        <createTable tableName="care_team">
+            <column name="care_team_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="visit_id" type="int"/>
+            <column name="patient_id" type="int"/>
+            <column name="start_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="datetime"/>
+            <column name="uuid" type="varchar(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="form_namespace_and_path" type="varchar(255)" />
+            <column name="creator" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column name="changed_by" type="int" />
+            <column name="date_changed" type="datetime" />
+            <column name="voided" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="voided_by" type="int" />
+            <column name="date_voided" type="datetime" />
+            <column name="void_reason" type="varchar(255)" />
+        </createTable>
+        <addForeignKeyConstraint constraintName="care_team_patient_fk" baseTableName="care_team" baseColumnNames="patient_id" referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="care_team_visit_fk" baseTableName="care_team" baseColumnNames="visit_id" referencedTableName="visit" referencedColumnNames="visit_id"/>
+        <addForeignKeyConstraint constraintName="care_team_creator_fk" baseTableName="care_team" baseColumnNames="creator" referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="care_team_changed_by_fk" baseTableName="care_team" baseColumnNames="changed_by" referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="care_team_voided_by_fk" baseTableName="care_team" baseColumnNames="voided_by" referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="care_team_participant_202402271255" author="Bahmni">
+        <preConditions onFail="MARK_RAN" onError="WARN">
+            <not>
+                <tableExists tableName="care_team_participant"/>
+            </not>
+            <tableExists tableName="care_team"/>
+        </preConditions>
+        <createTable tableName="care_team_participant">
+            <column name="care_team_participant_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="care_team_id" type="int"/>
+            <column name="provider_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="int"/>
+            <column name="start_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="datetime"/>
+            <column name="uuid" type="varchar(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="form_namespace_and_path" type="varchar(255)" />
+            <column name="creator" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false" />
+            </column>
+            <column name="changed_by" type="int" />
+            <column name="date_changed" type="datetime" />
+            <column name="voided" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="voided_by" type="int" />
+            <column name="date_voided" type="datetime" />
+            <column name="void_reason" type="varchar(255)" />
+        </createTable>
+        <addForeignKeyConstraint constraintName="care_team_participant_fk" baseTableName="care_team_participant" baseColumnNames="care_team_id" referencedTableName="care_team" referencedColumnNames="care_team_id"/>
+        <addForeignKeyConstraint constraintName="care_team_participant_provider_fk" baseTableName="care_team_participant" baseColumnNames="provider_id" referencedTableName="provider" referencedColumnNames="provider_id"/>
+        <addForeignKeyConstraint constraintName="care_team_participant_rl_fk" baseTableName="care_team_participant" baseColumnNames="role" referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="care_team_participant_creator_fk" baseTableName="care_team_participant" baseColumnNames="creator" referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="care_team_participant_changed_by_fk" baseTableName="care_team_participant" baseColumnNames="changed_by" referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="care_team_participant_voided_by_fk" baseTableName="care_team_participant" baseColumnNames="voided_by" referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
 </databaseChangeLog>

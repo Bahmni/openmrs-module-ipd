@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+
+    <person person_id="3" gender="F" dead="false" creator="1" date_created="2008-08-15 15:46:47.0" voided="false" uuid="2b597be0-83c7-4f1d-b3d2-1d61ab128762"/>
+    <person person_id="4" gender="F" dead="false" creator="1" date_created="2008-08-15 15:46:47.0" voided="false" uuid="2b597be0-83c7-4f1d-b3d2-1d61ab128823"/>
+    <person person_id="5" gender="F" dead="false" creator="1" date_created="2008-08-15 15:46:47.0" voided="false" uuid="2b597be0-83c7-4f1d-b3d2-1d61ab128824"/>
+
+    <patient patient_id="3" creator="1" date_created="2005-01-01 00:00:00.0" voided="false"/>
+    <patient patient_id="4" creator="1" date_created="2005-01-01 00:00:00.0" voided="false"/>
+    <patient patient_id="5" creator="1" date_created="2005-01-01 00:00:00.0" voided="false"/>
+
+    <person person_id="567" gender="" birthdate="1975-06-30" birthdate_estimated="false" dead="false" creator="1" date_created="2005-01-01 00:00:00.0" changed_by="1" date_changed="2007-09-20 21:54:12.0" voided="false" void_reason="" uuid="6adb7c42-cfd2-4301-b53b-ff17c5654ff7"/>
+    <person person_id="678" gender="" birthdate="1975-06-30" birthdate_estimated="false" dead="false" creator="1" date_created="2005-01-01 00:00:00.0" changed_by="1" date_changed="2007-09-20 21:54:12.0" voided="false" void_reason="" uuid="6adb7c42-cfd2-4301-b53b-ff17c5654dd7"/>
+
+    <provider provider_id="2220" person_id="567" name="System" creator="1" date_created="2005-01-01 00:00:00.0" retired="false" uuid="2bdc3f7d-d911-401a-84e9-5494dda83e8e" />
+
+    <visit visit_id="1" date_started="2024-01-27 00:00:00" date_created="2024-01-22 00:00:00" patient_id="3" visit_type_id="1" location_id="2" creator="1" changed_by="1" voided_by="1" uuid="84d8b838-1111-11e3-b47b-c6959a448789" voided="0"/>
+
+</dataset>
+
+
+
