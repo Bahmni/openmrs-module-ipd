@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public interface SlotService extends OpenmrsService {
@@ -44,4 +45,11 @@ public interface SlotService extends OpenmrsService {
 	List<Slot> getImmediatePreviousSlotsForPatientListByTime(List<String> patientUuidList, LocalDateTime localStartDate);
 
 	List<Object[]> getSlotDurationForPatientsByOrder(List<Order> orders, List<Concept> serviceTypes);
+
+
+    List<Slot> getSlotsForADay(LocalDateTime currentDay, LocalDateTime previousDay);
+
+	List<Slot> getScheduledSlots(List<Order> orders);
+
+	void markSlotsAsMissed(List<Slot> markSlotStatusAsMissed, Map<Order, LocalDateTime> slotsForADay);
 }

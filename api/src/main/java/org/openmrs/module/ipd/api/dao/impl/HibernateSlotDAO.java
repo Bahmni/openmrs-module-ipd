@@ -10,7 +10,6 @@ import org.openmrs.module.ipd.api.model.Slot;
 import org.hibernate.SessionFactory;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.ipd.api.util.DateTimeUtil;
-import org.openmrs.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -212,6 +211,36 @@ public class HibernateSlotDAO implements SlotDAO {
 
 		query.setParameterList("orders", orders);
 		query.setParameterList("serviceTypes", serviceTypes);
+		return query.getResultList();
+	}
+
+	@Override
+	public List<Slot> getSlotForADay(LocalDateTime localStartDate, LocalDateTime previousDate){
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("SELECT s from Slot s\n" +
+						"where s.startDateTime IN (SELECT MAX(s1.startDateTime) \n" +
+						"from Slot s1 WHERE \n" +
+						"s1.startDateTime>:previousDate \n" +
+						"and s1.startDateTime<=:currentDate \n" +
+						"and s1.order IS NOT NULL \n" +
+						"and s1.order = s.order \n" +
+						"and s1.voided = 0 \n" +
+						"GROUP by s1.order \n) " +
+						"and s.voided = 0 \n" +
+						"GROUP by s.order");
+
+        query.setParameter("currentDate", localStartDate);
+        query.setParameter("previousDate", previousDate);
+		return query.getResultList();
+	}
+
+	@Override
+	public List<Slot>  getScheduledSlots(List<Order> orders){
+		Query query = sessionFactory.getCurrentSession()
+				.createQuery("From Slot slot WHERE slot.order IN (:order) and slot.status=:status and slot.voided=0");
+
+		query.setParameter("order", orders);
+		query.setParameter("status", Slot.SlotStatus.SCHEDULED);
 		return query.getResultList();
 	}
 }
