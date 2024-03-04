@@ -30,7 +30,6 @@ public class CareTeamFactory {
                 participant.setStartTime(DateTimeUtil.convertEpochTimeToDate(participantRequest.getStartTime()));
                 participant.setEndTime(DateTimeUtil.convertEpochTimeToDate(participantRequest.getEndTime()));
                 participant.setProvider(Context.getProviderService().getProviderByUuid(participantRequest.getProviderUuid()));
-                participant.setRole(Context.getConceptService().getConceptByName(participantRequest.getRole()));
                 careTeamParticipants.add(participant);
             }
             careTeam.setParticipants(new HashSet<>(careTeamParticipants));
@@ -49,7 +48,6 @@ public class CareTeamFactory {
                     careTeamParticipant.setStartTime(DateTimeUtil.convertEpochTimeToDate(participantRequest.getStartTime()));
                     careTeamParticipant.setEndTime(DateTimeUtil.convertEpochTimeToDate(participantRequest.getEndTime()));
                     careTeamParticipant.setProvider(Context.getProviderService().getProviderByUuid(participantRequest.getProviderUuid()));
-                    careTeamParticipant.setRole(Context.getConceptService().getConceptByName(participantRequest.getRole()));
                     if (participantRequest.getVoided() != null) careTeamParticipant.setVoided(participantRequest.getVoided());
                 }
                 else {
@@ -61,7 +59,6 @@ public class CareTeamFactory {
                     participant.setStartTime(DateTimeUtil.convertEpochTimeToDate(participantRequest.getStartTime()));
                     participant.setEndTime(DateTimeUtil.convertEpochTimeToDate(participantRequest.getEndTime()));
                     participant.setProvider(Context.getProviderService().getProviderByUuid(participantRequest.getProviderUuid()));
-                    participant.setRole(Context.getConceptService().getConceptByName(participantRequest.getRole()));
                     careTeam.getParticipants().add(participant);
                 }
             }

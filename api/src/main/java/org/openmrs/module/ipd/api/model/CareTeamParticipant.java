@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.openmrs.BaseChangeableOpenmrsData;
-import org.openmrs.Concept;
 import org.openmrs.Provider;
 
 import javax.persistence.*;
@@ -32,17 +31,6 @@ public class CareTeamParticipant extends BaseChangeableOpenmrsData {
     @OneToOne(optional = false)
     @JoinColumn(name = "provider_id")
     private Provider provider;
-
-    /**
-     * FHIR:function
-     * @see <a href="https://hl7.org/fhir/valueset-participant-role.html">
-     *     		https://hl7.org/fhir/valueset-participant-role.html
-     *     	</a>
-     * i.e. performer, verifier, witness
-     */
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "role")
-    private Concept role;
 
     /**
      * FHIR:coverage.coveragePeriod.start
@@ -74,14 +62,6 @@ public class CareTeamParticipant extends BaseChangeableOpenmrsData {
 
     public void setProvider(Provider provider) {
         this.provider = provider;
-    }
-
-    public Concept getRole() {
-        return role;
-    }
-
-    public void setRole(Concept role) {
-        this.role = role;
     }
 
     public Date getStartTime() {

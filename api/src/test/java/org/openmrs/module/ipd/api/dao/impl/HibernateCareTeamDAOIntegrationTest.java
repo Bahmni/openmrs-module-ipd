@@ -32,7 +32,6 @@ public class HibernateCareTeamDAOIntegrationTest extends BaseIntegrationTest {
 
 
         CareTeamParticipant participant = new CareTeamParticipant();
-        participant.setRole(testConcept);
         participant.setStartTime(visit.getStartDatetime());
         participant.setProvider(provider);
         Set<CareTeamParticipant> participantSet=new HashSet<>();
@@ -50,7 +49,6 @@ public class HibernateCareTeamDAOIntegrationTest extends BaseIntegrationTest {
 
         Assertions.assertEquals(visit.getPatient().getPatientId(), savedCareTeam.getPatient().getPatientId());
         Assertions.assertEquals(provider, participantsList.get(0).getProvider());
-        Assertions.assertEquals(testConcept, participantsList.get(0).getRole());
         Assertions.assertEquals(visit, savedCareTeam.getVisit());
 
         sessionFactory.getCurrentSession().delete(savedCareTeam);
@@ -68,7 +66,6 @@ public class HibernateCareTeamDAOIntegrationTest extends BaseIntegrationTest {
 
 
         CareTeamParticipant participant = new CareTeamParticipant();
-        participant.setRole(testConcept);
         participant.setStartTime(visit.getStartDatetime());
         participant.setProvider(provider);
         Set<CareTeamParticipant> participantSet=new HashSet<>();

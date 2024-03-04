@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 public class CareTeamParticipantRequest {
 
     private String uuid;
-    private String role;
     private Long startTime;
     private Long endTime;
     private String providerUuid;

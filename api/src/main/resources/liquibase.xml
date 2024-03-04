@@ -358,7 +358,6 @@
             <column name="provider_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="role" type="int"/>
             <column name="start_time" type="datetime">
                 <constraints nullable="false"/>
             </column>
@@ -384,7 +383,6 @@
         </createTable>
         <addForeignKeyConstraint constraintName="care_team_participant_fk" baseTableName="care_team_participant" baseColumnNames="care_team_id" referencedTableName="care_team" referencedColumnNames="care_team_id"/>
         <addForeignKeyConstraint constraintName="care_team_participant_provider_fk" baseTableName="care_team_participant" baseColumnNames="provider_id" referencedTableName="provider" referencedColumnNames="provider_id"/>
-        <addForeignKeyConstraint constraintName="care_team_participant_rl_fk" baseTableName="care_team_participant" baseColumnNames="role" referencedTableName="concept" referencedColumnNames="concept_id"/>
         <addForeignKeyConstraint constraintName="care_team_participant_creator_fk" baseTableName="care_team_participant" baseColumnNames="creator" referencedTableName="users" referencedColumnNames="user_id"/>
         <addForeignKeyConstraint constraintName="care_team_participant_changed_by_fk" baseTableName="care_team_participant" baseColumnNames="changed_by" referencedTableName="users" referencedColumnNames="user_id"/>
         <addForeignKeyConstraint constraintName="care_team_participant_voided_by_fk" baseTableName="care_team_participant" baseColumnNames="voided_by" referencedTableName="users" referencedColumnNames="user_id"/>
