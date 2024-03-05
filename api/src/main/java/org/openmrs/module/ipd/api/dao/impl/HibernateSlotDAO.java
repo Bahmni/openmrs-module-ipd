@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Repository
@@ -215,7 +216,7 @@ public class HibernateSlotDAO implements SlotDAO {
 	}
 
 	@Override
-	public List<Slot> getSlotForADay(LocalDateTime localStartDate, LocalDateTime previousDate){
+	public List<Slot> getLastSlotForAnOrder(LocalDateTime localStartDateTime){
 		Query query = sessionFactory.getCurrentSession()
 				.createQuery("SELECT s from Slot s\n" +
 						"where s.startDateTime IN (SELECT MAX(s1.startDateTime) \n" +
@@ -229,8 +230,8 @@ public class HibernateSlotDAO implements SlotDAO {
 						"and s.voided = 0 \n" +
 						"GROUP by s.order");
 
-        query.setParameter("currentDate", localStartDate);
-        query.setParameter("previousDate", previousDate);
+        query.setParameter("currentDate", localStartDateTime);
+        query.setParameter("previousDate", localStartDateTime.minus(1, ChronoUnit.DAYS));
 		return query.getResultList();
 	}
 

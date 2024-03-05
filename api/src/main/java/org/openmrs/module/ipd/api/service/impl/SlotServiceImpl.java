@@ -113,13 +113,12 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 		return slotDAO.getSlotDurationForPatientsByOrder(orders, serviceTypes);
 	}
     @Override
-    public List<Slot> getSlotsForADay(LocalDateTime dateTime, LocalDateTime previousDay) {
-        return slotDAO.getSlotForADay(dateTime, previousDay);
+    public List<Slot> getLastSlotForAnOrder(LocalDateTime startDateTime) {
+        return slotDAO.getLastSlotForAnOrder(startDateTime);
     }
 
     @Override
     public List<Slot> getScheduledSlots(List<Order> orders) {
-
         return slotDAO.getScheduledSlots(orders);
     }
 

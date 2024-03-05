@@ -8,7 +8,6 @@ import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.scheduler.tasks.AbstractTask;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,13 +19,12 @@ public class MarkSlotsAsMissed extends AbstractTask {
     public void execute() {
 
         SlotService slotService = Context.getService(SlotService.class);
-        LocalDateTime currentDate = LocalDateTime.now();
-        LocalDateTime previousDay = currentDate.minus(1, ChronoUnit.DAYS);
-        List<Slot> slotsForADay = slotService.getSlotsForADay(currentDate, previousDay);
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        List<Slot> lastSlotForAnOrder = slotService.getLastSlotForAnOrder(currentDateTime);
         List<Order> orders = new ArrayList<>();
         Map<Order, LocalDateTime> maxTimeForAnOrder = new HashMap<>();
-        if (!slotsForADay.isEmpty()) {
-            slotsForADay.stream().forEach(slot -> {
+        if (!lastSlotForAnOrder.isEmpty()) {
+            lastSlotForAnOrder.stream().forEach(slot -> {
                 maxTimeForAnOrder.put(slot.getOrder(), slot.getStartDateTime());
                 orders.add(slot.getOrder());
             });

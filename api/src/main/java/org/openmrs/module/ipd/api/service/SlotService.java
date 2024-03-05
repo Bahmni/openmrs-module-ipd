@@ -47,7 +47,7 @@ public interface SlotService extends OpenmrsService {
 	List<Object[]> getSlotDurationForPatientsByOrder(List<Order> orders, List<Concept> serviceTypes);
 
 
-    List<Slot> getSlotsForADay(LocalDateTime currentDay, LocalDateTime previousDay);
+    List<Slot> getLastSlotForAnOrder(LocalDateTime currentDay);
 
 	List<Slot> getScheduledSlots(List<Order> orders);
 
