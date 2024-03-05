@@ -2,16 +2,16 @@ package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.Concept;
 import org.openmrs.Order;
+import org.openmrs.Visit;
+import org.openmrs.api.APIException;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
-import org.openmrs.Visit;
+import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.ipd.api.dao.SlotDAO;
 import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.SlotService;
-import org.openmrs.api.APIException;
-import org.openmrs.api.impl.BaseOpenmrsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -110,4 +112,28 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 	public List<Object[]> getSlotDurationForPatientsByOrder(List<Order> orders, List<Concept> serviceTypes) {
 		return slotDAO.getSlotDurationForPatientsByOrder(orders, serviceTypes);
 	}
+    @Override
+    public List<Slot> getLastSlotForAnOrder(LocalDateTime startDateTime) {
+        return slotDAO.getLastSlotForAnOrder(startDateTime);
+    }
+
+    @Override
+    public List<Slot> getScheduledSlots(List<Order> orders) {
+        return slotDAO.getScheduledSlots(orders);
+    }
+
+    @Override
+    public void markSlotsAsMissed(List<Slot> scheduledSlots, Map<Order, LocalDateTime> maxTimeForAnOrder) {
+        List<Slot> slotsToBeMarkedAsMissed = new ArrayList<>();
+
+        scheduledSlots.stream().forEach(slot -> {
+            if (slot.getStartDateTime().compareTo(maxTimeForAnOrder.get(slot.getOrder())) < 0)
+                slotsToBeMarkedAsMissed.add(slot);
+        });
+
+        slotsToBeMarkedAsMissed.forEach(slot -> {
+            slot.setStatus(Slot.SlotStatus.MISSED);
+            slotDAO.saveSlot(slot);
+        });
+    }
 }

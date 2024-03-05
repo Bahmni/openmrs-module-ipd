@@ -38,4 +38,8 @@ public interface SlotDAO {
 	List<Slot> getImmediatePreviousSlotsForPatientListByTime(List<String> patientUuidList, LocalDateTime localStartDate);
 
 	List<Object[]> getSlotDurationForPatientsByOrder(List<Order> orders, List<Concept> serviceTypes);
+
+	List<Slot> getLastSlotForAnOrder(LocalDateTime dateTime);
+
+	List<Slot> getScheduledSlots(List<Order> orders);
 }

@@ -24,7 +24,8 @@ public class Slot extends BaseChangeableOpenmrsData {
 		SCHEDULED,
 		NOT_DONE,
 		COMPLETED,
-		STOPPED
+		STOPPED,
+		MISSED
 	}
 	
 	@EqualsAndHashCode.Include
