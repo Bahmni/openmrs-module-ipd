@@ -7,6 +7,7 @@ public class AdmittedPatient {
     private BedPatientAssignment bedPatientAssignment;
     private Long newTreatments;
 
+
     public AdmittedPatient(BedPatientAssignment bedPatientAssignment, Long newTreatments){
         this.bedPatientAssignment=bedPatientAssignment;
         this.newTreatments=newTreatments;
