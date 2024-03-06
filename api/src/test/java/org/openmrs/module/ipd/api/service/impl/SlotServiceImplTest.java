@@ -19,6 +19,7 @@ import org.openmrs.module.ipd.api.model.Slot;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -188,5 +189,33 @@ public class SlotServiceImplTest {
         slotService.getSlotDurationForPatientsByOrder(orders, serviceTypes);
 
         Mockito.verify(slotDAO, Mockito.times(1)).getSlotDurationForPatientsByOrder(orders, serviceTypes);
+    }
+    @Test
+    public void shouldInvokeMarkSlotsAsMissed() {
+        Order order = new Order();
+        Slot slot1 = new Slot();
+        LocalDateTime localDateTime = LocalDateTime.now();
+        slot1.setStatus(Slot.SlotStatus.SCHEDULED);
+        slot1.setOrder(order);
+        slot1.setStartDateTime(localDateTime);
+
+        LocalDateTime futureTime = LocalDateTime.now().plusHours(2);
+
+        Slot slot2 = new Slot();
+        slot2.setStatus(Slot.SlotStatus.SCHEDULED);
+        slot2.setOrder(order);
+        slot2.setStartDateTime(futureTime);
+        ArrayList<Slot> slots = new ArrayList<>();
+        slots.add(slot1);
+        slots.add(slot2);
+        HashMap<Order, LocalDateTime> maxTimeForAnOrder = new HashMap<>();
+
+        Mockito.when(slotDAO.saveSlot(slot1)).thenReturn(slot1);
+
+
+        maxTimeForAnOrder.put(order, futureTime);
+        slotService.markSlotsAsMissed(slots, maxTimeForAnOrder);
+        Mockito.verify(slotDAO, Mockito.times(1)).saveSlot(slot1);
+
     }
 }

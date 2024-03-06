@@ -83,9 +83,9 @@ public class SlotTimeCreationService extends BaseOpenmrsService {
     }
 
     private List<LocalDateTime> getSlotsStartTimeWithStartTimeDurationFrequency(ScheduleMedicationRequest request, DrugOrder order) {
-        int numberOfSlotsStartTimeToBeCreated = (int) (Math.ceil(order.getQuantity() / order.getDose()));
+        int numberOfSlotsStartTimeToBeCreated = (order.getQuantity() == 0.0 || order.getFrequency() == null || order.getDuration() == null) ? 1 : (int) (Math.ceil(order.getQuantity() / order.getDose()));
         List<LocalDateTime> slotsStartTime = new ArrayList<>();
-        Double slotDurationInHours =  24 / order.getFrequency().getFrequencyPerDay();
+        Double slotDurationInHours =  order.getFrequency() != null ? 24 / order.getFrequency().getFrequencyPerDay() : 0;
         LocalDateTime slotStartTime = request.getSlotStartTimeAsLocaltime();
         while (numberOfSlotsStartTimeToBeCreated-- > 0) {
             slotsStartTime.add(slotStartTime);
@@ -105,7 +105,7 @@ public class SlotTimeCreationService extends BaseOpenmrsService {
         HashMap<String, DrugOrderSchedule> drugOrderScheduleHash= new HashMap<>();
         for (DrugOrder drugOrder : slotsByOrder.keySet()) {
             DrugOrderSchedule drugOrderSchedule = new DrugOrderSchedule();
-            if (drugOrder.getAsNeeded()){
+            if (drugOrder.getAsNeeded() || drugOrder.getFrequency() == null || drugOrder.getDuration() == null || drugOrder.getQuantity() == 0.0) {
                 drugOrderSchedule.setSlotStartTime(DateTimeUtil.convertLocalDateTimeToUTCEpoc(slotsByOrder.get(drugOrder).get(0).getStartDateTime()));
             }
             else {
