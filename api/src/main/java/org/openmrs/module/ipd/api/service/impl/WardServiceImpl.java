@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.Location;
+import org.openmrs.Provider;
 import org.openmrs.api.LocationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.WardDAO;
@@ -33,9 +34,10 @@ public class WardServiceImpl implements WardService {
     }
 
     @Override
-    public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid) {
+    public List<AdmittedPatient> getWardPatients(String wardUuid, String providerUUID) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return wardDAO.getAdmittedPatientsByLocation(location);
+        Provider provider = Context.getProviderService().getProviderByUuid(providerUUID);
+        return wardDAO.getAdmittedPatientsByLocation(location, provider);
     }
 
     @Override

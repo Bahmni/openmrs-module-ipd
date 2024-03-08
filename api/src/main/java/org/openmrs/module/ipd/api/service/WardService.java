@@ -10,7 +10,7 @@ public interface WardService {
 
     WardPatientsSummary getIPDWardPatientSummary(String wardUuid);
 
-    List<AdmittedPatient> getWardPatientsByUuid(String wardUuid);
+    List<AdmittedPatient> getWardPatients(String wardUuid, String providerUUID);
 
     List<AdmittedPatient>  searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue);
 

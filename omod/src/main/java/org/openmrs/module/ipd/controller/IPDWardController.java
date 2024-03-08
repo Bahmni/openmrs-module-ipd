@@ -41,9 +41,10 @@ public class IPDWardController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<Object> getIPDWardPatient(@PathVariable("wardUuid") String wardUuid,
                                                            @RequestParam(value = "offset") Integer offset,
-                                                           @RequestParam (value = "limit") Integer limit) throws ParseException {
+                                                           @RequestParam (value = "limit") Integer limit,
+                                                           @RequestParam(value = "providerUUID", required = false) String providerUUID) throws ParseException {
         try {
-            IPDPatientDetails ipdPatientDetails = ipdWardService.getIPDPatientByWard(wardUuid,offset,limit);
+            IPDPatientDetails ipdPatientDetails = ipdWardService.getIPDPatientByWard(wardUuid,offset,limit, providerUUID);
             return new ResponseEntity<>(IPDPatientDetailsResponse.createFrom(ipdPatientDetails), OK);
         } catch (Exception e) {
             log.error("Runtime error while trying to create new schedule", e);

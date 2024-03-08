@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.api.dao;
 
 import org.openmrs.Location;
+import org.openmrs.Provider;
 import org.openmrs.module.ipd.api.model.AdmittedPatient;
 import org.openmrs.module.ipd.api.model.WardPatientsSummary;
 
@@ -10,7 +11,7 @@ public interface WardDAO {
 
     List<AdmittedPatient> searchAdmittedPatients(Location location,List<String> searchKeys,String searchValue);
 
-    List<AdmittedPatient> getAdmittedPatientsByLocation(Location location);
+    List<AdmittedPatient> getAdmittedPatientsByLocation(Location location, Provider provider);
 
     WardPatientsSummary getWardPatientSummary(Location location);
 
