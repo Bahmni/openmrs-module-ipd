@@ -6,11 +6,13 @@ public class AdmittedPatient {
 
     private BedPatientAssignment bedPatientAssignment;
     private Long newTreatments;
+    private CareTeam careTeam;
 
 
-    public AdmittedPatient(BedPatientAssignment bedPatientAssignment, Long newTreatments){
+    public AdmittedPatient(BedPatientAssignment bedPatientAssignment, Long newTreatments, CareTeam careTeam){
         this.bedPatientAssignment=bedPatientAssignment;
         this.newTreatments=newTreatments;
+        this.careTeam=careTeam;
     }
 
     public BedPatientAssignment getBedPatientAssignment() {
@@ -21,4 +23,5 @@ public class AdmittedPatient {
         return newTreatments;
     }
 
+    public CareTeam getCareTeam() { return careTeam; }
 }

@@ -15,11 +15,17 @@ public class AdmittedPatientResponse {
     private Object patientDetails;
     private Object bedDetails;
     private Long newTreatments;
-
+    private Object careTeam;
     public static AdmittedPatientResponse createFrom(AdmittedPatient admittedPatient) {
-        return AdmittedPatientResponse.builder().
+        AdmittedPatientResponse admittedPatientResponse =  AdmittedPatientResponse.builder().
                 patientDetails(ConversionUtil.convertToRepresentation(admittedPatient.getBedPatientAssignment().getPatient(), Representation.DEFAULT)).
                 bedDetails(ConversionUtil.convertToRepresentation(admittedPatient.getBedPatientAssignment().getBed(),Representation.REF)).
                 newTreatments(admittedPatient.getNewTreatments()).build();
+
+        if ( admittedPatient.getCareTeam() != null ) {
+            admittedPatientResponse.setCareTeam(CareTeamResponse.createFrom(admittedPatient.getCareTeam()));
+        }
+
+        return admittedPatientResponse;
     }
 }
