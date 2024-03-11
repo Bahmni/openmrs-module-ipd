@@ -33,10 +33,11 @@ public class HibernateWardDAO implements WardDAO {
         Session session = this.sessionFactory.getCurrentSession();
         try {
             Query query = session.createQuery("select NEW org.openmrs.module.ipd.api.model.AdmittedPatient(assignment," +
-                    "(COUNT(DISTINCT o.orderId) - COUNT (DISTINCT s.order.orderId)))" +
+                    "(COUNT(DISTINCT o.orderId) - COUNT (DISTINCT s.order.orderId)), careTeam)" +
                     "from org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
                     "JOIN org.openmrs.Visit v on v.patient = assignment.patient " +
                     "JOIN org.openmrs.Encounter e on e.visit = v " +
+                    "LEFT JOIN CareTeam careTeam on careTeam.visit = v " +
                     "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
                     "JOIN org.openmrs.Location l on locmap.location = l " +
                     "LEFT JOIN org.openmrs.Order o on o.encounter = e " +
