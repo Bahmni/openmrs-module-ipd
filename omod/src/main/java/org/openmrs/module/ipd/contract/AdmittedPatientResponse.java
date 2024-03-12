@@ -14,12 +14,14 @@ public class AdmittedPatientResponse {
 
     private Object patientDetails;
     private Object bedDetails;
+    private Object visitDetails;
     private Long newTreatments;
     private Object careTeam;
     public static AdmittedPatientResponse createFrom(AdmittedPatient admittedPatient) {
         AdmittedPatientResponse admittedPatientResponse =  AdmittedPatientResponse.builder().
                 patientDetails(ConversionUtil.convertToRepresentation(admittedPatient.getBedPatientAssignment().getPatient(), Representation.DEFAULT)).
                 bedDetails(ConversionUtil.convertToRepresentation(admittedPatient.getBedPatientAssignment().getBed(),Representation.REF)).
+                visitDetails(ConversionUtil.convertToRepresentation(admittedPatient.getBedPatientAssignment().getEncounter().getVisit(), Representation.REF)).
                 newTreatments(admittedPatient.getNewTreatments()).build();
 
         if ( admittedPatient.getCareTeam() != null ) {
