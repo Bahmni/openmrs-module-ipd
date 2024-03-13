@@ -45,9 +45,6 @@ public class CareTeamFactory {
                     CareTeamParticipant careTeamParticipant = careTeam.getParticipants().stream()
                             .filter(participant -> participant.getUuid().equals(participantRequest.getUuid()))
                             .findFirst().get();
-                    careTeamParticipant.setStartTime(DateTimeUtil.convertEpochTimeToDate(participantRequest.getStartTime()));
-                    careTeamParticipant.setEndTime(DateTimeUtil.convertEpochTimeToDate(participantRequest.getEndTime()));
-                    careTeamParticipant.setProvider(Context.getProviderService().getProviderByUuid(participantRequest.getProviderUuid()));
                     if (participantRequest.getVoided() != null) careTeamParticipant.setVoided(participantRequest.getVoided());
                 }
                 else {
