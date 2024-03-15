@@ -14,8 +14,8 @@ import org.springframework.stereotype.Repository;
 
 import org.hibernate.query.Query;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -31,7 +31,7 @@ public class HibernateWardDAO implements WardDAO {
     }
 
     @Override
-    public List<AdmittedPatient> getAdmittedPatients(Location location, Provider provider, LocalDateTime dateTime) {
+    public List<AdmittedPatient> getAdmittedPatients(Location location, Provider provider, Date dateTime) {
         Session session = this.sessionFactory.getCurrentSession();
         try {
             String queryString = "select NEW org.openmrs.module.ipd.api.model.AdmittedPatient(assignment," +
