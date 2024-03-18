@@ -58,7 +58,7 @@ public class IPDWardController extends BaseRestController {
                                                                 @RequestParam(value = "offset") Integer offset,
                                                                 @RequestParam (value = "limit") Integer limit)  throws ParseException {
         try {
-            IPDPatientDetails ipdPatientDetails = ipdWardService.getIPDProviderPatientsByWard(wardUuid, providerUuid, offset, limit);
+            IPDPatientDetails ipdPatientDetails = ipdWardService.getIPDPatientsByWardAndProvider(wardUuid, providerUuid, offset, limit);
             return new ResponseEntity<>(IPDPatientDetailsResponse.createFrom(ipdPatientDetails), OK);
         } catch (Exception e) {
             log.error("Runtime error while trying to create new schedule", e);

@@ -46,9 +46,9 @@ public class IPDWardServiceImpl implements IPDWardService {
     }
 
     @Override
-    public IPDPatientDetails getIPDProviderPatientsByWard(String wardUuid, String providerUuid, Integer offset, Integer limit) {
+    public IPDPatientDetails getIPDPatientsByWardAndProvider(String wardUuid, String providerUuid, Integer offset, Integer limit) {
 
-        List<AdmittedPatient> admittedPatients = wardService.getProviderWardPatientsByUuid(wardUuid, providerUuid);
+        List<AdmittedPatient> admittedPatients = wardService.getPatientsByWardAndProvider(wardUuid, providerUuid);
 
         if (admittedPatients ==null ){
             return new IPDPatientDetails(new ArrayList<>(),0);

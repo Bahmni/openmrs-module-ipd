@@ -40,7 +40,7 @@ public class WardServiceImpl implements WardService {
     }
 
     @Override
-    public List<AdmittedPatient> getProviderWardPatientsByUuid(String wardUuid, String providerUuid) {
+    public List<AdmittedPatient> getPatientsByWardAndProvider(String wardUuid, String providerUuid) {
         Location location = Context.getService(LocationService.class).getLocationByUuid(wardUuid);
         Provider provider = Context.getProviderService().getProviderByUuid(providerUuid);
         Date currentDateTime = new Date();

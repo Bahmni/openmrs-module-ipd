@@ -14,5 +14,5 @@ public interface IPDWardService {
 
     IPDPatientDetails searchIPDPatientsInWard(String wardUuid, List<String> searchKeys, String searchValue, Integer offset, Integer limit);
 
-    IPDPatientDetails getIPDProviderPatientsByWard(String wardUuid, String providerUuid, Integer offset, Integer limit);
+    IPDPatientDetails getIPDPatientsByWardAndProvider(String wardUuid, String providerUuid, Integer offset, Integer limit);
 }
