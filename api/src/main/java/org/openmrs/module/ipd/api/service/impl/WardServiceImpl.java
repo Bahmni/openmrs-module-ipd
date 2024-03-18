@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,15 +32,15 @@ public class WardServiceImpl implements WardService {
     }
 
     @Override
-    public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid) {
+    public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid, String sortBy) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return wardDAO.getAdmittedPatientsByLocation(location);
+        return wardDAO.getAdmittedPatientsByLocation(location, sortBy);
     }
 
     @Override
-    public List<AdmittedPatient> searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue) {
+    public List<AdmittedPatient> searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue, String sortBy) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return  wardDAO.searchAdmittedPatients(location,searchKeys,searchValue);
+        return  wardDAO.searchAdmittedPatients(location,searchKeys,searchValue,sortBy);
     }
 
 }
