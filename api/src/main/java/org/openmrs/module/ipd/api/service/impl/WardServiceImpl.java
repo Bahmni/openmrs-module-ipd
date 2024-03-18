@@ -34,23 +34,23 @@ public class WardServiceImpl implements WardService {
     }
 
     @Override
-    public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid) {
+    public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid, String sortBy) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return wardDAO.getAdmittedPatients(location,null, null);
+        return wardDAO.getAdmittedPatients(location,null, null, sortBy);
     }
 
     @Override
-    public List<AdmittedPatient> getPatientsByWardAndProvider(String wardUuid, String providerUuid) {
+    public List<AdmittedPatient> getPatientsByWardAndProvider(String wardUuid, String providerUuid, String sortBy) {
         Location location = Context.getService(LocationService.class).getLocationByUuid(wardUuid);
         Provider provider = Context.getProviderService().getProviderByUuid(providerUuid);
         Date currentDateTime = new Date();
-        return wardDAO.getAdmittedPatients(location, provider, currentDateTime);
+        return wardDAO.getAdmittedPatients(location, provider, currentDateTime, sortBy);
     }
 
     @Override
-    public List<AdmittedPatient> searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue) {
+    public List<AdmittedPatient> searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue, String sortBy) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return  wardDAO.searchAdmittedPatients(location,searchKeys,searchValue);
+        return  wardDAO.searchAdmittedPatients(location,searchKeys,searchValue,sortBy);
     }
 
 }
