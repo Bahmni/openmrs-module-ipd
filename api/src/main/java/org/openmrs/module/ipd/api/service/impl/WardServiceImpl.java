@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.api.service.impl;
 
 import org.openmrs.Location;
+import org.openmrs.Provider;
 import org.openmrs.api.LocationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.WardDAO;
@@ -11,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -35,7 +36,15 @@ public class WardServiceImpl implements WardService {
     @Override
     public List<AdmittedPatient> getWardPatientsByUuid(String wardUuid) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return wardDAO.getAdmittedPatientsByLocation(location);
+        return wardDAO.getAdmittedPatients(location,null, null);
+    }
+
+    @Override
+    public List<AdmittedPatient> getPatientsByWardAndProvider(String wardUuid, String providerUuid) {
+        Location location = Context.getService(LocationService.class).getLocationByUuid(wardUuid);
+        Provider provider = Context.getProviderService().getProviderByUuid(providerUuid);
+        Date currentDateTime = new Date();
+        return wardDAO.getAdmittedPatients(location, provider, currentDateTime);
     }
 
     @Override

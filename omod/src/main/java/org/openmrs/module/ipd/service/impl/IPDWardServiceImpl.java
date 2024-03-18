@@ -46,6 +46,21 @@ public class IPDWardServiceImpl implements IPDWardService {
     }
 
     @Override
+    public IPDPatientDetails getIPDPatientsByWardAndProvider(String wardUuid, String providerUuid, Integer offset, Integer limit) {
+
+        List<AdmittedPatient> admittedPatients = wardService.getPatientsByWardAndProvider(wardUuid, providerUuid);
+
+        if (admittedPatients ==null ){
+            return new IPDPatientDetails(new ArrayList<>(),0);
+        }
+
+        offset = Math.min(offset, admittedPatients.size());
+        limit = Math.min(limit, admittedPatients.size() - offset);
+
+        return new IPDPatientDetails(admittedPatients.subList(offset, offset + limit), admittedPatients.size());
+    }
+
+    @Override
     public IPDPatientDetails searchIPDPatientsInWard(String wardUuid, List<String> searchKeys, String searchValue,
                                                      Integer offset, Integer limit) {
 

@@ -26,7 +26,7 @@ public class HibernateWardDAOIntegrationTest extends BaseIntegrationTest {
     public void shouldGetAdmittedPatientsByLocation() {
 
         Location location= Context.getService(LocationService.class).getLocationByUuid("7779d653-393b-4118-9c83-a3715b82d4ac");
-        List<AdmittedPatient> admittedPatients= wardDAO.getAdmittedPatientsByLocation(location);
+        List<AdmittedPatient> admittedPatients= wardDAO.getAdmittedPatients(location, null, null);
 
         Assertions.assertEquals(0, admittedPatients.size());
 

@@ -14,4 +14,5 @@ public interface WardService {
 
     List<AdmittedPatient>  searchWardPatients(String wardUuid, List<String> searchKeys, String searchValue);
 
+    List<AdmittedPatient> getPatientsByWardAndProvider(String wardUuid, String providerUuid);
 }
