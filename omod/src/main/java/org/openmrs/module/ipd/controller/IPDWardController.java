@@ -42,7 +42,7 @@ public class IPDWardController extends BaseRestController {
     public ResponseEntity<Object> getIPDWardPatient(@PathVariable("wardUuid") String wardUuid,
                                                            @RequestParam(value = "offset") Integer offset,
                                                            @RequestParam (value = "limit") Integer limit,
-                                                    @RequestParam(value = "sortBy") String sortBy) throws ParseException {
+                                                    @RequestParam(value = "sortBy", required = false) String sortBy) throws ParseException {
         try {
             IPDPatientDetails ipdPatientDetails = ipdWardService.getIPDPatientByWard(wardUuid,offset,limit,sortBy);
             return new ResponseEntity<>(IPDPatientDetailsResponse.createFrom(ipdPatientDetails), OK);
@@ -58,7 +58,7 @@ public class IPDWardController extends BaseRestController {
                                                                 @RequestParam(value = "providerUuid") String providerUuid,
                                                                 @RequestParam(value = "offset") Integer offset,
                                                                 @RequestParam (value = "limit") Integer limit,
-                                                                @RequestParam(value = "sortBy") String sortBy)  throws ParseException {
+                                                                @RequestParam(value = "sortBy", required = false) String sortBy)  throws ParseException {
         try {
             IPDPatientDetails ipdPatientDetails = ipdWardService.getIPDPatientsByWardAndProvider(wardUuid, providerUuid, offset, limit, sortBy);
             return new ResponseEntity<>(IPDPatientDetailsResponse.createFrom(ipdPatientDetails), OK);
@@ -75,7 +75,7 @@ public class IPDWardController extends BaseRestController {
                                                     @RequestParam (value = "limit") Integer limit,
                                                        @RequestParam(value = "searchKeys") List<String> searchKeys,
                                                        @RequestParam(value = "searchValue") String searchValue,
-                                                       @RequestParam(value = "sortBy") String sortBy) throws ParseException {
+                                                       @RequestParam(value = "sortBy", required = false) String sortBy) throws ParseException {
         try {
             IPDPatientDetails ipdPatientDetails = ipdWardService.searchIPDPatientsInWard(wardUuid,searchKeys,searchValue,offset,limit,sortBy);
             return new ResponseEntity<>(IPDPatientDetailsResponse.createFrom(ipdPatientDetails), OK);
