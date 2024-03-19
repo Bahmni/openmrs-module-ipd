@@ -33,6 +33,8 @@ public class HibernateWardDAO implements WardDAO {
     private static String generateGroupByClauseForSorting(String sortBy) {
         String groupBy = " GROUP BY assignment.patient, v ";
 
+        sortBy = sortBy != null ? sortBy : "default";
+
         switch (sortBy) {
             case "bedNumber":
                 groupBy += " ORDER BY assignment.bed.bedNumber ";
