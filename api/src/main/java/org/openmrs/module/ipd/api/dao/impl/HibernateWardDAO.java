@@ -30,20 +30,20 @@ public class HibernateWardDAO implements WardDAO {
         this.sessionFactory = sessionFactory;
     }
 
-    private static String generateGroupByClauseForSorting(String sortBy) {
-        String groupBy = " GROUP BY assignment.patient, v ";
+    private static String generateOrderByClauseForSorting(String sortBy) {
+        String orderBy = " ";
 
         sortBy = sortBy != null ? sortBy : "default";
 
         switch (sortBy) {
             case "bedNumber":
-                groupBy += " ORDER BY assignment.bed.bedNumber ";
+                orderBy += "ORDER BY assignment.bed.bedNumber ";
                 break;
             default:
-                groupBy += " ORDER BY assignment.startDatetime desc ";
+                orderBy += "ORDER BY assignment.startDatetime desc ";
                 break;
         }
-        return groupBy;
+        return orderBy;
     }
 
     @Override
@@ -71,9 +71,11 @@ public class HibernateWardDAO implements WardDAO {
                 queryString += "and :dateTime between ctp.startTime and ctp.endTime ";
             }
 
-            String groupBy = generateGroupByClauseForSorting(sortBy);
+            String groupBy = " GROUP BY assignment.patient, v ";
 
-            String finalQuery = queryString + groupBy;
+            String orderBy = generateOrderByClauseForSorting(sortBy);
+
+            String finalQuery = queryString + groupBy + orderBy;
 
             Query query = session.createQuery(finalQuery);
 
@@ -138,10 +140,12 @@ public class HibernateWardDAO implements WardDAO {
             generateSQLSearchConditions(searchKeys,additionalJoins,whereClause);
 
             // Construct group by clause
-            String groupBy = generateGroupByClauseForSorting(sortBy);
+            String groupBy = " GROUP BY assignment.patient, v ";
+
+            String orderBy = generateOrderByClauseForSorting(sortBy);
 
             // Create query
-            Query query = session.createQuery(selectQuery + additionalJoins + whereClause + groupBy);
+            Query query = session.createQuery(selectQuery + additionalJoins + whereClause + groupBy + orderBy);
 
             // Set parameters
             query.setParameter("location", location);
