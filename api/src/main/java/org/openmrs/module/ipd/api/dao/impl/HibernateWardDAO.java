@@ -30,8 +30,24 @@ public class HibernateWardDAO implements WardDAO {
         this.sessionFactory = sessionFactory;
     }
 
+    private static String generateOrderByClauseForSorting(String sortBy) {
+        String orderBy = " ";
+
+        sortBy = sortBy != null ? sortBy : "default";
+
+        switch (sortBy) {
+            case "bedNumber":
+                orderBy += "ORDER BY assignment.bed.bedNumber ";
+                break;
+            default:
+                orderBy += "ORDER BY assignment.startDatetime desc ";
+                break;
+        }
+        return orderBy;
+    }
+
     @Override
-    public List<AdmittedPatient> getAdmittedPatients(Location location, Provider provider, Date dateTime) {
+    public List<AdmittedPatient> getAdmittedPatients(Location location, Provider provider, Date dateTime, String sortBy) {
         Session session = this.sessionFactory.getCurrentSession();
         try {
             String queryString = "select NEW org.openmrs.module.ipd.api.model.AdmittedPatient(assignment," +
@@ -42,11 +58,11 @@ public class HibernateWardDAO implements WardDAO {
                     "LEFT JOIN CareTeam careTeam on careTeam.visit = v " +
                     "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
                     "JOIN org.openmrs.Location l on locmap.location = l " +
-                    //"JOIN careTeam.participants ctp " +
+                    "LEFT JOIN careTeam.participants ctp " +
                     "LEFT JOIN org.openmrs.Order o on o.encounter = e " +
                     "LEFT JOIN Slot s on s.order = o " +
                     "where assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location ";
-
+          
             if (provider != null) {
                 queryString += "and ctp.provider = :provider ";
             }
@@ -55,11 +71,13 @@ public class HibernateWardDAO implements WardDAO {
                 queryString += "and :dateTime between ctp.startTime and ctp.endTime ";
             }
 
+            String groupBy = " GROUP BY assignment.patient, v ";
 
-            queryString += "GROUP BY assignment.patient, v " +
-                    "ORDER BY assignment.startDatetime desc";
+            String orderBy = generateOrderByClauseForSorting(sortBy);
 
-            Query query = session.createQuery(queryString);
+            String finalQuery = queryString + groupBy + orderBy;
+
+            Query query = session.createQuery(finalQuery);
 
             query.setParameter("location", location);
 
@@ -99,7 +117,7 @@ public class HibernateWardDAO implements WardDAO {
     }
 
     @Override
-    public List<AdmittedPatient> searchAdmittedPatients(Location location, List<String> searchKeys, String searchValue) {
+    public List<AdmittedPatient> searchAdmittedPatients(Location location, List<String> searchKeys, String searchValue, String sortBy) {
         try {
             Session session = sessionFactory.getCurrentSession();
 
@@ -122,10 +140,12 @@ public class HibernateWardDAO implements WardDAO {
             generateSQLSearchConditions(searchKeys,additionalJoins,whereClause);
 
             // Construct group by clause
-            String groupBy = " GROUP BY assignment.patient, v ORDER BY assignment.startDatetime desc ";
+            String groupBy = " GROUP BY assignment.patient, v ";
+
+            String orderBy = generateOrderByClauseForSorting(sortBy);
 
             // Create query
-            Query query = session.createQuery(selectQuery + additionalJoins + whereClause + groupBy);
+            Query query = session.createQuery(selectQuery + additionalJoins + whereClause + groupBy + orderBy);
 
             // Set parameters
             query.setParameter("location", location);
