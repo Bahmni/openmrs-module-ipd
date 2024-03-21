@@ -98,21 +98,29 @@ public class HibernateWardDAO implements WardDAO {
     }
 
     @Override
-    public WardPatientsSummary getWardPatientSummary(Location location) {
+    public WardPatientsSummary getWardPatientSummary(Location location, Provider provider) {
         Session session = this.sessionFactory.getCurrentSession();
         try {
             Query query = session.createQuery(
-                    "select NEW org.openmrs.module.ipd.api.model.WardPatientsSummary(COUNT(assignment)) " +
-                            "from org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
-                            "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
-                            "JOIN org.openmrs.Location l on locmap.location = l " +
-                            "JOIN org.openmrs.Visit v on v.patient = assignment.patient " +
-                            "where assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location");
+                    "SELECT NEW org.openmrs.module.ipd.api.model.WardPatientsSummary(" +
+                            "COUNT(assignment) AS totalPatients, " +
+                            "COUNT(DISTINCT CASE WHEN ctp.provider = :provider THEN assignment.patient ELSE null END) AS totalProviderPatients) " +
+                            "FROM org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
+                            "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap ON locmap.bed = assignment.bed " +
+                            "JOIN org.openmrs.Location l ON locmap.location = l " +
+                            "JOIN org.openmrs.Visit v ON v.patient = assignment.patient " +
+                            "LEFT JOIN CareTeam careTeam ON careTeam.patient = v.patient " +
+                            "LEFT JOIN careTeam.participants ctp " +
+                            "WHERE assignment.endDatetime IS NULL AND v.stopDatetime IS NULL AND l.parentLocation = :location AND (ctp.provider IS NULL OR ctp.provider = :provider)");
+
             query.setParameter("location", location);
+            query.setParameter("provider", provider);
+
             return (WardPatientsSummary) query.getSingleResult();
         } catch (Exception e) {
-            log.error("Exception at WardDAO getAdmittedPatients ",e.getStackTrace());
+            log.error("Exception at WardDAO getAdmittedPatients ", e.getStackTrace());
         }
+
         return new WardPatientsSummary();
     }
 

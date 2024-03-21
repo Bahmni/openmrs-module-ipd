@@ -26,8 +26,8 @@ public class IPDWardServiceImpl implements IPDWardService {
 
 
     @Override
-    public WardPatientsSummary getIPDWardPatientSummary(String wardUuid) {
-        return wardService.getIPDWardPatientSummary(wardUuid);
+    public WardPatientsSummary getIPDWardPatientSummary(String wardUuid, String providerUuid) {
+        return wardService.getIPDWardPatientSummary(wardUuid, providerUuid);
     }
 
     @Override

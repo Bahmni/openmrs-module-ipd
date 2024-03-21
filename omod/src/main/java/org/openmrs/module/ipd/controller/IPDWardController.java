@@ -32,8 +32,9 @@ public class IPDWardController extends BaseRestController {
 
     @RequestMapping(value = "{wardUuid}/summary",method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Object> getIPDWardPatientStats (@PathVariable("wardUuid") String wardUuid) throws ParseException {
-        WardPatientsSummary wardPatientsSummary = ipdWardService.getIPDWardPatientSummary(wardUuid);
+    public ResponseEntity<Object> getIPDWardPatientStats (@PathVariable("wardUuid") String wardUuid,
+                                                          @RequestParam(value = "providerUuid") String providerUuid) throws ParseException {
+        WardPatientsSummary wardPatientsSummary = ipdWardService.getIPDWardPatientSummary(wardUuid, providerUuid);
         return new ResponseEntity<>(IPDWardPatientSummaryResponse.createFrom(wardPatientsSummary), OK);
     }
 
