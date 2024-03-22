@@ -98,27 +98,43 @@ public class HibernateWardDAO implements WardDAO {
     }
 
     @Override
-    public WardPatientsSummary getWardPatientSummary(Location location, Provider provider) {
+    public WardPatientsSummary getWardPatientSummary(Location location, Provider provider, Date dateTime) {
         Session session = this.sessionFactory.getCurrentSession();
         try {
-            Query query = session.createQuery(
-                    "SELECT NEW org.openmrs.module.ipd.api.model.WardPatientsSummary(" +
-                            "COUNT(assignment) AS totalPatients, " +
-                            "COUNT(DISTINCT CASE WHEN ctp.provider = :provider THEN assignment.patient ELSE null END) AS totalProviderPatients) " +
-                            "FROM org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
-                            "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap ON locmap.bed = assignment.bed " +
-                            "JOIN org.openmrs.Location l ON locmap.location = l " +
-                            "JOIN org.openmrs.Visit v ON v.patient = assignment.patient " +
-                            "LEFT JOIN CareTeam careTeam ON careTeam.patient = v.patient " +
-                            "LEFT JOIN careTeam.participants ctp " +
-                            "WHERE assignment.endDatetime IS NULL AND v.stopDatetime IS NULL AND l.parentLocation = :location AND (ctp.provider IS NULL OR ctp.provider = :provider)");
+            Query totalPatientsQuery = session.createQuery(
+                 "SELECT COUNT(assignment) " +
+                    "FROM org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
+                    "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap ON locmap.bed = assignment.bed " +
+                    "JOIN org.openmrs.Location l ON locmap.location = l " +
+                    "JOIN org.openmrs.Visit v ON v.patient = assignment.patient " +
+                    "WHERE assignment.endDatetime IS NULL AND v.stopDatetime IS NULL AND l.parentLocation = :location"
+            );
 
-            query.setParameter("location", location);
-            query.setParameter("provider", provider);
+            totalPatientsQuery.setParameter("location", location);
 
-            return (WardPatientsSummary) query.getSingleResult();
+            Long totalPatients = (Long) totalPatientsQuery.uniqueResult();
+
+            Query totalProviderPatientsQuery = session.createQuery(
+                 "SELECT COUNT(DISTINCT CASE WHEN ctp.provider = :provider THEN assignment.patient ELSE null END) " +
+                    "FROM org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
+                    "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap ON locmap.bed = assignment.bed " +
+                    "JOIN org.openmrs.Location l ON locmap.location = l " +
+                    "JOIN org.openmrs.Visit v ON v.patient = assignment.patient " +
+                    "LEFT JOIN CareTeam careTeam ON careTeam.patient = v.patient " +
+                    "LEFT JOIN careTeam.participants ctp ON ctp.voided = 0 " +
+                    "WHERE assignment.endDatetime IS NULL AND v.stopDatetime IS NULL AND l.parentLocation = :location " +
+                    "AND (ctp.provider = :provider AND :dateTime BETWEEN ctp.startTime AND ctp.endTime)"
+            );
+
+            totalProviderPatientsQuery.setParameter("location", location);
+            totalProviderPatientsQuery.setParameter("provider", provider);
+            totalProviderPatientsQuery.setParameter("dateTime", dateTime);
+
+            Long totalProviderPatients = (Long) totalProviderPatientsQuery.uniqueResult();
+
+            return new WardPatientsSummary(totalPatients, totalProviderPatients);
         } catch (Exception e) {
-            log.error("Exception at WardDAO getAdmittedPatients ", e.getStackTrace());
+            log.error("Exception at WardDAO getAdmittedPatients ", e);
         }
 
         return new WardPatientsSummary();
