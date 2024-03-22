@@ -58,7 +58,7 @@ public class HibernateWardDAO implements WardDAO {
                     "LEFT JOIN CareTeam careTeam on careTeam.visit = v " +
                     "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
                     "JOIN org.openmrs.Location l on locmap.location = l " +
-                    "LEFT JOIN careTeam.participants ctp " +
+                    "LEFT JOIN careTeam.participants ctp ON ctp.voided = 0 " +
                     "LEFT JOIN org.openmrs.Order o on o.encounter = e " +
                     "LEFT JOIN Slot s on s.order = o " +
                     "where assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location ";
