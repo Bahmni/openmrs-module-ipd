@@ -11,8 +11,8 @@ import lombok.Setter;
 @Getter
 public class WardPatientsSummary {
     private Long totalPatients = 0L;
+    private Long totalProviderPatients = 0L;
 
     // to be added in future
-//    private Integer myPatients;
 //    private Integer toBeDischargedPatients;
 }

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface WardService {
 
-    WardPatientsSummary getIPDWardPatientSummary(String wardUuid);
+    WardPatientsSummary getIPDWardPatientSummary(String wardUuid, String providerUuid);
 
     List<AdmittedPatient> getWardPatientsByUuid(String wardUuid, String sortBy);
 

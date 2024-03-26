@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface IPDWardService {
 
-    WardPatientsSummary getIPDWardPatientSummary(String wardUuid);
+    WardPatientsSummary getIPDWardPatientSummary(String wardUuid, String providerUuid);
 
     IPDPatientDetails getIPDPatientByWard(String wardUuid, Integer offset, Integer limit, String sortBy);
 

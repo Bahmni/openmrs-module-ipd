@@ -28,9 +28,11 @@ public class WardServiceImpl implements WardService {
 
 
     @Override
-    public WardPatientsSummary getIPDWardPatientSummary(String wardUuid) {
+    public WardPatientsSummary getIPDWardPatientSummary(String wardUuid, String providerUuid) {
         Location location= Context.getService(LocationService.class).getLocationByUuid(wardUuid);
-        return wardDAO.getWardPatientSummary(location);
+        Provider provider = Context.getProviderService().getProviderByUuid(providerUuid);
+        Date currentDateTime = new Date();
+        return wardDAO.getWardPatientSummary(location, provider, currentDateTime);
     }
 
     @Override

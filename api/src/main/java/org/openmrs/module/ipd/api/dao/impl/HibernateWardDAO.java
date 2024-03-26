@@ -58,7 +58,7 @@ public class HibernateWardDAO implements WardDAO {
                     "LEFT JOIN CareTeam careTeam on careTeam.visit = v " +
                     "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
                     "JOIN org.openmrs.Location l on locmap.location = l " +
-                    "LEFT JOIN careTeam.participants ctp " +
+                    "LEFT JOIN careTeam.participants ctp ON ctp.voided = 0 " +
                     "LEFT JOIN org.openmrs.Order o on o.encounter = e " +
                     "LEFT JOIN Slot s on s.order = o " +
                     "where assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location ";
@@ -98,21 +98,45 @@ public class HibernateWardDAO implements WardDAO {
     }
 
     @Override
-    public WardPatientsSummary getWardPatientSummary(Location location) {
+    public WardPatientsSummary getWardPatientSummary(Location location, Provider provider, Date dateTime) {
         Session session = this.sessionFactory.getCurrentSession();
         try {
-            Query query = session.createQuery(
-                    "select NEW org.openmrs.module.ipd.api.model.WardPatientsSummary(COUNT(assignment)) " +
-                            "from org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
-                            "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
-                            "JOIN org.openmrs.Location l on locmap.location = l " +
-                            "JOIN org.openmrs.Visit v on v.patient = assignment.patient " +
-                            "where assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location");
-            query.setParameter("location", location);
-            return (WardPatientsSummary) query.getSingleResult();
+            Query totalPatientsQuery = session.createQuery(
+                 "SELECT COUNT(assignment) " +
+                    "FROM org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
+                    "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap ON locmap.bed = assignment.bed " +
+                    "JOIN org.openmrs.Location l ON locmap.location = l " +
+                    "JOIN org.openmrs.Visit v ON v.patient = assignment.patient " +
+                    "WHERE assignment.endDatetime IS NULL AND v.stopDatetime IS NULL AND l.parentLocation = :location"
+            );
+
+            totalPatientsQuery.setParameter("location", location);
+
+            Long totalPatients = (Long) totalPatientsQuery.uniqueResult();
+
+            Query totalProviderPatientsQuery = session.createQuery(
+                 "SELECT COUNT(DISTINCT CASE WHEN ctp.provider = :provider THEN assignment.patient ELSE null END) " +
+                    "FROM org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
+                    "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap ON locmap.bed = assignment.bed " +
+                    "JOIN org.openmrs.Location l ON locmap.location = l " +
+                    "JOIN org.openmrs.Visit v ON v.patient = assignment.patient " +
+                    "LEFT JOIN CareTeam careTeam ON careTeam.patient = v.patient " +
+                    "LEFT JOIN careTeam.participants ctp ON ctp.voided = 0 " +
+                    "WHERE assignment.endDatetime IS NULL AND v.stopDatetime IS NULL AND l.parentLocation = :location " +
+                    "AND (ctp.provider = :provider AND :dateTime BETWEEN ctp.startTime AND ctp.endTime)"
+            );
+
+            totalProviderPatientsQuery.setParameter("location", location);
+            totalProviderPatientsQuery.setParameter("provider", provider);
+            totalProviderPatientsQuery.setParameter("dateTime", dateTime);
+
+            Long totalProviderPatients = (Long) totalProviderPatientsQuery.uniqueResult();
+
+            return new WardPatientsSummary(totalPatients, totalProviderPatients);
         } catch (Exception e) {
-            log.error("Exception at WardDAO getAdmittedPatients ",e.getStackTrace());
+            log.error("Exception at WardDAO getAdmittedPatients ", e);
         }
+
         return new WardPatientsSummary();
     }
 

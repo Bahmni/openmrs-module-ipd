@@ -14,6 +14,6 @@ public interface WardDAO {
 
     List<AdmittedPatient> getAdmittedPatients(Location location, Provider provider, Date currentDateTime, String sortBy);
 
-    WardPatientsSummary getWardPatientSummary(Location location);
+    WardPatientsSummary getWardPatientSummary(Location location, Provider provider, Date currentDateTime);
 
 }
