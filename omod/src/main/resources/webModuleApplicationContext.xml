@@ -8,4 +8,5 @@
 
 	<context:component-scan base-package="org.openmrs.module.ipd.api"/>
 	<context:annotation-config />
+	<context:property-placeholder location="classpath:application.properties"/>
 </beans>

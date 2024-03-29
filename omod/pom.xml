@@ -124,6 +124,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.bahmni.module</groupId>
+			<artifactId>fhir2Extension-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.bahmni.module</groupId>
+			<artifactId>fhir2Extension-omod</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>emrapi-api</artifactId>
 			<scope>provided</scope>
