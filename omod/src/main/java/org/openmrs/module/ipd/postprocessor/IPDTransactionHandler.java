@@ -27,8 +27,10 @@ public class IPDTransactionHandler implements EncounterTransactionHandler {
     @Override
     public void forSave(Encounter encounter, EncounterTransaction encounterTransaction) {
         IPDEventType eventType = eventManager.getEventTypeForEncounter(encounter.getEncounterType().getName());
-        IPDEvent ipdEvent = new IPDEvent(encounter.getUuid(), encounter.getPatient().getUuid(), eventType);
-        eventManager.processEvent(ipdEvent);
+        if (eventType != null) {
+            IPDEvent ipdEvent = new IPDEvent(encounter.getUuid(), encounter.getPatient().getUuid(), eventType);
+            eventManager.processEvent(ipdEvent);
+        }
         ipdScheduleService.handlePostProcessEncounterTransaction(encounter,encounterTransaction);
     }
 }
