@@ -48,7 +48,7 @@
 		<jacocoVersion>0.7.9</jacocoVersion>
 		<lombokVersion>1.18.26</lombokVersion>
 		<openmrsFhir2Version>2.0.0-SNAPSHOT</openmrsFhir2Version>
-		<openmrsFhir2ExtensionVersion>1.3.0-SNAPSHOT</openmrsFhir2ExtensionVersion>
+		<fhir2ExtensionVersion>1.3.0.ipd-SNAPSHOT</fhir2ExtensionVersion>
 		<bahmniVersion>0.94-SNAPSHOT</bahmniVersion>
 		<emrapi-omod.version>1.32.0</emrapi-omod.version>
 	</properties>
@@ -201,7 +201,7 @@
 			<dependency>
 				<groupId>org.bahmni.module</groupId>
 				<artifactId>fhir2Extension-api</artifactId>
-				<version>${openmrsFhir2ExtensionVersion}</version>
+				<version>${fhir2ExtensionVersion}</version>
 				<scope>provided</scope>
 			</dependency>
 
@@ -209,7 +209,7 @@
 			<dependency>
 				<groupId>org.bahmni.module</groupId>
 				<artifactId>fhir2Extension-omod</artifactId>
-				<version>${openmrsFhir2ExtensionVersion}</version>
+				<version>${fhir2ExtensionVersion}</version>
 				<scope>provided</scope>
 			</dependency>
 
