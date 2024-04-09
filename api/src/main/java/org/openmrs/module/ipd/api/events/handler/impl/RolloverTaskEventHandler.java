@@ -1,9 +1,9 @@
-package org.openmrs.module.ipd.events.handler.impl;
+package org.openmrs.module.ipd.api.events.handler.impl;
 
-import org.openmrs.module.ipd.events.ConfigLoader;
-import org.openmrs.module.ipd.events.model.ConfigDetail;
-import org.openmrs.module.ipd.events.model.IPDEvent;
-import org.openmrs.module.ipd.events.handler.IPDEventHandler;
+import org.openmrs.module.ipd.api.events.model.ConfigDetail;
+import org.openmrs.module.ipd.api.events.ConfigLoader;
+import org.openmrs.module.ipd.api.events.model.IPDEvent;
+import org.openmrs.module.ipd.api.events.handler.IPDEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,9 +1,9 @@
-package org.openmrs.module.ipd.events;
+package org.openmrs.module.ipd.api.events;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.openmrs.module.ipd.events.model.ConfigDetail;
+import org.openmrs.module.ipd.api.events.model.ConfigDetail;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;

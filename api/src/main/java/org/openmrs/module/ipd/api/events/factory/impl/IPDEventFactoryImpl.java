@@ -1,11 +1,11 @@
-package org.openmrs.module.ipd.events.factory.impl;
+package org.openmrs.module.ipd.api.events.factory.impl;
 
-import org.openmrs.module.ipd.events.model.IPDEventType;
-import org.openmrs.module.ipd.events.factory.IPDEventFactory;
-import org.openmrs.module.ipd.events.handler.IPDEventHandler;
-import org.openmrs.module.ipd.events.handler.impl.PatientAdmitEventHandler;
-import org.openmrs.module.ipd.events.handler.impl.RolloverTaskEventHandler;
-import org.openmrs.module.ipd.events.handler.impl.ShiftStartTaskEventHandler;
+import org.openmrs.module.ipd.api.events.handler.impl.ShiftStartTaskEventHandler;
+import org.openmrs.module.ipd.api.events.model.IPDEventType;
+import org.openmrs.module.ipd.api.events.factory.IPDEventFactory;
+import org.openmrs.module.ipd.api.events.handler.IPDEventHandler;
+import org.openmrs.module.ipd.api.events.handler.impl.PatientAdmitEventHandler;
+import org.openmrs.module.ipd.api.events.handler.impl.RolloverTaskEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

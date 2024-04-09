@@ -1,4 +1,4 @@
-package org.openmrs.module.ipd.events.handler.impl;
+package org.openmrs.module.ipd.api.events.handler.impl;
 
 import org.openmrs.api.EncounterService;
 import org.openmrs.api.context.Context;
@@ -6,16 +6,17 @@ import org.openmrs.module.emrapi.encounter.ActiveEncounterParameters;
 import org.openmrs.module.emrapi.encounter.EmrEncounterService;
 import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction;
 import org.openmrs.module.fhirExtension.model.Task;
+import org.openmrs.module.fhirExtension.service.TaskService;
 import org.openmrs.module.fhirExtension.web.contract.TaskRequest;
 import org.openmrs.module.fhirExtension.web.mapper.TaskMapper;
+import org.openmrs.module.ipd.api.events.ConfigLoader;
+import org.openmrs.module.ipd.api.events.IPDEventUtils;
+import org.openmrs.module.ipd.api.events.handler.IPDEventHandler;
+import org.openmrs.module.ipd.api.events.model.ConfigDetail;
+import org.openmrs.module.ipd.api.events.model.IPDEvent;
+import org.openmrs.module.ipd.api.events.model.TaskDetail;
 import org.openmrs.module.ipd.api.model.AdmittedPatient;
 import org.openmrs.module.ipd.api.service.WardService;
-import org.openmrs.module.ipd.events.ConfigLoader;
-import org.openmrs.module.ipd.events.IPDEventUtils;
-import org.openmrs.module.ipd.events.handler.IPDEventHandler;
-import org.openmrs.module.ipd.events.model.ConfigDetail;
-import org.openmrs.module.ipd.events.model.IPDEvent;
-import org.openmrs.module.ipd.events.model.TaskDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,10 +34,13 @@ public class ShiftStartTaskEventHandler implements IPDEventHandler {
 
     @Autowired
     private TaskMapper taskMapper;
+    @Autowired
+    private TaskService taskService;
+
 
     @Override
     public void handleEvent(IPDEvent event) {
-
+        System.out.println("Inside HandleEvent");
         WardService wardService = Context.getService(WardService.class);
         // - getAdmit - wardDAO.getAdmittedPatients
         List<AdmittedPatient> admittedPatients = wardService.getAdmittedPatients();
@@ -56,6 +60,8 @@ public class ShiftStartTaskEventHandler implements IPDEventHandler {
             activeEncounterParameters.setPatientUuid(patientUuid);
             activeEncounterParameters.setEncounterTypeUuid(encounterService.getEncounterType(CONSULTATION_ENCOUNTER_TYPE).getUuid());
             EncounterTransaction encounterTransaction = emrEncounterService.getActiveEncounter(activeEncounterParameters);
+            System.out.println("encounterTransaction "+encounterTransaction+ " - "+ encounterTransaction.getEncounterUuid());
+            System.out.println("patientUuid "+ patientUuid);
             IPDEvent ipdEvent = new IPDEvent(encounterTransaction.getEncounterUuid(), patientUuid, event.getIpdEventType());
             for(TaskDetail taskDetail : eventConfig.getTasks()) {
                 TaskRequest taskRequest = IPDEventUtils.createNonMedicationTaskRequest(ipdEvent, taskDetail.getName(), "nursing_activity_system");
@@ -63,7 +69,9 @@ public class ShiftStartTaskEventHandler implements IPDEventHandler {
                 tasks.add(task);
             }
         }
-
-//        bulkSaveTasks(List<Task> tasks);
+        System.out.println("tasks --> "+tasks.size());
+        if(tasks.size() > 0){
+            taskService.bulkSaveTasks(tasks);
+        }
     }
 }

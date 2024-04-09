@@ -1,4 +1,4 @@
-package org.openmrs.module.ipd.events.model;
+package org.openmrs.module.ipd.api.events.model;
 
 public enum IPDEventType {
     PATIENT_ADMIT,
