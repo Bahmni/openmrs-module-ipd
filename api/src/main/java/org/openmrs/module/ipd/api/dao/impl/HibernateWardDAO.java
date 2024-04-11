@@ -83,7 +83,9 @@ public class HibernateWardDAO implements WardDAO {
 
             Query query = session.createQuery(finalQuery);
 
-            query.setParameter("location", location);
+            if(location != null) {
+                query.setParameter("location", location);
+            }
 
             if (provider != null) {
                 query.setParameter("provider", provider);

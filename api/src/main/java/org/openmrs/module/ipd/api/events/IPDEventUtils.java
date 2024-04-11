@@ -14,6 +14,7 @@ public class IPDEventUtils {
         taskRequest.setTaskType(taskType);
         taskRequest.setEncounterUuid(ipdEvent.getEncounterUuid());
         taskRequest.setPatientUuid(ipdEvent.getPatientUuid());
+        taskRequest.setVisitUuid(ipdEvent.getVisitUuid());
         taskRequest.setRequestedStartTime(new Date());
         taskRequest.setIntent(FhirTask.TaskIntent.ORDER);
         taskRequest.setStatus(FhirTask.TaskStatus.REQUESTED);

@@ -14,5 +14,6 @@ import lombok.NoArgsConstructor;
 public class IPDEvent {
     private String encounterUuid;
     private String patientUuid;
+    private String visitUuid;
     private IPDEventType ipdEventType;
 }

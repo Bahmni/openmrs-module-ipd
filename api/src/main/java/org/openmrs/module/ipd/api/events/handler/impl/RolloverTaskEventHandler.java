@@ -1,15 +1,20 @@
 package org.openmrs.module.ipd.api.events.handler.impl;
 
+import org.openmrs.module.fhir2.model.FhirTask;
+import org.openmrs.module.fhirExtension.dao.TaskRequestedPeriodDao;
+import org.openmrs.module.fhirExtension.model.FhirTaskRequestedPeriod;
+import org.openmrs.module.fhirExtension.model.Task;
 import org.openmrs.module.fhirExtension.service.TaskService;
 import org.openmrs.module.ipd.api.events.ConfigLoader;
 import org.openmrs.module.ipd.api.events.handler.IPDEventHandler;
 import org.openmrs.module.ipd.api.events.model.ConfigDetail;
-import org.openmrs.module.ipd.api.events.model.TaskDetail;
 import org.openmrs.module.ipd.api.events.model.IPDEvent;
-import org.openmrs.module.fhirExtension.model.Task;
+import org.openmrs.module.ipd.api.events.model.TaskDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,9 +23,10 @@ public class RolloverTaskEventHandler implements IPDEventHandler {
 
     @Autowired
     ConfigLoader configLoader;
-
+    @Autowired
     private TaskService taskService;
-
+    @Autowired
+    private TaskRequestedPeriodDao taskRequestedPeriodDao;
     private static final String TASK_STATUS = "REQUESTED";
 
     @Override
@@ -30,8 +36,6 @@ public class RolloverTaskEventHandler implements IPDEventHandler {
                 .filter(config -> config.getType().equals(event.getIpdEventType().name()))
                 .findFirst()
                 .orElse(null);
-        System.out.println("eventConfig type RolloverTaskEventHandler " + eventConfig.getType());
-        System.out.println("eventConfig tasks RolloverTaskEventHandler " + eventConfig.getTasks() + " size --- " + eventConfig.getTasks().size());
 
         List<String> taskNames = eventConfig.getTasks().stream()
                 .map(TaskDetail::getName)
@@ -39,9 +43,16 @@ public class RolloverTaskEventHandler implements IPDEventHandler {
 
         List<Task> rolloverTasks = taskService.getTasksByNameAndStatus(taskNames, TASK_STATUS);
 
+        List<FhirTaskRequestedPeriod> fhirTaskRequestedPeriods = new ArrayList<FhirTaskRequestedPeriod>();
         for (Task task : rolloverTasks) {
-            System.out.println("Task : " + task.getFhirTask());
-
+            if (task.getFhirTaskRequestedPeriod() != null) {
+                FhirTaskRequestedPeriod fhirTaskRequestedPeriod = task.getFhirTaskRequestedPeriod();
+                if(task.getFhirTask().getStatus() == FhirTask.TaskStatus.REQUESTED){
+                    fhirTaskRequestedPeriod.setRequestedStartTime(new Date());
+                    fhirTaskRequestedPeriods.add(fhirTaskRequestedPeriod);
+                }
+            }
         }
+        taskRequestedPeriodDao.bulkSave(fhirTaskRequestedPeriods);
     }
 }
