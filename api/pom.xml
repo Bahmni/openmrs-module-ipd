@@ -212,11 +212,6 @@
 			</exclusions>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.openmrs.module</groupId>
-			<artifactId>emrapi-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
 	</dependencies>
 
 </project>
