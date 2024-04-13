@@ -33,15 +33,11 @@ public class ShiftStartTaskEventHandler implements IPDEventHandler {
     @Override
     public void handleEvent(IPDEvent event) {
         List<AdmittedPatient> admittedPatients = wardService.getAdmittedPatients();
-
         ConfigDetail eventConfig = getEventConfig(event);
-
         List<Task> tasks = new ArrayList<Task>();
         for(AdmittedPatient admittedPatient: admittedPatients){
             String patientUuid = admittedPatient.getBedPatientAssignment().getPatient().getUuid();
-            String visituuid = admittedPatient.getBedPatientAssignment().getEncounter().getVisit().getUuid();
-
-            IPDEvent ipdEvent = new IPDEvent(null, patientUuid, visituuid, event.getIpdEventType());
+            IPDEvent ipdEvent = new IPDEvent(null, patientUuid, event.getIpdEventType());
             for(TaskDetail taskDetail : eventConfig.getTasks()) {
                 TaskRequest taskRequest = IPDEventUtils.createNonMedicationTaskRequest(ipdEvent, taskDetail.getName(), "nursing_activity_system");
                 Task task = taskMapper.fromRequest(taskRequest);
@@ -61,6 +57,4 @@ public class ShiftStartTaskEventHandler implements IPDEventHandler {
                 .orElse(null);
         return eventConfig;
     }
-
-
 }

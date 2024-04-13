@@ -17,7 +17,7 @@ public class ShiftStartTasks extends AbstractTask implements ApplicationContextA
         IPDEventManager eventManager = context.getBean(IPDEventManager.class);
         IPDEventType eventType = eventManager.getEventTypeForEncounter(String.valueOf(IPDEventType.SHIFT_START_TASK));
         if (eventType != null) {
-            IPDEvent ipdEvent = new IPDEvent(null, null, null, eventType);
+            IPDEvent ipdEvent = new IPDEvent(null, null, eventType);
             eventManager.processEvent(ipdEvent);
         }
     }

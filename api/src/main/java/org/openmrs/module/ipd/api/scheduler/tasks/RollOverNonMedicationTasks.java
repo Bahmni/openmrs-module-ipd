@@ -18,7 +18,7 @@ public class RollOverNonMedicationTasks extends AbstractTask implements Applicat
         IPDEventManager eventManager = context.getBean(IPDEventManager.class);
         IPDEventType eventType = eventManager.getEventTypeForEncounter(String.valueOf(IPDEventType.ROLLOVER_TASK));
         if (eventType != null) {
-            IPDEvent ipdEvent = new IPDEvent(null, null, null, eventType);
+            IPDEvent ipdEvent = new IPDEvent(null, null, eventType);
             eventManager.processEvent(ipdEvent);
         }
     }
