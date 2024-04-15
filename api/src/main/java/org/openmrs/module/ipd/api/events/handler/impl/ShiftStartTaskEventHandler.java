@@ -45,7 +45,7 @@ public class ShiftStartTaskEventHandler implements IPDEventHandler {
             }
         }
         if(tasks.size() > 0){
-            taskService.bulkSaveTasks(tasks);
+            taskService.saveTask(tasks);
         }
     }
 

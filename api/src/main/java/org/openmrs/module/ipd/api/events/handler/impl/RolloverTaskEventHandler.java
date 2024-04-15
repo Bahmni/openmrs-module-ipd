@@ -40,7 +40,7 @@ public class RolloverTaskEventHandler implements IPDEventHandler {
         List<String> taskNames = eventConfig.getTasks().stream()
                 .map(TaskDetail::getName)
                 .collect(Collectors.toList());
-        List<Task> rolloverTasks = taskService.getTasksByNameAndStatus(taskNames, FhirTask.TaskStatus.REQUESTED);
+        List<Task> rolloverTasks = taskService.searchTasks(taskNames, FhirTask.TaskStatus.REQUESTED);
         List<FhirTaskRequestedPeriod> fhirTaskRequestedPeriods = new ArrayList<FhirTaskRequestedPeriod>();
         for (Task task : rolloverTasks) {
             if (task.getFhirTaskRequestedPeriod() != null) {
@@ -49,6 +49,6 @@ public class RolloverTaskEventHandler implements IPDEventHandler {
                 fhirTaskRequestedPeriods.add(fhirTaskRequestedPeriod);
             }
         }
-        taskRequestedPeriodDao.bulkUpdate(fhirTaskRequestedPeriods);
+        taskRequestedPeriodDao.update(fhirTaskRequestedPeriods);
     }
 }
