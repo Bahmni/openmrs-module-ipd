@@ -1,8 +1,8 @@
-package org.openmrs.module.ipd.events;
+package org.openmrs.module.ipd.api.events;
 
 import org.openmrs.module.fhir2.model.FhirTask;
 import org.openmrs.module.fhirExtension.web.contract.TaskRequest;
-import org.openmrs.module.ipd.events.model.IPDEvent;
+import org.openmrs.module.ipd.api.events.model.IPDEvent;
 
 import java.util.Date;
 

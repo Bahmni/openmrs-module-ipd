@@ -55,4 +55,8 @@ public class WardServiceImpl implements WardService {
         return  wardDAO.searchAdmittedPatients(location,searchKeys,searchValue,sortBy);
     }
 
+    @Override
+    public List<AdmittedPatient> getAdmittedPatients() {
+        return wardDAO.getAdmittedPatients(null,null, null, null);
+    }
 }

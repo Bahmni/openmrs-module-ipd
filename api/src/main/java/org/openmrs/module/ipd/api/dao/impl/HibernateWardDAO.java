@@ -61,8 +61,12 @@ public class HibernateWardDAO implements WardDAO {
                     "LEFT JOIN careTeam.participants ctp ON ctp.voided = 0 " +
                     "LEFT JOIN org.openmrs.Order o on o.encounter = e " +
                     "LEFT JOIN Slot s on s.order = o " +
-                    "where assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location ";
-          
+                    "where assignment.endDatetime is null and v.stopDatetime is null ";
+
+            if(location != null){
+                queryString += "and l.parentLocation = :location ";
+            }
+
             if (provider != null) {
                 queryString += "and ctp.provider = :provider ";
             }
@@ -79,7 +83,9 @@ public class HibernateWardDAO implements WardDAO {
 
             Query query = session.createQuery(finalQuery);
 
-            query.setParameter("location", location);
+            if(location != null) {
+                query.setParameter("location", location);
+            }
 
             if (provider != null) {
                 query.setParameter("provider", provider);

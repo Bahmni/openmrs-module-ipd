@@ -1,4 +1,4 @@
-package org.openmrs.module.ipd.events.model;
+package org.openmrs.module.ipd.api.events.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

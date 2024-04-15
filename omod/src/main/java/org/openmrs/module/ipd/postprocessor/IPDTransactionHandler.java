@@ -3,12 +3,12 @@ package org.openmrs.module.ipd.postprocessor;
 import org.openmrs.Encounter;
 import org.openmrs.module.emrapi.encounter.domain.EncounterTransaction;
 import org.openmrs.module.emrapi.encounter.postprocessor.EncounterTransactionHandler;
-import org.openmrs.module.ipd.events.model.IPDEvent;
+import org.openmrs.module.ipd.api.events.model.IPDEvent;
 import org.openmrs.module.ipd.service.IPDScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.openmrs.module.ipd.events.model.IPDEventType;
-import org.openmrs.module.ipd.events.IPDEventManager;
+import org.openmrs.module.ipd.api.events.model.IPDEventType;
+import org.openmrs.module.ipd.api.events.IPDEventManager;
 
 @Component
 public class IPDTransactionHandler implements EncounterTransactionHandler {
