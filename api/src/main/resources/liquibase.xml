@@ -439,7 +439,7 @@
     <changeSet id="rollover-tasks-first-202404091253" author="Bahmni">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
-                SELECT COUNT(*) FROM scheduler_task_config WHERE name = "Rollover Tasks First";
+                SELECT COUNT(*) FROM scheduler_task_config WHERE name = "Shift Rollover Tasks First";
             </sqlCheck>
         </preConditions>
         <sql>
@@ -447,7 +447,7 @@
             scheduler_task_config(name, description, schedulable_class, start_time, start_time_pattern, repeat_interval,
             start_on_startup, created_by, date_created, uuid)
             VALUES
-            ('Rollover Tasks First', 'Rollover tasks first shift', 'org.openmrs.module.ipd.api.scheduler.tasks.RollOverNonMedicationTasks',
+            ('Shift Rollover Tasks First', 'Shift Rollover tasks first shift', 'org.openmrs.module.ipd.api.scheduler.tasks.RollOverNonMedicationTasks',
             '2024-04-11 08:00:00', 'MM/dd/yyyy HH:mm:ss', 86400, true, 1, NOW(), UUID());
         </sql>
     </changeSet>
@@ -455,7 +455,7 @@
     <changeSet id="rollover-tasks-second-202404091253" author="Bahmni">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
-                SELECT COUNT(*) FROM scheduler_task_config WHERE name = "Rollover Tasks Second";
+                SELECT COUNT(*) FROM scheduler_task_config WHERE name = "Shift Rollover Tasks Second";
             </sqlCheck>
         </preConditions>
         <sql>
@@ -463,7 +463,7 @@
             scheduler_task_config(name, description, schedulable_class, start_time, start_time_pattern, repeat_interval,
             start_on_startup, created_by, date_created, uuid)
             VALUES
-            ('Rollover Tasks Second', 'Rollover tasks second shift', 'org.openmrs.module.ipd.api.scheduler.tasks.RollOverNonMedicationTasks',
+            ('Shift Rollover Tasks Second', 'Shift Rollover tasks second shift', 'org.openmrs.module.ipd.api.scheduler.tasks.RollOverNonMedicationTasks',
             '2024-04-11 19:00:00', 'MM/dd/yyyy HH:mm:ss', 86400, true, 1, NOW(), UUID());
         </sql>
     </changeSet>
