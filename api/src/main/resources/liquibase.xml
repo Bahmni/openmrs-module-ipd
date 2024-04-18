@@ -388,7 +388,7 @@
         <addForeignKeyConstraint constraintName="care_team_participant_voided_by_fk" baseTableName="care_team_participant" baseColumnNames="voided_by" referencedTableName="users" referencedColumnNames="user_id"/>
     </changeSet>
 
-    <changeSet id="mark-slots-as-missed-202403041331" author="Bahmni">
+    <changeSet id="mark-slots-as-missed-202404181732" author="Bahmni">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
                 SELECT COUNT(*) FROM scheduler_task_config WHERE name = "Mark Slots As Missed";
@@ -400,7 +400,7 @@
             start_on_startup, created_by, date_created, uuid)
             VALUES
             ('Mark Slots As Missed', 'Mark Slots As Missed', 'org.openmrs.module.ipd.api.scheduler.tasks.MarkSlotsAsMissed',
-            TIMESTAMP(CURDATE()), 'MM/dd/yyyy HH:mm:ss', 86340, false, 1, NOW(), UUID());
+            TIMESTAMP(CURDATE(), "23:59"), 'MM/dd/yyyy HH:mm:ss', 86400, false, 1, NOW(), UUID());
         </sql>
     </changeSet>
 
