@@ -2,10 +2,12 @@ package org.openmrs.module.ipd.controller;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.bahmni.module.bahmnicore.util.WebUtils;
 import org.openmrs.Patient;
 import org.openmrs.Visit;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.VisitService;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
@@ -18,10 +20,12 @@ import org.openmrs.module.ipd.contract.ScheduleMedicationRequest;
 import org.openmrs.module.ipd.contract.ScheduleMedicationResponse;
 import org.openmrs.module.ipd.model.PatientMedicationSummary;
 import org.openmrs.module.ipd.service.IPDScheduleService;
+import org.openmrs.module.ipd.util.PrivilegeConstants;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.RestUtil;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +40,7 @@ import static org.openmrs.module.ipd.api.util.DateTimeUtil.convertEpocUTCToLocal
 import static org.openmrs.module.ipd.contract.MedicationScheduleResponse.createFrom;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Controller
 @RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/ipd/schedule")
@@ -59,6 +64,9 @@ public class IPDScheduleController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<Object> createMedicationSchedule(@RequestBody ScheduleMedicationRequest scheduleMedicationRequest) {
         try {
+            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_MEDICATION_TASKS)) {
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege " + PrivilegeConstants.EDIT_MEDICATION_TASKS), FORBIDDEN);
+            }
             Schedule schedule = ipdScheduleService.saveMedicationSchedule(scheduleMedicationRequest);
             return new ResponseEntity<>(ScheduleMedicationResponse.constructFrom(schedule), OK);
         } catch (Exception e) {
@@ -71,6 +79,9 @@ public class IPDScheduleController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<Object> updateMedicationSchedule(@RequestBody ScheduleMedicationRequest scheduleMedicationRequest) {
         try {
+            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_MEDICATION_TASKS)) {
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege " + PrivilegeConstants.EDIT_MEDICATION_TASKS), FORBIDDEN);
+            }
             Schedule schedule = ipdScheduleService.updateMedicationSchedule(scheduleMedicationRequest);
             return new ResponseEntity<>(ScheduleMedicationResponse.constructFrom(schedule), OK);
         } catch (Exception e) {
@@ -86,6 +97,9 @@ public class IPDScheduleController extends BaseRestController {
                                                            @RequestParam(value = "visitUuid",required = false) String visitUuid,
                                                            @RequestParam(value = "view", required = false) String view) {
         try {
+            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_ADMINISTRATION) || !Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_TASKS)) {
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.EDIT_MEDICATION_TASKS+", "+PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
+            }
 ;            if (startTime != null && endTime != null) {
                 LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
                 LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
@@ -108,6 +122,9 @@ public class IPDScheduleController extends BaseRestController {
                                                                  @RequestParam(value = "serviceType", required = false) ServiceType serviceType,
                                                                  @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
         try {
+            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_ADMINISTRATION) || !Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_TASKS)) {
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.EDIT_MEDICATION_TASKS+" "+PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
+            }
             List<Slot> slots;
             if (orderUuids == null || orderUuids.isEmpty()) {
                 slots =
