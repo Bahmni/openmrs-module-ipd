@@ -2,12 +2,14 @@ package org.openmrs.module.ipd.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.MedicationAdministration;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.apiext.dao.FhirMedicationAdministrationDao;
 import org.openmrs.module.ipd.api.service.SlotService;
 import org.openmrs.module.ipd.contract.MedicationAdministrationRequest;
 import org.openmrs.module.ipd.contract.MedicationAdministrationResponse;
 import org.openmrs.module.ipd.factory.MedicationAdministrationFactory;
 import org.openmrs.module.ipd.service.IPDMedicationAdministrationService;
+import org.openmrs.module.ipd.util.PrivilegeConstants;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.RestUtil;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
@@ -19,8 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 
 @Controller
 @RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/ipd")
@@ -43,6 +44,9 @@ public class IPDMedicationAdministrationController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<Object> createScheduledMedicationAdministration(@RequestBody List<MedicationAdministrationRequest> medicationAdministrationRequestList) {
         try {
+            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_MEDICATION_ADMINISTRATION)) {
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege " + PrivilegeConstants.EDIT_MEDICATION_ADMINISTRATION), FORBIDDEN);
+            }
             List<MedicationAdministrationResponse> medicationAdministrationResponseList = new ArrayList<>();
             for (MedicationAdministrationRequest medicationAdministrationRequest : medicationAdministrationRequestList) {
                 MedicationAdministration medicationAdministration = ipdMedicationAdministrationService.saveScheduledMedicationAdministration(medicationAdministrationRequest);
@@ -59,6 +63,9 @@ public class IPDMedicationAdministrationController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<Object> createAdhocMedicationAdministration(@RequestBody MedicationAdministrationRequest medicationAdministrationRequest) {
         try {
+            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_ADHOC_MEDICATION_TASKS) || !Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_MEDICATION_ADMINISTRATION)) {
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.EDIT_MEDICATION_TASKS + ", "+PrivilegeConstants.EDIT_MEDICATION_ADMINISTRATION), FORBIDDEN);
+            }
             MedicationAdministration medicationAdministration = ipdMedicationAdministrationService.saveAdhocMedicationAdministration(medicationAdministrationRequest);
             MedicationAdministrationResponse medicationAdministrationResponse = medicationAdministrationFactory.mapMedicationAdministrationToResponse(medicationAdministration);
             return new ResponseEntity<>(medicationAdministrationResponse, OK);
