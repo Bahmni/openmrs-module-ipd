@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - Bahmni-IPD-master
   workflow_dispatch:
 
 jobs:
