@@ -71,8 +71,8 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         List<String> visitUuidsList = new ArrayList<>();
         visitUuidsList.add(visitUuid);
         Visit visit = visitService.getVisitByUuid(visitUuid);
-        // Logic to fetch immediate preceded Visit's drug orders as well as part of current Visit drug order list as doctors tend to convert OPD to IPD immediately on emergency situations.
-        String precededVisitUuid= getImmediatePrecededVisit(visit.getPatient(),visitUuid);
+        // Logic to fetch immediate preceded OPD Visit's drug orders as well as doctors tend to convert OPD to IPD immediately on emergency situations.
+        String precededVisitUuid= getImmediatePrecededOPDVisit(visit.getPatient(),visitUuid);
         if (precededVisitUuid!=null){
             visitUuidsList.add(precededVisitUuid);
         }
@@ -171,8 +171,8 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         return slotService.getSlotsByPatientAndVisitAndServiceType(subjectReference.get(), visit, concept);
     }
 
-    private String getImmediatePrecededVisit(Patient patient,String currentVisitUuid){
-        String previousVisitUuid=null;
+    private String getImmediatePrecededOPDVisit(Patient patient,String currentVisitUuid){
+        String previousOPDVisitUuid=null;
         List<Visit> visits= visitService.getVisitsByPatient(patient);
         List<Visit> sortedVisits = visits.stream()
                 .sorted(Comparator.comparing(Visit::getStartDatetime).reversed())
@@ -184,9 +184,11 @@ public class IPDVisitServiceImpl implements IPDVisitService {
                 .orElse(-1);
 
         if (currentVisitIndex != -1 && currentVisitIndex + 1 < sortedVisits.size()) {
-            previousVisitUuid = sortedVisits.get(currentVisitIndex + 1).getUuid();
+            Visit previousVisit = sortedVisits.get(currentVisitIndex + 1);
+            if ("OPD".equals(previousVisit.getVisitType().getName())){
+                previousOPDVisitUuid=previousVisit.getUuid();
+            }
         }
-
-        return previousVisitUuid;
+        return previousOPDVisitUuid;
     }
 }
