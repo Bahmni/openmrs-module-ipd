@@ -4,6 +4,7 @@ import org.openmrs.module.fhir2.model.FhirTask;
 import org.openmrs.module.fhirExtension.dao.TaskRequestedPeriodDao;
 import org.openmrs.module.fhirExtension.model.FhirTaskRequestedPeriod;
 import org.openmrs.module.fhirExtension.model.Task;
+import org.openmrs.module.fhirExtension.model.TaskSearchRequest;
 import org.openmrs.module.fhirExtension.service.TaskService;
 import org.openmrs.module.ipd.api.events.ConfigLoader;
 import org.openmrs.module.ipd.api.events.handler.IPDEventHandler;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,7 +42,8 @@ public class RolloverTaskEventHandler implements IPDEventHandler {
         List<String> taskNames = eventConfig.getTasks().stream()
                 .map(TaskDetail::getName)
                 .collect(Collectors.toList());
-        List<Task> rolloverTasks = taskService.searchTasks(taskNames, FhirTask.TaskStatus.REQUESTED);
+        List<FhirTask.TaskStatus> taskStatuses= Arrays.asList(FhirTask.TaskStatus.REQUESTED);
+        List<Task> rolloverTasks = taskService.searchTasks(new TaskSearchRequest(taskNames,taskStatuses));
         List<FhirTaskRequestedPeriod> fhirTaskRequestedPeriods = new ArrayList<FhirTaskRequestedPeriod>();
         for (Task task : rolloverTasks) {
             if (task.getFhirTaskRequestedPeriod() != null) {
