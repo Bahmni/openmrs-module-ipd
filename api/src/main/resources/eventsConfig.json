@@ -1,26 +1,14 @@
 [
   {
     "type": "PATIENT_ADMIT",
-    "tasks": [
-      {
-        "name": "Check Ward Instructions"
-      }
-    ]
+    "tasks": []
   },
   {
     "type": "SHIFT_START_TASK",
-    "tasks": [
-      {
-        "name": "Check Care Plan"
-      }
-    ]
+    "tasks": []
   },
   {
     "type": "ROLLOVER_TASK",
-    "tasks": [
-      {
-        "name": "Check Ward Instructions"
-      }
-    ]
+    "tasks": []
   }
 ]
