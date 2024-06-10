@@ -527,4 +527,18 @@
             <column name="uuid" valueComputed="uuid()"/>
         </insert>
     </changeSet>
+
+    <changeSet id="ipd-events-config-filepath-202405311510" author="Kavitha">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(*) from global_property where property = 'ipd.eventsConfig.filepath';
+            </sqlCheck>
+        </preConditions>
+        <comment>Add global property to add filepath for the events config json file</comment>
+        <sql>
+            INSERT INTO global_property (property, property_value, description, uuid)
+            VALUES ('ipd.eventsConfig.filepath', '',
+            'File path of the events configuration json file', uuid())
+        </sql>
+    </changeSet>
 </databaseChangeLog>
