@@ -167,7 +167,7 @@ public class HibernateWardDAO implements WardDAO {
             // Construct additional joins and where clause based on search keys
             StringBuilder additionalJoins = new StringBuilder("");
             StringBuilder whereClause = new StringBuilder("");
-            generateSQLSearchConditions(searchKeys,additionalJoins,whereClause);
+            generateSQLSearchConditions(searchKeys, additionalJoins, whereClause, searchValue);
 
             // Construct group by clause
             String groupBy = " GROUP BY assignment.patient, v ";
@@ -188,7 +188,7 @@ public class HibernateWardDAO implements WardDAO {
         }
     }
 
-    private void generateSQLSearchConditions(List<String> searchKeys,StringBuilder additionalJoins,StringBuilder whereClause) {
+    private void generateSQLSearchConditions(List<String> searchKeys, StringBuilder additionalJoins, StringBuilder whereClause, String searchValue) {
         whereClause.append("where (assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location)");
         if (searchKeys != null && !searchKeys.isEmpty()) {
             whereClause.append(" and (");
@@ -203,7 +203,16 @@ public class HibernateWardDAO implements WardDAO {
                         break;
                     case "patientName":
                         additionalJoins.append(" JOIN pr.names prn ");
-                        whereClause.append(" (prn.givenName LIKE :patientName or prn.middleName LIKE :patientName or prn.familyName LIKE :patientName) ");
+                        whereClause.append(" (");
+
+                        String[] nameParts = searchValue.split("\\s+");
+                        for (int j = 0; j < nameParts.length; j++) {
+                            if (j > 0) whereClause.append(" and ");
+                            whereClause.append(" (prn.givenName LIKE :namePart" + j +
+                                    " or prn.middleName LIKE :namePart" + j +
+                                    " or prn.familyName LIKE :namePart" + j + ") ");
+                        }
+                        whereClause.append(" )");
                         break;
                 }
                 if (i < searchKeys.size() - 1) {
@@ -223,7 +232,10 @@ public class HibernateWardDAO implements WardDAO {
                 query.setParameter("patientIdentifier", "%" + searchValue + "%");
             }
             if (searchKeys.contains("patientName")) {
-                query.setParameter("patientName", "%" + searchValue + "%");
+                String[] nameParts = searchValue.split("\\s+");
+                for (int i = 0; i < nameParts.length; i++) {
+                    query.setParameter("namePart" + i, "%" + nameParts[i] + "%");
+                }
             }
         }
     }
