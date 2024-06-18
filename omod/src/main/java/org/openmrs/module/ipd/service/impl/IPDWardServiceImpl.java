@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Service
@@ -40,11 +40,12 @@ public class IPDWardServiceImpl implements IPDWardService {
         if (admittedPatients ==null ){
             return new IPDPatientDetails(new ArrayList<>(),0);
         }
+        List<AdmittedPatient> admittedPatientsSortedList = Objects.equals(sortBy, "bedNumber") ? sortNumericBedNumbers(admittedPatients) : admittedPatients;
 
-        offset = Math.min(offset, admittedPatients.size());
-        limit = Math.min(limit, admittedPatients.size() - offset);
+        offset = Math.min(offset, admittedPatientsSortedList.size());
+        limit = Math.min(limit, admittedPatientsSortedList.size() - offset);
 
-        return new IPDPatientDetails(admittedPatients.subList(offset, offset + limit), admittedPatients.size());
+        return new IPDPatientDetails(admittedPatientsSortedList.subList(offset, offset + limit), admittedPatientsSortedList.size());
     }
 
     @Override
@@ -55,12 +56,12 @@ public class IPDWardServiceImpl implements IPDWardService {
         if (admittedPatients ==null ){
             return new IPDPatientDetails(new ArrayList<>(),0);
         }
-        List<AdmittedPatient> admittedPatientsSortedList = sortBedNumbers(admittedPatients);
+        List<AdmittedPatient> admittedPatientsSortedList = Objects.equals(sortBy, "bedNumber") ? sortNumericBedNumbers(admittedPatients) : admittedPatients;
 
         offset = Math.min(offset, admittedPatientsSortedList.size());
         limit = Math.min(limit, admittedPatientsSortedList.size() - offset);
 
-        return new IPDPatientDetails(admittedPatientsSortedList.subList(offset, offset + limit), admittedPatients.size());
+        return new IPDPatientDetails(admittedPatientsSortedList.subList(offset, offset + limit), admittedPatientsSortedList.size());
     }
 
     @Override
@@ -73,32 +74,28 @@ public class IPDWardServiceImpl implements IPDWardService {
             return new IPDPatientDetails(new ArrayList<>(),0);
         }
 
-        List<AdmittedPatient> admittedPatientsSortedList = sortBedNumbers(admittedPatients);
+        List<AdmittedPatient> admittedPatientsSortedList = Objects.equals(sortBy, "bedNumber") ? sortNumericBedNumbers(admittedPatients) : admittedPatients;
 
         offset = Math.min(offset, admittedPatientsSortedList.size());
         limit = Math.min(limit, admittedPatientsSortedList.size() - offset);
 
-        return new IPDPatientDetails(admittedPatientsSortedList.subList(offset, offset + limit), admittedPatients.size());
+        return new IPDPatientDetails(admittedPatientsSortedList.subList(offset, offset + limit), admittedPatientsSortedList.size());
     }
 
-    private List<AdmittedPatient> sortBedNumbers(List<AdmittedPatient> admittedPatients) {
-        Collections.sort(admittedPatients, (patientA, patientB) -> {
-            String bedNumberA = patientA.getBedPatientAssignment().getBed().getBedNumber();
-            String bedNumberB = patientB.getBedPatientAssignment().getBed().getBedNumber();
+    private List<AdmittedPatient> sortNumericBedNumbers(List<AdmittedPatient> admittedPatients) {
 
-            boolean isNumericA = numericPattern.matcher(bedNumberA).matches();
-            boolean isNumericB = numericPattern.matcher(bedNumberB).matches();
+        boolean allNumeric = admittedPatients.stream()
+                .map(patient -> patient.getBedPatientAssignment().getBed().getBedNumber())
+                .allMatch(bedNumber -> numericPattern.matcher(bedNumber).matches());
 
-            if (isNumericA && isNumericB) {
+        if(allNumeric) {
+            admittedPatients.sort((patientA, patientB) -> {
+                String bedNumberA = patientA.getBedPatientAssignment().getBed().getBedNumber();
+                String bedNumberB = patientB.getBedPatientAssignment().getBed().getBedNumber();
+
                 return Integer.compare(Integer.parseInt(bedNumberA), Integer.parseInt(bedNumberB));
-            } else if (!isNumericA && !isNumericB) {
-                return bedNumberA.compareTo(bedNumberB);
-            } else {
-                return isNumericA ? -1 : 1;
-            }
-        });
-
+            });
+        }
         return admittedPatients;
-
     }
 }
