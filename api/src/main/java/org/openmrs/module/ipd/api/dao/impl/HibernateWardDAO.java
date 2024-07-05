@@ -151,23 +151,24 @@ public class HibernateWardDAO implements WardDAO {
         try {
             Session session = sessionFactory.getCurrentSession();
 
-            String selectQuery = "select NEW org.openmrs.module.ipd.api.model.AdmittedPatient(assignment," +
-                    "(COUNT(DISTINCT o.orderId) - COUNT (DISTINCT s.order.orderId)),careTeam) " +
+            String selectQuery = "select NEW org.openmrs.module.ipd.api.model.AdmittedPatient(assignment, " +
+                    "(COUNT(DISTINCT o.orderId) - COUNT(DISTINCT s.order.orderId)), careTeam) " +
                     "from org.openmrs.module.bedmanagement.entity.BedPatientAssignment assignment " +
                     "JOIN org.openmrs.Visit v on v.patient = assignment.patient " +
                     "JOIN org.openmrs.Patient p on assignment.patient = p " +
-                    "JOIN org.openmrs.Person pr on pr.personId=p.patientId " +
+                    "JOIN org.openmrs.Person pr on pr.personId = p.patientId " +
                     "JOIN org.openmrs.Encounter e on e.visit = v " +
-                    "LEFT JOIN CareTeam careTeam on careTeam.visit = v "+
+                    "LEFT JOIN CareTeam careTeam on careTeam.visit = v " +
                     "JOIN org.openmrs.module.bedmanagement.entity.BedLocationMapping locmap on locmap.bed = assignment.bed " +
                     "JOIN org.openmrs.Location l on locmap.location = l " +
-                    "LEFT JOIN org.openmrs.Order o on o.encounter = e " +
+                    "LEFT JOIN org.openmrs.Order o on o.encounter = e and o.dateStopped is null and o.action!='DISCONTINUE' and o.careSetting.careSettingId = 2 " +
                     "LEFT JOIN Slot s on s.order = o ";
 
+
             // Construct additional joins and where clause based on search keys
-            StringBuilder additionalJoins = new StringBuilder("");
-            StringBuilder whereClause = new StringBuilder("");
-            generateSQLSearchConditions(searchKeys,additionalJoins,whereClause);
+            StringBuilder additionalJoins = new StringBuilder();
+            StringBuilder whereClause = new StringBuilder();
+            generateSQLSearchConditions(searchKeys, additionalJoins, whereClause, searchValue);
 
             // Construct group by clause
             String groupBy = " GROUP BY assignment.patient, v ";
@@ -188,7 +189,8 @@ public class HibernateWardDAO implements WardDAO {
         }
     }
 
-    private void generateSQLSearchConditions(List<String> searchKeys,StringBuilder additionalJoins,StringBuilder whereClause) {
+
+    private void generateSQLSearchConditions(List<String> searchKeys, StringBuilder additionalJoins, StringBuilder whereClause, String searchValue) {
         whereClause.append("where (assignment.endDatetime is null and v.stopDatetime is null and l.parentLocation = :location)");
         if (searchKeys != null && !searchKeys.isEmpty()) {
             whereClause.append(" and (");
@@ -203,7 +205,16 @@ public class HibernateWardDAO implements WardDAO {
                         break;
                     case "patientName":
                         additionalJoins.append(" JOIN pr.names prn ");
-                        whereClause.append(" (prn.givenName LIKE :patientName or prn.middleName LIKE :patientName or prn.familyName LIKE :patientName) ");
+                        whereClause.append(" (");
+
+                        String[] nameParts = searchValue.split("\\s+");
+                        for (int j = 0; j < nameParts.length; j++) {
+                            if (j > 0) whereClause.append(" and ");
+                            whereClause.append(" (prn.givenName LIKE :namePart" + j +
+                                    " or prn.middleName LIKE :namePart" + j +
+                                    " or prn.familyName LIKE :namePart" + j + ") ");
+                        }
+                        whereClause.append(" )");
                         break;
                 }
                 if (i < searchKeys.size() - 1) {
@@ -223,7 +234,10 @@ public class HibernateWardDAO implements WardDAO {
                 query.setParameter("patientIdentifier", "%" + searchValue + "%");
             }
             if (searchKeys.contains("patientName")) {
-                query.setParameter("patientName", "%" + searchValue + "%");
+                String[] nameParts = searchValue.split("\\s+");
+                for (int i = 0; i < nameParts.length; i++) {
+                    query.setParameter("namePart" + i, "%" + nameParts[i] + "%");
+                }
             }
         }
     }
