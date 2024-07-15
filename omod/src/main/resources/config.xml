@@ -16,6 +16,13 @@
 		<require_module>org.bahmni.module.medication-administration</require_module>
 		<require_module>org.bahmni.module.fhir2Extension</require_module>
 	</require_modules>
+
+	<globalProperty>
+		<property>bahmni-ipd.allowSlotStopOnDrugOrderStop</property>
+		<defaultValue>true</defaultValue>
+		<description>Feature toggle to decide whether to stop slots associated when drug order is stopped</description>
+	</globalProperty>
+	
 	<activator>org.openmrs.module.ipd.api.IPDActivator</activator>
 </module>
 
