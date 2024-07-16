@@ -39,7 +39,7 @@ public class ShiftStartTaskEventHandler implements IPDEventHandler {
             String patientUuid = admittedPatient.getBedPatientAssignment().getPatient().getUuid();
             IPDEvent ipdEvent = new IPDEvent(null, patientUuid, event.getIpdEventType());
             for(TaskDetail taskDetail : eventConfig.getTasks()) {
-                TaskRequest taskRequest = IPDEventUtils.createNonMedicationTaskRequest(ipdEvent, taskDetail.getName(), "nursing_activity_system");
+                TaskRequest taskRequest = IPDEventUtils.createNonMedicationTaskRequest(ipdEvent, taskDetail.getName(), "nursing_activity_system",true);
                 Task task = taskMapper.fromRequest(taskRequest);
                 tasks.add(task);
             }

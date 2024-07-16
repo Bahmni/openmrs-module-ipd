@@ -40,7 +40,7 @@ public class PatientAdmitEventHandler  implements IPDEventHandler {
                 .orElse(null);
         if (eventConfig != null) {
             for(TaskDetail taskDetail : eventConfig.getTasks()) {
-                TaskRequest taskRequest = IPDEventUtils.createNonMedicationTaskRequest(event, taskDetail.getName(), "nursing_activity_system");
+                TaskRequest taskRequest = IPDEventUtils.createNonMedicationTaskRequest(event, taskDetail.getName(), "nursing_activity_system",true);
                 Task task = taskMapper.fromRequest(taskRequest);
                 taskService.saveTask(task);
                 log.info("Task created " + taskDetail.getName());
