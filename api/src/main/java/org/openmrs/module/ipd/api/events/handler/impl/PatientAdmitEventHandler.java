@@ -35,12 +35,12 @@ public class PatientAdmitEventHandler  implements IPDEventHandler {
     public void handleEvent(IPDEvent event) {
         List<ConfigDetail> configList = configLoader.getConfigs();
         ConfigDetail eventConfig = configList.stream()
-                .filter(config -> config.getType().equals(event.getIpdEventType().name()))
+                .filter(config -> config.getEvent().equals(event.getIpdEventType().name()))
                 .findFirst()
                 .orElse(null);
         if (eventConfig != null) {
             for(TaskDetail taskDetail : eventConfig.getTasks()) {
-                TaskRequest taskRequest = IPDEventUtils.createNonMedicationTaskRequest(event, taskDetail.getName(), "nursing_activity_system",true);
+                TaskRequest taskRequest = IPDEventUtils.createNonMedicationTaskRequest(event, taskDetail.getName(), taskDetail.getType(), true);
                 Task task = taskMapper.fromRequest(taskRequest);
                 taskService.saveTask(task);
                 log.info("Task created " + taskDetail.getName());
