@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TaskDetail {
     private String name;
+    private String type;
 }
