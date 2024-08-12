@@ -63,8 +63,8 @@ public class IPDMedicationAdministrationController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<Object> createAdhocMedicationAdministration(@RequestBody MedicationAdministrationRequest medicationAdministrationRequest) {
         try {
-            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_ADHOC_MEDICATION_TASKS) || !Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_MEDICATION_ADMINISTRATION)) {
-                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.EDIT_MEDICATION_TASKS + ", "+PrivilegeConstants.EDIT_MEDICATION_ADMINISTRATION), FORBIDDEN);
+            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_ADHOC_MEDICATION_TASKS)) {
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.EDIT_ADHOC_MEDICATION_TASKS), FORBIDDEN);
             }
             MedicationAdministration medicationAdministration = ipdMedicationAdministrationService.saveAdhocMedicationAdministration(medicationAdministrationRequest);
             MedicationAdministrationResponse medicationAdministrationResponse = medicationAdministrationFactory.mapMedicationAdministrationToResponse(medicationAdministration);
