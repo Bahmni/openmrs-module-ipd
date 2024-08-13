@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -35,7 +34,12 @@ public class MedicationAdministrationFactory {
         MedicationAdministration medicationAdministration = new MedicationAdministration();
         if (existingMedicationAdministration ==null ||  existingMedicationAdministration.getId() == null) {
             medicationAdministration.setAdministeredDateTime(request.getAdministeredDateTimeAsLocaltime());
-            medicationAdministration.setStatus(medicationAdministrationStatusTranslator.toOpenmrsType(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus())));
+            String status = request.getStatus();
+            org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus medicationAdministrationStatus =
+                    org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode(status);
+
+            medicationAdministrationStatus = (medicationAdministrationStatus != null) ? medicationAdministrationStatus : org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode("unknown");
+            medicationAdministration.setStatus(medicationAdministrationStatusTranslator.toOpenmrsType(medicationAdministrationStatus));
             medicationAdministration.setPatient(Context.getPatientService().getPatientByUuid(request.getPatientUuid()));
             medicationAdministration.setEncounter(Context.getEncounterService().getEncounterByUuid(request.getEncounterUuid()));
             medicationAdministration.setDrugOrder((DrugOrder) Context.getOrderService().getOrderByUuid(request.getOrderUuid()));

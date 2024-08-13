@@ -13,6 +13,8 @@ import org.openmrs.module.ipd.util.PrivilegeConstants;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.RestUtil;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,6 +32,7 @@ public class IPDMedicationAdministrationController extends BaseRestController {
 
     private final IPDMedicationAdministrationService ipdMedicationAdministrationService;
     private final MedicationAdministrationFactory medicationAdministrationFactory;
+    private static final Logger log = LoggerFactory.getLogger(IPDMedicationAdministrationController.class);
 
     @Autowired
     public IPDMedicationAdministrationController(IPDMedicationAdministrationService ipdMedicationAdministrationService,
