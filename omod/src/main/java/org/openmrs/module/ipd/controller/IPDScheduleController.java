@@ -98,7 +98,7 @@ public class IPDScheduleController extends BaseRestController {
                                                            @RequestParam(value = "view", required = false) String view) {
         try {
             if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_ADMINISTRATION) || !Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_TASKS)) {
-                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.EDIT_MEDICATION_TASKS+", "+PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.GET_MEDICATION_ADMINISTRATION+", "+PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
             }
 ;            if (startTime != null && endTime != null) {
                 LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
@@ -123,7 +123,7 @@ public class IPDScheduleController extends BaseRestController {
                                                                  @RequestParam(value = "orderUuids", required = false) List<String> orderUuids) {
         try {
             if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_ADMINISTRATION) || !Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_TASKS)) {
-                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.EDIT_MEDICATION_TASKS+" "+PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.GET_MEDICATION_ADMINISTRATION+" "+PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
             }
             List<Slot> slots;
             if (orderUuids == null || orderUuids.isEmpty()) {
