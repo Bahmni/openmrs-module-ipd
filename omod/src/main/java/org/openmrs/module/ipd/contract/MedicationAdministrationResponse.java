@@ -38,7 +38,7 @@ public class MedicationAdministrationResponse {
         if (openmrsMedicationAdministration == null) {
             return null;
         }
-        String status = openmrsMedicationAdministration.getStatus() != null ? openmrsMedicationAdministration.getStatus() : null;
+        String status = openmrsMedicationAdministration.getStatus().toCode() != null ? openmrsMedicationAdministration.getStatus().toCode() : null;
         String statusReason = openmrsMedicationAdministration.getStatusReason() != null ? openmrsMedicationAdministration.getStatusReason().getDisplayString() : null;
         String patientUuid = openmrsMedicationAdministration.getPatient() != null ? openmrsMedicationAdministration.getPatient().getUuid() : null;
         String encounterUuid = openmrsMedicationAdministration.getEncounter() != null ? openmrsMedicationAdministration.getEncounter().getUuid() : null;

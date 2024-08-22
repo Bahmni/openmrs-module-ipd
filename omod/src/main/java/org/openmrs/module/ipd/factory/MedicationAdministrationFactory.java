@@ -2,7 +2,6 @@ package org.openmrs.module.ipd.factory;
 
 import org.openmrs.DrugOrder;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationStatusTranslator;
 import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
 import org.openmrs.module.ipd.api.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
@@ -20,13 +19,10 @@ import java.util.List;
 public class MedicationAdministrationFactory {
 
     private MedicationAdministrationTranslator medicationAdministrationTranslator;
-    private MedicationAdministrationStatusTranslator medicationAdministrationStatusTranslator;
 
     @Autowired
-    public MedicationAdministrationFactory(MedicationAdministrationTranslator medicationAdministrationTranslator,
-                                           MedicationAdministrationStatusTranslator medicationAdministrationStatusTranslator) {
+    public MedicationAdministrationFactory(MedicationAdministrationTranslator medicationAdministrationTranslator) {
         this.medicationAdministrationTranslator = medicationAdministrationTranslator;
-        this.medicationAdministrationStatusTranslator = medicationAdministrationStatusTranslator;
     }
 
     public MedicationAdministration mapRequestToMedicationAdministration(MedicationAdministrationRequest request, MedicationAdministration existingMedicationAdministration) {
@@ -34,12 +30,9 @@ public class MedicationAdministrationFactory {
         MedicationAdministration medicationAdministration = new MedicationAdministration();
         if (existingMedicationAdministration ==null ||  existingMedicationAdministration.getId() == null) {
             medicationAdministration.setAdministeredDateTime(request.getAdministeredDateTimeAsLocaltime());
-            String status = request.getStatus();
-            org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus medicationAdministrationStatus =
-                    org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode(status);
-
+            org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus medicationAdministrationStatus = org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus());
             medicationAdministrationStatus = (medicationAdministrationStatus != null) ? medicationAdministrationStatus : org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode("unknown");
-            medicationAdministration.setStatus(medicationAdministrationStatusTranslator.toOpenmrsType(medicationAdministrationStatus));
+            medicationAdministration.setStatus(medicationAdministrationStatus);
             medicationAdministration.setPatient(Context.getPatientService().getPatientByUuid(request.getPatientUuid()));
             medicationAdministration.setEncounter(Context.getEncounterService().getEncounterByUuid(request.getEncounterUuid()));
             medicationAdministration.setDrugOrder((DrugOrder) Context.getOrderService().getOrderByUuid(request.getOrderUuid()));
