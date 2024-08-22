@@ -30,9 +30,7 @@ public class MedicationAdministrationFactory {
         MedicationAdministration medicationAdministration = new MedicationAdministration();
         if (existingMedicationAdministration ==null ||  existingMedicationAdministration.getId() == null) {
             medicationAdministration.setAdministeredDateTime(request.getAdministeredDateTimeAsLocaltime());
-            org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus medicationAdministrationStatus = org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus());
-            medicationAdministrationStatus = (medicationAdministrationStatus != null) ? medicationAdministrationStatus : org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode("unknown");
-            medicationAdministration.setStatus(medicationAdministrationStatus);
+            medicationAdministration.setStatus(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.fromCode(request.getStatus()));
             medicationAdministration.setPatient(Context.getPatientService().getPatientByUuid(request.getPatientUuid()));
             medicationAdministration.setEncounter(Context.getEncounterService().getEncounterByUuid(request.getEncounterUuid()));
             medicationAdministration.setDrugOrder((DrugOrder) Context.getOrderService().getOrderByUuid(request.getOrderUuid()));
