@@ -10,6 +10,7 @@
 
     <context:component-scan base-package="org.openmrs.module.ipd.api"/>
     <context:annotation-config/>
+    <context:property-placeholder location="classpath:application.properties"/>
     <bean id="hibernateSlotDAO" class="org.openmrs.module.ipd.api.dao.impl.HibernateSlotDAO"/>
     <bean id="slotServiceImpl" class="org.openmrs.module.ipd.api.service.impl.SlotServiceImpl"/>
     <bean id="slotService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">

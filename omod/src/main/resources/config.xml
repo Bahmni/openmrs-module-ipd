@@ -16,6 +16,37 @@
 		<require_module>org.bahmni.module.medication-administration</require_module>
 		<require_module>org.bahmni.module.fhir2Extension</require_module>
 	</require_modules>
+
+	<globalProperty>
+		<property>bahmni-ipd.allowSlotStopOnDrugOrderStop</property>
+		<defaultValue>true</defaultValue>
+		<description>Feature toggle to decide whether to stop slots associated when drug order is stopped</description>
+	</globalProperty>
+
+	<privilege>
+		<name>Edit Medication Tasks</name>
+		<description>Allows to Edit Medication Schedules and Slots</description>
+	</privilege>
+	<privilege>
+		<name>Delete Medication Tasks</name>
+		<description>Allows to Delete Medication Schedules and Slots</description>
+	</privilege>
+	<privilege>
+		<name>Edit adhoc medication tasks</name>
+		<description>Allows to Edit Emergency Medication Tasks</description>
+	</privilege>
+	<privilege>
+		<name>Edit Medication Administration</name>
+		<description>Allows to Edit Medication Administrations</description>
+	</privilege>
+	<privilege>
+		<name>Get Medication Administration</name>
+		<description>Allows to Get Medication Administrations</description>
+	</privilege>
+	<privilege>
+		<name>Get Medication Tasks</name>
+		<description>Allows to Get Medication Tasks</description>
+	</privilege>
 	<activator>org.openmrs.module.ipd.api.IPDActivator</activator>
 </module>
 
