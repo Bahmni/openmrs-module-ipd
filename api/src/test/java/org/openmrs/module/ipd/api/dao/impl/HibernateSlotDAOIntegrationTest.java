@@ -285,12 +285,12 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
 
 
         MedicationAdministration medicationAdministration=new MedicationAdministration();
-        medicationAdministration.setStatus(testConcept);
+        medicationAdministration.setStatus(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED);
         medicationAdministration.setAdministeredDateTime(DateTimeUtil.convertLocalDateTimeDate(medicationAdministeredTime));
         MedicationAdministration savedMedicationAdministration= medicationAdministrationDao.createOrUpdate(medicationAdministration);
 
         MedicationAdministration medicationAdministration2=new MedicationAdministration();
-        medicationAdministration2.setStatus(testConcept);
+        medicationAdministration2.setStatus(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED);
         medicationAdministration2.setAdministeredDateTime(DateTimeUtil.convertLocalDateTimeDate(medicationAdministeredTime2));
         MedicationAdministration savedMedicationAdministration2= medicationAdministrationDao.createOrUpdate(medicationAdministration2);
 
@@ -376,12 +376,12 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
 
 
         MedicationAdministration medicationAdministration=new MedicationAdministration();
-        medicationAdministration.setStatus(testConcept);
+        medicationAdministration.setStatus(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED);
         medicationAdministration.setAdministeredDateTime(DateTimeUtil.convertLocalDateTimeDate(medicationAdministeredTime));
         MedicationAdministration savedMedicationAdministration= medicationAdministrationDao.createOrUpdate(medicationAdministration);
 
         MedicationAdministration medicationAdministration2=new MedicationAdministration();
-        medicationAdministration2.setStatus(testConcept);
+        medicationAdministration2.setStatus(org.hl7.fhir.r4.model.MedicationAdministration.MedicationAdministrationStatus.COMPLETED);
         medicationAdministration2.setAdministeredDateTime(DateTimeUtil.convertLocalDateTimeDate(medicationAdministeredTime2));
         MedicationAdministration savedMedicationAdministration2= medicationAdministrationDao.createOrUpdate(medicationAdministration2);
 

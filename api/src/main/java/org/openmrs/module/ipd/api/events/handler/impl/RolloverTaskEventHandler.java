@@ -35,7 +35,7 @@ public class RolloverTaskEventHandler implements IPDEventHandler {
     public void handleEvent(IPDEvent event) {
         List<ConfigDetail> configList = configLoader.getConfigs();
         ConfigDetail eventConfig = configList.stream()
-                .filter(config -> config.getType().equals(event.getIpdEventType().name()))
+                .filter(config -> config.getEvent().equals(event.getIpdEventType().name()))
                 .findFirst()
                 .orElse(null);
 
