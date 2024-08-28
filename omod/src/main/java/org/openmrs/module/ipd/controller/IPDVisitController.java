@@ -43,7 +43,7 @@ public class IPDVisitController extends BaseRestController {
             @PathVariable("visitUuid") String visitUuid,
             @RequestParam(value = "includes", required = false) List<String> includes) throws ParseException {
             if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_ADMINISTRATION) || !Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_TASKS)) {
-                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.EDIT_MEDICATION_TASKS + ", " + PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.GET_MEDICATION_ADMINISTRATION + ", " + PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
             }
             List<IPDDrugOrder> prescribedOrders = ipdVisitService.getPrescribedOrders(visitUuid, true, null, null, null, false);
             List<IPDDrugOrderResponse> prescribedOrderResponse = prescribedOrders.stream().map(IPDDrugOrderResponse::createFrom).collect(Collectors.toList());

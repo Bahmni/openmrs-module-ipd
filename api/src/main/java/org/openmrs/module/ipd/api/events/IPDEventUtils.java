@@ -8,7 +8,7 @@ import java.util.Date;
 
 public class IPDEventUtils {
 
-    public static TaskRequest createNonMedicationTaskRequest(IPDEvent ipdEvent, String name, String taskType) {
+    public static TaskRequest createNonMedicationTaskRequest(IPDEvent ipdEvent, String name, String taskType, Boolean isSystemGenerated) {
         TaskRequest taskRequest = new TaskRequest();
         taskRequest.setName(name);
         taskRequest.setTaskType(taskType);
@@ -17,6 +17,7 @@ public class IPDEventUtils {
         taskRequest.setRequestedStartTime(new Date());
         taskRequest.setIntent(FhirTask.TaskIntent.ORDER);
         taskRequest.setStatus(FhirTask.TaskStatus.REQUESTED);
+        taskRequest.setIsSystemGeneratedTask(isSystemGenerated);
         return taskRequest;
     }
 }

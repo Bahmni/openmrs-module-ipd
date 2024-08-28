@@ -29,8 +29,8 @@
     <ipd_schedule schedule_id="1" uuid="23255323d-e887-4485-bc19-756cdbf00001" subject_reference_id="2" actor_reference_id="1" service_type_id="101" active="true" start_date="2024-01-27 15:48:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" visit_id="1"/>
 
     <concept concept_id="103" retired="false" datatype_id="4" class_id="11" is_set="false" creator="1" date_created="2024-01-27 15:48:00.0" version="" uuid="0abca361-f6bf-49cc-97de-b2f37f099125"/>
-    <medication_administration medication_administration_id="1" uuid="23255323d-e887-4485-bc19-756cdbf10101" status="103" creator="1" date_created="2024-01-27 20:00:00.0" voided="false"/>
-    <medication_administration medication_administration_id="2" uuid="23255323d-e887-4485-bc19-756cdbf10102" status="103" creator="1" date_created="2024-01-28 14:00:00.0" voided="false"/>
+    <medication_administration medication_administration_id="1" uuid="23255323d-e887-4485-bc19-756cdbf10101" status="COMPLETED" creator="1" date_created="2024-01-27 20:00:00.0" voided="false"/>
+    <medication_administration medication_administration_id="2" uuid="23255323d-e887-4485-bc19-756cdbf10102" status="COMPLETED" creator="1" date_created="2024-01-28 14:00:00.0" voided="false"/>
 
     <ipd_slot slot_id="1" uuid="23255323d-e887-4485-bc19-756cdbf00101" service_type_id="101" schedule_id="1" status="COMPLETED" start_date_time="2024-01-27 20:00:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" order_id="1" medication_administration_id="1"/>
     <ipd_slot slot_id="2" uuid="23255323d-e887-4485-bc19-756cdbf00102" service_type_id="101" schedule_id="1" status="SCHEDULED" start_date_time="2024-01-28 08:00:00.0" creator="1" date_created="2024-01-27 15:48:00.0" voided="false" order_id="1"/>
