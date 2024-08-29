@@ -14,6 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConfigDetail {
-    private String type;
+    private String event;
     private List<TaskDetail> tasks;
 }
