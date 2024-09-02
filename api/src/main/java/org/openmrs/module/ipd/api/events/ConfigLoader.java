@@ -20,7 +20,7 @@ public class ConfigLoader {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${config-file.path}")
+    @Value("${config-file.path:/etc/bahmni_config/openmrs/apps/ipdDashboard/eventsConfig.json}")
     private String routeConfigurationFileLocation;
 
     public List<ConfigDetail> getConfigs() {
