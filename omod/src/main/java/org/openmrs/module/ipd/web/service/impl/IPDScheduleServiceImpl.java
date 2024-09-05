@@ -193,7 +193,7 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
                     PatientMedicationSummary patientMedicationSummary = new PatientMedicationSummary();
                     patientMedicationSummary.setPatientUuid(entry.getKey());
                     List<PrescribedOrderSlotSummary> prescribedOrderSlotsSummaryList = entry.getValue().entrySet().stream()
-                            .filter(subEntry -> subEntry.getKey() != null)
+                            .filter(subEntry -> subEntry.getKey() != null && !subEntry.getKey().equals("emergencyMedications"))
                             .map(subEntry -> {
                                 PrescribedOrderSlotSummary prescribedOrderSlotSummary = new PrescribedOrderSlotSummary();
                                 prescribedOrderSlotSummary.setOrderUuid(subEntry.getKey());
