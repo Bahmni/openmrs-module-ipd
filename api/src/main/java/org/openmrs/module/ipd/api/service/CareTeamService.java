@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.openmrs.api.OpenmrsService;
 
 
-@Service
+
 public interface CareTeamService extends OpenmrsService {
 
     CareTeam saveCareTeam(CareTeam careTeam) throws APIException;
