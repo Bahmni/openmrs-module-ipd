@@ -1,20 +1,17 @@
 package org.openmrs.module.ipd.api.scheduler.tasks;
 
+import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.events.IPDEventManager;
 import org.openmrs.module.ipd.api.events.model.IPDEvent;
 import org.openmrs.module.ipd.api.events.model.IPDEventType;
 import org.openmrs.scheduler.tasks.AbstractTask;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
 
-@Component
-public class ShiftStartTasks extends AbstractTask implements ApplicationContextAware {
 
-    private static ApplicationContext context;
+public class ShiftStartTasks extends AbstractTask {
+
     @Override
     public void execute() {
-        IPDEventManager eventManager = context.getBean(IPDEventManager.class);
+        IPDEventManager eventManager = Context.getRegisteredComponents(IPDEventManager.class).get(0);
         IPDEventType eventType = eventManager.getEventTypeForEncounter(String.valueOf(IPDEventType.SHIFT_START_TASK));
         if (eventType != null) {
             IPDEvent ipdEvent = new IPDEvent(null, null, eventType);
@@ -22,8 +19,4 @@ public class ShiftStartTasks extends AbstractTask implements ApplicationContextA
         }
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.context = applicationContext;
-    }
 }
