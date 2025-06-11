@@ -123,10 +123,41 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
     @Override
     public void markSlotsAsMissed(List<Slot> scheduledSlots, Map<Order, LocalDateTime> maxTimeForAnOrder) {
         List<Slot> slotsToBeMarkedAsMissed = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        Concept asNeededPlaceholderConcept = null;
 
-        scheduledSlots.stream().forEach(slot -> {
-            if (slot.getStartDateTime().compareTo(maxTimeForAnOrder.get(slot.getOrder())) < 0)
-                slotsToBeMarkedAsMissed.add(slot);
+        try {
+            if (this.conceptService != null) {
+                asNeededPlaceholderConcept = this.conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
+            } else {
+                ConceptService localConceptService = Context.getConceptService();
+                if (localConceptService != null) {
+                    this.conceptService = localConceptService;
+                    asNeededPlaceholderConcept = this.conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Exception while fetching asNeededPlaceholderConcept: ", e);
+        }
+
+        final Concept finalPrnConcept = asNeededPlaceholderConcept;
+
+        scheduledSlots.forEach(slot -> {
+            if (slot.getStartDateTime().compareTo(maxTimeForAnOrder.get(slot.getOrder())) < 0) {
+                boolean isPrnTask = finalPrnConcept != null &&
+                                    slot.getServiceType() != null &&
+                                    slot.getServiceType().equals(finalPrnConcept);
+
+                LocalDateTime slotEndDateTime = slot.getEndDateTime();
+
+                boolean prnShouldBeSkipped = isPrnTask &&
+                                             slotEndDateTime != null &&
+                                             slotEndDateTime.isAfter(now);
+
+                if (!prnShouldBeSkipped) {
+                    slotsToBeMarkedAsMissed.add(slot);
+                }
+            }
         });
 
         slotsToBeMarkedAsMissed.forEach(slot -> {
