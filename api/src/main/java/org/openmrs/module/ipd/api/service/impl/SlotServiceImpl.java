@@ -130,11 +130,8 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
             if (this.conceptService != null) {
                 asNeededPlaceholderConcept = this.conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
             } else {
-                ConceptService localConceptService = Context.getConceptService();
-                if (localConceptService != null) {
-                    this.conceptService = localConceptService;
-                    asNeededPlaceholderConcept = this.conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
-                }
+                this.conceptService = Context.getConceptService();
+                asNeededPlaceholderConcept = this.conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
             }
         } catch (Exception e) {
             log.error("Exception while fetching asNeededPlaceholderConcept: ", e);
