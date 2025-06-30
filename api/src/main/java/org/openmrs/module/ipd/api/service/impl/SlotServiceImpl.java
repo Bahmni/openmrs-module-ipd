@@ -125,17 +125,7 @@ public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
         List<Slot> slotsToBeMarkedAsMissed = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         Concept asNeededPlaceholderConcept = null;
-
-        try {
-            if (this.conceptService != null) {
-                asNeededPlaceholderConcept = this.conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
-            } else {
-                this.conceptService = Context.getConceptService();
-                asNeededPlaceholderConcept = this.conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
-            }
-        } catch (Exception e) {
-            log.error("Exception while fetching asNeededPlaceholderConcept: ", e);
-        }
+        asNeededPlaceholderConcept = this.conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName());
 
         final Concept finalPrnConcept = asNeededPlaceholderConcept;
 
