@@ -216,7 +216,6 @@ public class SlotServiceImplTest {
 
         Mockito.when(slotDAO.saveSlot(slot1)).thenReturn(slot1);
 
-        // Mock conceptService to avoid NullPointerException
         Concept prnConcept = new Concept();
         Mockito.when(conceptService.getConceptByName(Mockito.anyString())).thenReturn(prnConcept);
         slotService.setConceptService(conceptService);
