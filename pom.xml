@@ -48,24 +48,13 @@
 		<jacocoVersion>0.7.9</jacocoVersion>
 		<lombokVersion>1.18.26</lombokVersion>
 		<openmrsFhir2Version>2.1.0</openmrsFhir2Version>
-		<fhir2ExtensionVersion>1.3.0</fhir2ExtensionVersion>
+		<fhir2ExtensionVersion>1.4.0-SNAPSHOT</fhir2ExtensionVersion>
 		<bahmniVersion>1.2.0</bahmniVersion>
 		<emrapi-omod.version>1.36.0</emrapi-omod.version>
 		<medicationAdminstrationVersion>1.0.0</medicationAdminstrationVersion>
 	</properties>
 
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.sonatype.central</groupId>
-				<artifactId>central-publishing-maven-plugin</artifactId>
-				<version>0.7.0</version>
-				<extensions>true</extensions>
-				<configuration>
-					<publishingServerId>nexus-sonatype</publishingServerId>
-				</configuration>
-			</plugin>
-		</plugins>
 	<resources>
 		<resource>
 			<directory>src/main/resources</directory>
@@ -108,6 +97,15 @@
 		</testResources>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.sonatype.central</groupId>
+					<artifactId>central-publishing-maven-plugin</artifactId>
+					<version>0.7.0</version>
+					<extensions>true</extensions>
+					<configuration>
+						<publishingServerId>nexus-sonatype</publishingServerId>
+					</configuration>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
