@@ -1,7 +1,9 @@
 package org.openmrs.module.ipd.web.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.SessionFactory;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.ipd.api.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.web.contract.IPDDrugOrderResponse;
@@ -50,7 +52,15 @@ public class IPDVisitController extends BaseRestController {
             List<MedicationAdministrationResponse> emergencyMedications = null;
             if (includes != null && includes.contains("emergencyMedications")) {
                 List<Slot> emergencyMedicationSlots = ipdVisitService.getMedicationSlots(visitUuid, ServiceType.EMERGENCY_MEDICATION_REQUEST);
-                emergencyMedications = emergencyMedicationSlots.stream().map(slot -> MedicationAdministrationResponse.createFrom(slot.getMedicationAdministration())).collect(Collectors.toList());
+                SessionFactory sf = Context.getRegisteredComponents(SessionFactory.class).get(0);
+                emergencyMedications = emergencyMedicationSlots.stream()
+                        .filter(slot -> slot.getMedicationAdministrationId() != null)
+                        .map(slot -> {
+                            MedicationAdministration admin = sf.getCurrentSession()
+                                    .get(MedicationAdministration.class, slot.getMedicationAdministrationId());
+                            return MedicationAdministrationResponse.createFrom(admin);
+                        })
+                        .collect(Collectors.toList());
             }
             return new ResponseEntity(IPDTreatmentsResponse.createFrom(prescribedOrderResponse, emergencyMedications), OK);
     }

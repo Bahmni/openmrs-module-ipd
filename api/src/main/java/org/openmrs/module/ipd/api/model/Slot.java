@@ -84,9 +84,12 @@ public class Slot extends BaseChangeableOpenmrsData {
 	/**
 	 * The reference of medication administration if the medication is administered
 	 */
-	@OneToOne
-	@JoinColumn(name = "medication_administration_id", referencedColumnName = "medication_administration_id")
-	private MedicationAdministration medicationAdministration;
+	// @OneToOne
+	// @JoinColumn(name = "medication_administration_id", referencedColumnName = "medication_administration_id")
+	// private MedicationAdministration medicationAdministration;
+
+	@Column(name = "medication_administration_id")
+	private Integer medicationAdministrationId;
 
 	@Column(name = "comments")
 	private String notes;

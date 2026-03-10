@@ -57,7 +57,9 @@ public class SlotFactory {
             slot.setSchedule(savedSchedule);
             slot.setStartDateTime(slotStartTime);
             slot.setStatus(status);
-            slot.setMedicationAdministration(medicationAdministration);
+            if (medicationAdministration != null) {
+                slot.setMedicationAdministrationId(medicationAdministration.getMedicationAdministrationId());
+            }
             slot.setNotes(comments);
             return slot;
         }).collect(Collectors.toList());
