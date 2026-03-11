@@ -82,6 +82,9 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
             if (slot.getMedicationAdministrationId() != null) {
                 MedicationAdministration existingAdmin = sessionFactory.getCurrentSession()
                         .get(MedicationAdministration.class, slot.getMedicationAdministrationId());
+                if (existingAdmin == null) {
+                    throw new RuntimeException("MedicationAdministration not found for id: " + slot.getMedicationAdministrationId());
+                }
                 return fhirMedicationAdministrationService.get(existingAdmin.getUuid());
             }
             if (!StringUtils.isBlank(medicationAdministrationRequest.getUuid())) {
@@ -123,6 +126,12 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
                         openmrsMedicationAdministration, Slot.SlotStatus.COMPLETED, serviceType,"")
                 .forEach(slotService::saveSlot);
         return medicationAdministration;
+    }
+
+    @Override
+    public MedicationAdministration getMedicationAdministrationById(Integer id) {
+        if (id == null) return null;
+        return sessionFactory.getCurrentSession().get(MedicationAdministration.class, id);
     }
 
 }

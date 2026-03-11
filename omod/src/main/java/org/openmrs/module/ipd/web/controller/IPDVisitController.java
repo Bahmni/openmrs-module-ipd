@@ -1,7 +1,6 @@
 package org.openmrs.module.ipd.web.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.SessionFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.ServiceType;
@@ -10,6 +9,7 @@ import org.openmrs.module.ipd.web.contract.IPDDrugOrderResponse;
 import org.openmrs.module.ipd.web.contract.IPDTreatmentsResponse;
 import org.openmrs.module.ipd.web.contract.MedicationAdministrationResponse;
 import org.openmrs.module.ipd.web.model.IPDDrugOrder;
+import org.openmrs.module.ipd.web.service.IPDMedicationAdministrationService;
 import org.openmrs.module.ipd.web.service.IPDVisitService;
 import org.openmrs.module.ipd.web.util.PrivilegeConstants;
 import org.openmrs.module.webservices.rest.web.RestConstants;
@@ -33,10 +33,12 @@ import static org.springframework.http.HttpStatus.OK;
 public class IPDVisitController extends BaseRestController {
 
     private IPDVisitService ipdVisitService;
+    private IPDMedicationAdministrationService ipdMedicationAdministrationService;
 
     @Autowired
-    public IPDVisitController(IPDVisitService ipdVisitService) {
+    public IPDVisitController(IPDVisitService ipdVisitService, IPDMedicationAdministrationService ipdMedicationAdministrationService) {
         this.ipdVisitService = ipdVisitService;
+        this.ipdMedicationAdministrationService = ipdMedicationAdministrationService;
     }
 
     @RequestMapping(value = "/medication", method = RequestMethod.GET)
@@ -52,12 +54,10 @@ public class IPDVisitController extends BaseRestController {
             List<MedicationAdministrationResponse> emergencyMedications = null;
             if (includes != null && includes.contains("emergencyMedications")) {
                 List<Slot> emergencyMedicationSlots = ipdVisitService.getMedicationSlots(visitUuid, ServiceType.EMERGENCY_MEDICATION_REQUEST);
-                SessionFactory sf = Context.getRegisteredComponents(SessionFactory.class).get(0);
                 emergencyMedications = emergencyMedicationSlots.stream()
                         .filter(slot -> slot.getMedicationAdministrationId() != null)
                         .map(slot -> {
-                            MedicationAdministration admin = sf.getCurrentSession()
-                                    .get(MedicationAdministration.class, slot.getMedicationAdministrationId());
+                            MedicationAdministration admin = ipdMedicationAdministrationService.getMedicationAdministrationById(slot.getMedicationAdministrationId());
                             return MedicationAdministrationResponse.createFrom(admin);
                         })
                         .collect(Collectors.toList());
