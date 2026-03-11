@@ -233,10 +233,10 @@ public class IPDScheduleServiceImpl implements IPDScheduleService {
             if (existingSlots == null || existingSlots.isEmpty()) {
                 continue;
             }
-            boolean atleastOneMedicationAdministered = existingSlots.stream().anyMatch(slot -> slot.getMedicationAdministration() != null);
+            boolean atleastOneMedicationAdministered = existingSlots.stream().anyMatch(slot -> slot.getMedicationAdministrationId() != null);
             if (atleastOneMedicationAdministered){ // Mark status of non administered slots to stopped
                 existingSlots.stream().forEach(slot -> {
-                    if ((slot.getMedicationAdministration() == null) && !slot.isStopped() && (DateTimeUtil.convertDateToLocalDateTime(drugOrder.getDateStopped())
+                    if ((slot.getMedicationAdministrationId() == null) && !slot.isStopped() && (DateTimeUtil.convertDateToLocalDateTime(drugOrder.getDateStopped())
                             .compareTo(slot.getStartDateTime())) < 0)  {slot.setStatus(Slot.SlotStatus.STOPPED); slotService.saveSlot(slot);}});
             } else { // Void all slots
                 existingSlots.stream().forEach(slot -> slotService.voidSlot(slot, ""));

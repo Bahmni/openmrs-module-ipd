@@ -304,7 +304,7 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         slot2.setSchedule(savedSchedule);
         slot2.setServiceType(testConcept);
         slot2.setStartDateTime(slot2StartTime);
-        slot2.setMedicationAdministration(savedMedicationAdministration);
+        slot2.setMedicationAdministrationId(savedMedicationAdministration.getMedicationAdministrationId());
         slot2.setOrder(drugOrder2);
 
         Slot slot3 = new Slot();
@@ -317,7 +317,7 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         slot4.setSchedule(savedSchedule);
         slot4.setServiceType(testConcept);
         slot4.setStartDateTime(slot1StartTime);
-        slot4.setMedicationAdministration(savedMedicationAdministration2);
+        slot4.setMedicationAdministrationId(savedMedicationAdministration2.getMedicationAdministrationId());
         slot4.setOrder(drugOrder);
 
         Slot savedSlot1 = slotDAO.saveSlot(slot1);
@@ -395,7 +395,7 @@ public class HibernateSlotDAOIntegrationTest extends BaseIntegrationTest {
         slot2.setSchedule(savedSchedule);
         slot2.setServiceType(testConcept);
         slot2.setStartDateTime(slot2StartTime);
-        slot2.setMedicationAdministration(savedMedicationAdministration);
+        slot2.setMedicationAdministrationId(savedMedicationAdministration.getMedicationAdministrationId());
         slot2.setOrder(drugOrder2);
 
         Slot slot3 = new Slot();

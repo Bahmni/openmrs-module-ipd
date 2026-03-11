@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.ipd.api.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.Slot;
+import org.openmrs.module.ipd.web.service.IPDMedicationAdministrationService;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 
@@ -26,6 +29,11 @@ public class MedicationSlotResponse {
     private Object medicationAdministration;
     private String notes;
 
+    private static MedicationAdministration fetchMedicationAdministration(Integer id) {
+        if (id == null) return null;
+        return Context.getService(IPDMedicationAdministrationService.class).getMedicationAdministrationById(id);
+    }
+
     public static MedicationSlotResponse createFrom(Slot slot) {
         return MedicationSlotResponse.builder()
                 .id(slot.getId())
@@ -34,7 +42,7 @@ public class MedicationSlotResponse {
                 .status(slot.getStatus().name())
                 .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
                 .order(ConversionUtil.convertToRepresentation(slot.getOrder(), Representation.FULL))
-                .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
+                .medicationAdministration(MedicationAdministrationResponse.createFrom(fetchMedicationAdministration(slot.getMedicationAdministrationId())))
                 .notes(slot.getNotes())
                 .build();
     }
@@ -48,7 +56,7 @@ public class MedicationSlotResponse {
                     .serviceType(slot.getServiceType().getName().getName())
                     .status(slot.getStatus().name())
                     .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
-                    .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
+                    .medicationAdministration(MedicationAdministrationResponse.createFrom(fetchMedicationAdministration(slot.getMedicationAdministrationId())))
                     .notes(slot.getNotes())
                     .build();
         }

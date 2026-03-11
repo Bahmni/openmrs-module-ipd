@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.web.service.impl;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.SessionFactory;
 import org.openmrs.Patient;
 import org.openmrs.Visit;
 import org.openmrs.api.context.Context;
@@ -44,6 +45,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     private FhirMedicationAdministrationDao fhirMedicationAdministrationDao;
     private MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator;
     private ScheduleFactory scheduleFactory;
+    private SessionFactory sessionFactory;
 
     @Autowired
     public IPDMedicationAdministrationServiceImpl(FhirMedicationAdministrationService fhirMedicationAdministrationService,
@@ -52,7 +54,8 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
                                                   SlotFactory slotFactory, SlotService slotService, ScheduleService scheduleService,
                                                   FhirMedicationAdministrationDao fhirMedicationAdministrationDao,
                                                   MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator,
-                                                  ScheduleFactory scheduleFactory) {
+                                                  ScheduleFactory scheduleFactory,
+                                                  SessionFactory sessionFactory) {
         this.fhirMedicationAdministrationService = fhirMedicationAdministrationService;
         this.medicationAdministrationTranslator = medicationAdministrationTranslator;
         this.medicationAdministrationFactory = medicationAdministrationFactory;
@@ -62,6 +65,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         this.fhirMedicationAdministrationDao = fhirMedicationAdministrationDao;
         this.medicationAdministrationToSlotStatusTranslator=medicationAdministrationToSlotStatusTranslator;
         this.scheduleFactory = scheduleFactory;
+        this.sessionFactory = sessionFactory;
     }
 
     private org.hl7.fhir.r4.model.MedicationAdministration createMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
@@ -75,15 +79,21 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         if (slot == null) {
             throw new RuntimeException("Slot not found");
         } else {
-            if (slot.getMedicationAdministration() != null) {
-                return fhirMedicationAdministrationService.get(slot.getMedicationAdministration().getUuid());
+            if (slot.getMedicationAdministrationId() != null) {
+                MedicationAdministration existingAdmin = sessionFactory.getCurrentSession()
+                        .get(MedicationAdministration.class, slot.getMedicationAdministrationId());
+                if (existingAdmin == null) {
+                    throw new RuntimeException("MedicationAdministration not found for id: " + slot.getMedicationAdministrationId());
+                }
+                return fhirMedicationAdministrationService.get(existingAdmin.getUuid());
             }
             if (!StringUtils.isBlank(medicationAdministrationRequest.getUuid())) {
                 return fhirMedicationAdministrationService.get(medicationAdministrationRequest.getUuid());
             }
             org.hl7.fhir.r4.model.MedicationAdministration medicationAdministration = createMedicationAdministration(medicationAdministrationRequest);
             slot.setStatus(medicationAdministrationToSlotStatusTranslator.toSlotStatus(medicationAdministration.getStatus()));
-            slot.setMedicationAdministration((MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId()));
+            MedicationAdministration savedAdmin = (MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId());
+            slot.setMedicationAdministrationId(savedAdmin.getMedicationAdministrationId());
             slotService.saveSlot(slot);
             return medicationAdministration;
         }
@@ -116,6 +126,12 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
                         openmrsMedicationAdministration, Slot.SlotStatus.COMPLETED, serviceType,"")
                 .forEach(slotService::saveSlot);
         return medicationAdministration;
+    }
+
+    @Override
+    public MedicationAdministration getMedicationAdministrationById(Integer id) {
+        if (id == null) return null;
+        return sessionFactory.getCurrentSession().get(MedicationAdministration.class, id);
     }
 
 }

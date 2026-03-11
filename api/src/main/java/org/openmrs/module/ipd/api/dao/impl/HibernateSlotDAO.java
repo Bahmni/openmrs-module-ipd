@@ -37,7 +37,7 @@ public class HibernateSlotDAO implements SlotDAO {
 
 	@Override
 	public Slot getSlotByUUID(String uuid) throws DAOException {
-		Slot s = (Slot)this.sessionFactory.getCurrentSession().createQuery("from Slot s where s.uuid = :uuid").setString("uuid", uuid).uniqueResult();
+		Slot s = (Slot)this.sessionFactory.getCurrentSession().createQuery("from Slot s where s.uuid = :uuid").setParameter("uuid", uuid).uniqueResult();
 		return s;
 	}
 
@@ -117,12 +117,11 @@ public class HibernateSlotDAO implements SlotDAO {
 	public List<Slot> getSlotsBySubjectIncludingAdministeredTimeFrame(Reference subject, LocalDateTime localStartDate, LocalDateTime localEndDate, Visit visit) {
 		Query query = sessionFactory.getCurrentSession()
 				.createQuery("SELECT slot FROM Slot slot " +
-						"LEFT JOIN slot.medicationAdministration medAdmin " +
 						"WHERE (slot.schedule.subject = :subject) AND slot.voided = 0 AND slot.schedule.visit=:visit AND " +
-						"(((slot.startDateTime BETWEEN :startDateTime AND :endDateTime) AND " +
-						"(medAdmin.administeredDateTime BETWEEN :startDate AND :endDate or medAdmin is null)) OR " +
-						"(medAdmin is not null AND " +
-						"(medAdmin.administeredDateTime BETWEEN :startDate AND :endDate)))");
+						"((slot.startDateTime BETWEEN :startDateTime AND :endDateTime AND slot.medicationAdministrationId IS NULL) OR " +
+						"slot.medicationAdministrationId IN (" +
+						"SELECT ma.medicationAdministrationId FROM MedicationAdministration ma " +
+						"WHERE ma.administeredDateTime BETWEEN :startDate AND :endDate))");
 
 		query.setParameter("subject", subject);
 		query.setParameter("visit", visit);

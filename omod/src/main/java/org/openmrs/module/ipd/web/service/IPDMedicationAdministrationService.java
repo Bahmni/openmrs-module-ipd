@@ -11,4 +11,6 @@ public interface IPDMedicationAdministrationService {
 
     MedicationAdministration saveAdhocMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest);
 
+    org.openmrs.module.ipd.api.model.MedicationAdministration getMedicationAdministrationById(Integer id);
+
 }
