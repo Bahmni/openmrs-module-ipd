@@ -9,6 +9,11 @@
 
     <context:component-scan base-package="org.openmrs.module.ipd.api"/>
     <context:annotation-config/>
+
+    <!-- Marks adminService as @Primary to resolve Spring 5.3 NoUniqueBeanDefinitionException
+         when both adminService (proxy) and adminServiceTarget (impl) are in context -->
+    <bean class="org.openmrs.module.ipd.api.AdminServicePrimaryPostProcessor"/>
+
     <bean id="sessionFactory" class="org.openmrs.api.db.hibernate.HibernateSessionFactoryBean">
         <property name="configLocations">
             <list>
