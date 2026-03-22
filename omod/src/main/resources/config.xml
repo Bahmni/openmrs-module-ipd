@@ -49,5 +49,7 @@
 		<description>Allows to Get Medication Tasks</description>
 	</privilege>
 	<activator>org.openmrs.module.ipd.api.IPDActivator</activator>
+
+	<packagesWithMappedClasses>org.openmrs.module.ipd.api.model</packagesWithMappedClasses>
 </module>
 

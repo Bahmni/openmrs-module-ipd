@@ -20,6 +20,13 @@
                 <value>classpath:hibernate.cfg.xml</value>
             </list>
         </property>
+        <property name="mappingResources">
+            <list>
+                <value>MedicationAdministration.hbm.xml</value>
+                <value>MedicationAdministrationPerformer.hbm.xml</value>
+                <value>MedicationAdministrationNote.hbm.xml</value>
+            </list>
+        </property>
         <property name="packagesToScan">
             <list>
                 <value>org.openmrs</value>
