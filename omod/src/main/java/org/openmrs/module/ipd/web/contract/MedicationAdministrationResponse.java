@@ -1,17 +1,16 @@
 package org.openmrs.module.ipd.web.contract;
 
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir2.model.FhirTask;
 import org.openmrs.module.fhirExtension.model.Task;
-import org.openmrs.module.fhirExtension.model.TaskSearchRequest;
 import org.openmrs.module.fhirExtension.service.TaskService;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationPerformer;
+import org.openmrs.module.ipd.web.util.AcknowledgementTaskUtil;
 import org.openmrs.module.webservices.rest.web.ConversionUtil;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +23,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class MedicationAdministrationResponse {
 
     private String uuid;
@@ -41,8 +41,6 @@ public class MedicationAdministrationResponse {
     private Object route;
     private Object site;
     private Date administeredDateTime;
-
-    private static final String ACKNOWLEDGE_TASK_NAME = "ACKNOWLEDGE_MEDICATION_NOTE";
 
     public static MedicationAdministrationResponse createFrom(org.openmrs.module.ipd.api.model.MedicationAdministration openmrsMedicationAdministration) {
         if (openmrsMedicationAdministration == null) {
@@ -100,46 +98,20 @@ public class MedicationAdministrationResponse {
     }
 
     private static Map<String, Task> getAcknowledgementTasksForNotes(Set<String> noteUuids) {
-        Map<String, Task> result = new HashMap<>();
-
         if (noteUuids == null || noteUuids.isEmpty()) {
-            return result;
+            return new HashMap<>();
         }
 
         try {
             TaskService taskService = Context.getService(TaskService.class);
             if (taskService == null) {
-                return result;
+                return new HashMap<>();
             }
-
-            TaskSearchRequest searchRequest = new TaskSearchRequest();
-            searchRequest.setTaskName(Arrays.asList(ACKNOWLEDGE_TASK_NAME));
-            searchRequest.setTaskStatus(Arrays.asList(FhirTask.TaskStatus.COMPLETED));
-
-            List<Task> acknowledgementTasks = taskService.searchTasks(searchRequest);
-
-            for (Task task : acknowledgementTasks) {
-                String targetUuid = getTargetUuidFromTask(task);
-                if (targetUuid != null && noteUuids.contains(targetUuid)) {
-                    result.put(targetUuid, task);
-                }
-            }
+            return AcknowledgementTaskUtil.mapCompletedTasksByNoteUuid(taskService, noteUuids);
         } catch (Exception e) {
-
+            log.error("Failed to resolve acknowledgement tasks for medication administration notes", e);
+            return new HashMap<>();
         }
-
-        return result;
-    }
-
-    private static String getTargetUuidFromTask(Task task) {
-        if (task == null || task.getFhirTask() == null) {
-            return null;
-        }
-        FhirTask fhirTask = task.getFhirTask();
-        if (fhirTask.getFocusReference() != null) {
-            return fhirTask.getFocusReference().getTargetUuid();
-        }
-        return null;
     }
 }
 

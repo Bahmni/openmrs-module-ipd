@@ -479,10 +479,12 @@
         </addColumn>
     </changeSet>
 
-    <changeSet id="ipd-create-amendment-reason-concept-set-202407150001" author="Soorya">
+    <changeSet id="ipd-create-amendment-reason-concept-set-202607150001" author="Soorya">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
-                SELECT COUNT(*) FROM concept_name WHERE name = 'Amendment Reason' AND concept_name_type = 'FULLY_SPECIFIED';
+                SELECT COUNT(*) FROM concept
+                INNER JOIN concept_name ON concept.concept_id = concept_name.concept_id
+                WHERE concept_name.name = 'Amendment Reason' and concept.uuid = '5c3d2d00-0ad6-434a-b27b-d820796781a4';
             </sqlCheck>
         </preConditions>
         <comment>Create Amendment Reason concept set with 8 amendment reason concepts in 5 locales</comment>

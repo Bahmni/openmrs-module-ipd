@@ -48,7 +48,7 @@ public class MedicationAdministrationNoteResponse {
 
         String amendmentReason = null;
         Concept statusReason = openmrsObject.getStatusReason();
-        if (statusReason != null) {
+        if (statusReason != null && statusReason.getName() != null) {
             amendmentReason = statusReason.getName().getName();
         }
 

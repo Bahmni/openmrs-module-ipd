@@ -23,6 +23,11 @@
 		<defaultValue>true</defaultValue>
 		<description>Feature toggle to decide whether to stop slots associated when drug order is stopped</description>
 	</globalProperty>
+	<globalProperty>
+		<property>ipd.acknowledgement_task_type</property>
+		<defaultValue>56eb8040-2d0d-11f1-9dc8-0242ac120009</defaultValue>
+		<description>UUID value for the Drug MAR amendment note Acknowledgement</description>
+	</globalProperty>
 
 	<privilege>
 		<name>Edit Medication Tasks</name>

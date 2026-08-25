@@ -2,7 +2,6 @@ package org.openmrs.module.ipd.web.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r4.model.MedicationAdministration;
-import org.openmrs.Concept;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhirExtension.model.Task;
 import org.openmrs.module.fhirExtension.web.mapper.TaskMapper;
@@ -98,7 +97,7 @@ public class IPDMedicationAdministrationController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "/medicationadministration/{uuid}/note", method = RequestMethod.POST)
+    @RequestMapping(value = "/medicationAdministration/{uuid}/note", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> addAmendmentNote(
             @PathVariable("uuid") String medicationAdministrationUuid,
@@ -106,13 +105,6 @@ public class IPDMedicationAdministrationController extends BaseRestController {
         try {
             if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.EDIT_MEDICATION_ADMINISTRATION)) {
                 return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege " + PrivilegeConstants.EDIT_MEDICATION_ADMINISTRATION), FORBIDDEN);
-            }
-
-            if (noteRequest.getStatusReasonUuid() != null) {
-                Concept statusReasonConcept = Context.getConceptService().getConceptByUuid(noteRequest.getStatusReasonUuid());
-                if (statusReasonConcept == null) {
-                    return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "Amendment reason concept not found with UUID: " + noteRequest.getStatusReasonUuid()), BAD_REQUEST);
-                }
             }
 
             MedicationAdministrationNote note = ipdMedicationAdministrationService.amendNote(medicationAdministrationUuid, noteRequest);
@@ -125,7 +117,7 @@ public class IPDMedicationAdministrationController extends BaseRestController {
         }
     }
 
-    @RequestMapping(value = "/medicationadministration/{uuid}/acknowledgement", method = RequestMethod.POST)
+    @RequestMapping(value = "/medicationAdministration/{uuid}/acknowledgement", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> acknowledgeMedicationAdministration(
             @PathVariable("uuid") String medicationAdministrationUuid,

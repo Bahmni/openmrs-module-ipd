@@ -9,9 +9,14 @@ import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.openmrs.Visit;
 import org.openmrs.Concept;
+import org.openmrs.ConceptName;
 import org.openmrs.Encounter;
+import org.openmrs.Person;
 import org.openmrs.Provider;
+import org.openmrs.User;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.APIException;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.ProviderService;
@@ -231,11 +236,25 @@ public class IPDMedicationAdministrationServiceImplTest {
         PowerMockito.mockStatic(Context.class);
         ProviderService providerService = mock(ProviderService.class);
         AdministrationService administrationService = mock(AdministrationService.class);
+        User authenticatedUser = mock(User.class);
+        Person authenticatedPerson = mock(Person.class);
+
+        ConceptService conceptService = mock(ConceptService.class);
+        Concept taskTypeConcept = mock(Concept.class);
+        ConceptName taskTypeConceptName = mock(ConceptName.class);
+        when(taskTypeConceptName.getName()).thenReturn("acknowledge_amend_note");
+        when(taskTypeConcept.getName()).thenReturn(taskTypeConceptName);
 
         when(Context.getProviderService()).thenReturn(providerService);
         when(Context.getAdministrationService()).thenReturn(administrationService);
+        when(Context.getConceptService()).thenReturn(conceptService);
+        when(Context.getAuthenticatedUser()).thenReturn(authenticatedUser);
+        when(authenticatedUser.getPerson()).thenReturn(authenticatedPerson);
+        when(providerService.getProvidersByPerson(authenticatedPerson))
+                .thenReturn(Collections.singleton(provider));
         when(administrationService.getGlobalProperty("ipd.acknowledgement_task_type"))
-                .thenReturn("acknowledge_amend_note");
+                .thenReturn("task-type-uuid");
+        when(conceptService.getConceptByUuid("task-type-uuid")).thenReturn(taskTypeConcept);
 
         when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
                 .thenReturn(medicationAdministration);
@@ -302,6 +321,90 @@ public class IPDMedicationAdministrationServiceImplTest {
 
         // Act & Assert (exception expected)
         service.acknowledge(medicationAdminUuid, ackRequest);
+    }
+
+    @Test
+    public void shouldAmendSuccessfully_WhenExistingNoteHasNullVoided() {
+        // Arrange: a freshly-constructed note may have a null (unboxed) `voided` field
+        // before the interceptor sets it; getLatestNote must treat it as not-voided, not NPE.
+        MedicationAdministrationNoteRequest noteRequest = MedicationAdministrationNoteRequest.builder()
+                .authorUuid(providerUuid)
+                .text("Amendment over a note with null voided")
+                .build();
+
+        MedicationAdministrationNote existingNote = new MedicationAdministrationNote();
+        existingNote.setUuid("note-uuid-null-voided");
+        existingNote.setText("Existing note");
+        existingNote.setDateCreated(new Date());
+        // existingNote.getVoided() is null here - not explicitly set.
+        medicationAdministration.getNotes().add(existingNote);
+
+        PowerMockito.mockStatic(Context.class);
+        ProviderService providerService = mock(ProviderService.class);
+        when(Context.getProviderService()).thenReturn(providerService);
+        when(providerService.getProviderByUuid(providerUuid)).thenReturn(provider);
+
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
+                .thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class)))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        MedicationAdministrationNote result = service.amendNote(medicationAdminUuid, noteRequest);
+
+        // Assert
+        assertNotNull("Amendment note should be created", result);
+        assertNotNull("Previous note should be linked despite null voided on the existing note", result.getPreviousNote());
+        assertEquals("Previous note should be the existing note", existingNote.getUuid(), result.getPreviousNote().getUuid());
+    }
+
+    @Test
+    public void shouldSelectHeadOfPreviousNoteChain_AsLatestNote_AmongMultipleNonVoidedNotes() {
+        // Arrange: three notes chained via previousNote; dateCreated is intentionally out of
+        // chain order to prove selection follows the previousNote chain, not dateCreated.
+        MedicationAdministrationNoteRequest noteRequest = MedicationAdministrationNoteRequest.builder()
+                .authorUuid(providerUuid)
+                .text("Fourth amendment")
+                .build();
+
+        MedicationAdministrationNote firstNote = new MedicationAdministrationNote();
+        firstNote.setUuid("note-1");
+        firstNote.setVoided(false);
+        firstNote.setDateCreated(new Date(3000));
+
+        MedicationAdministrationNote secondNote = new MedicationAdministrationNote();
+        secondNote.setUuid("note-2");
+        secondNote.setVoided(false);
+        secondNote.setPreviousNote(firstNote);
+        secondNote.setDateCreated(new Date(1000));
+
+        MedicationAdministrationNote thirdNote = new MedicationAdministrationNote();
+        thirdNote.setUuid("note-3");
+        thirdNote.setVoided(false);
+        thirdNote.setPreviousNote(secondNote);
+        thirdNote.setDateCreated(new Date(2000));
+
+        medicationAdministration.getNotes().add(firstNote);
+        medicationAdministration.getNotes().add(secondNote);
+        medicationAdministration.getNotes().add(thirdNote);
+
+        PowerMockito.mockStatic(Context.class);
+        ProviderService providerService = mock(ProviderService.class);
+        when(Context.getProviderService()).thenReturn(providerService);
+        when(providerService.getProviderByUuid(providerUuid)).thenReturn(provider);
+
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
+                .thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class)))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        MedicationAdministrationNote result = service.amendNote(medicationAdminUuid, noteRequest);
+
+        // Assert
+        assertNotNull("Latest note (head of chain) should be linked as previousNote", result.getPreviousNote());
+        assertEquals("Head of the previousNote chain should be selected regardless of dateCreated ordering",
+                "note-3", result.getPreviousNote().getUuid());
     }
 
     @Test(expected = APIException.class)

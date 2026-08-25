@@ -6,6 +6,7 @@ import org.openmrs.ConceptSearchResult;
 import org.openmrs.ConceptSet;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.model.FhirReference;
 import org.openmrs.module.fhir2.model.FhirTask;
@@ -93,25 +94,23 @@ public class AcknowledgementTaskMapper {
         if (taskType == null || taskType.isEmpty()) {
             return null;
         }
-        try {
-            List<ConceptClass> parentConceptClasses = new ArrayList<>();
-            parentConceptClasses.add(Context.getConceptService().getConceptClassByName("ConvSet"));
-            List<Locale> locales = Arrays.asList(Locale.ENGLISH);
-            List<ConceptSearchResult> conceptsSearchResult = Context.getConceptService()
-                    .getConcepts(ALL_TASK_TYPES, locales, false, parentConceptClasses, null, null, null, null, 0, null);
-            if (conceptsSearchResult.isEmpty()) {
-                return null;
-            }
-            return conceptsSearchResult.stream()
-                    .map(ConceptSearchResult::getConcept)
-                    .filter(concept -> concept != null)
-                    .flatMap(concept -> concept.getConceptSets().stream().map(ConceptSet::getConcept))
-                    .filter(concept -> concept.getNames(false) != null &&
-                            concept.getNames(false).stream().anyMatch(name -> name.getName().equals(taskType)))
-                    .findFirst()
-                    .orElse(null);
-        } catch (Exception e) {
-            return null;
+        List<ConceptClass> parentConceptClasses = new ArrayList<>();
+        parentConceptClasses.add(Context.getConceptService().getConceptClassByName("ConvSet"));
+        List<Locale> locales = Arrays.asList(Locale.ENGLISH);
+        List<ConceptSearchResult> conceptsSearchResult = Context.getConceptService()
+                .getConcepts(ALL_TASK_TYPES, locales, false, parentConceptClasses, null, null, null, null, 0, null);
+        Concept taskTypeConcept = conceptsSearchResult.stream()
+                .map(ConceptSearchResult::getConcept)
+                .filter(concept -> concept != null)
+                .flatMap(concept -> concept.getConceptSets().stream().map(ConceptSet::getConcept))
+                .filter(concept -> concept.getNames(false) != null &&
+                        concept.getNames(false).stream().anyMatch(name -> name.getName().equals(taskType)))
+                .findFirst()
+                .orElse(null);
+        if (taskTypeConcept == null) {
+            throw new APIException("Could not resolve task type '" + taskType
+                    + "' against the '" + ALL_TASK_TYPES + "' concept set. Check the global property value and the concept set configuration.");
         }
+        return taskTypeConcept;
     }
 }
