@@ -524,7 +524,7 @@
             INSERT INTO concept (datatype_id, class_id, is_set, creator, date_created, uuid)
             VALUES ((SELECT concept_datatype_id FROM concept_datatype WHERE name = 'N/A'),
                     (SELECT concept_class_id FROM concept_class WHERE name = 'Misc'),
-                    0, 1, NOW(), UUID());
+                    0, 1, NOW(), '459fd8cd-568e-4d36-b5f5-88e861db62b9');
             SET @concept_id = LAST_INSERT_ID();
             INSERT INTO concept_name (concept_id, name, locale, concept_name_type, locale_preferred, creator, date_created, uuid)
             VALUES (@concept_id, 'Incorrect Time', 'en', 'FULLY_SPECIFIED', 1, 1, NOW(), UUID()),
@@ -539,7 +539,7 @@
             INSERT INTO concept (datatype_id, class_id, is_set, creator, date_created, uuid)
             VALUES ((SELECT concept_datatype_id FROM concept_datatype WHERE name = 'N/A'),
                     (SELECT concept_class_id FROM concept_class WHERE name = 'Misc'),
-                    0, 1, NOW(), UUID());
+                    0, 1, NOW(), '2b12a0e8-27b6-4572-be1c-241c9f215064');
             SET @concept_id = LAST_INSERT_ID();
             INSERT INTO concept_name (concept_id, name, locale, concept_name_type, locale_preferred, creator, date_created, uuid)
             VALUES (@concept_id, 'Incorrect Dose', 'en', 'FULLY_SPECIFIED', 1, 1, NOW(), UUID()),
@@ -554,7 +554,7 @@
             INSERT INTO concept (datatype_id, class_id, is_set, creator, date_created, uuid)
             VALUES ((SELECT concept_datatype_id FROM concept_datatype WHERE name = 'N/A'),
                     (SELECT concept_class_id FROM concept_class WHERE name = 'Misc'),
-                    0, 1, NOW(), UUID());
+                    0, 1, NOW(), '729ce28c-c616-4ca8-98ae-21159624cc4e');
             SET @concept_id = LAST_INSERT_ID();
             INSERT INTO concept_name (concept_id, name, locale, concept_name_type, locale_preferred, creator, date_created, uuid)
             VALUES (@concept_id, 'Incorrect Unit', 'en', 'FULLY_SPECIFIED', 1, 1, NOW(), UUID()),
@@ -569,7 +569,7 @@
             INSERT INTO concept (datatype_id, class_id, is_set, creator, date_created, uuid)
             VALUES ((SELECT concept_datatype_id FROM concept_datatype WHERE name = 'N/A'),
                     (SELECT concept_class_id FROM concept_class WHERE name = 'Misc'),
-                    0, 1, NOW(), UUID());
+                    0, 1, NOW(), '434a4470-d3e1-4b29-a816-5e5669613ab3');
             SET @concept_id = LAST_INSERT_ID();
             INSERT INTO concept_name (concept_id, name, locale, concept_name_type, locale_preferred, creator, date_created, uuid)
             VALUES (@concept_id, 'Incorrect Drug', 'en', 'FULLY_SPECIFIED', 1, 1, NOW(), UUID()),
@@ -584,7 +584,7 @@
             INSERT INTO concept (datatype_id, class_id, is_set, creator, date_created, uuid)
             VALUES ((SELECT concept_datatype_id FROM concept_datatype WHERE name = 'N/A'),
                     (SELECT concept_class_id FROM concept_class WHERE name = 'Misc'),
-                    0, 1, NOW(), UUID());
+                    0, 1, NOW(), '3183a8aa-57e9-42fd-a78b-46998b46d0f9');
             SET @concept_id = LAST_INSERT_ID();
             INSERT INTO concept_name (concept_id, name, locale, concept_name_type, locale_preferred, creator, date_created, uuid)
             VALUES (@concept_id, 'Incorrect Patient', 'en', 'FULLY_SPECIFIED', 1, 1, NOW(), UUID()),
@@ -599,7 +599,7 @@
             INSERT INTO concept (datatype_id, class_id, is_set, creator, date_created, uuid)
             VALUES ((SELECT concept_datatype_id FROM concept_datatype WHERE name = 'N/A'),
                     (SELECT concept_class_id FROM concept_class WHERE name = 'Misc'),
-                    0, 1, NOW(), UUID());
+                    0, 1, NOW(), '940300ab-4d23-44d6-a5f7-6fcc3d55009e');
             SET @concept_id = LAST_INSERT_ID();
             INSERT INTO concept_name (concept_id, name, locale, concept_name_type, locale_preferred, creator, date_created, uuid)
             VALUES (@concept_id, 'Incorrect Route', 'en', 'FULLY_SPECIFIED', 1, 1, NOW(), UUID()),
@@ -614,7 +614,7 @@
             INSERT INTO concept (datatype_id, class_id, is_set, creator, date_created, uuid)
             VALUES ((SELECT concept_datatype_id FROM concept_datatype WHERE name = 'N/A'),
                     (SELECT concept_class_id FROM concept_class WHERE name = 'Misc'),
-                    0, 1, NOW(), UUID());
+                    0, 1, NOW(), '7ce131ec-75d2-4f2f-aefa-8a6fc9506c65');
             SET @concept_id = LAST_INSERT_ID();
             INSERT INTO concept_name (concept_id, name, locale, concept_name_type, locale_preferred, creator, date_created, uuid)
             VALUES (@concept_id, 'Missed Dose', 'en', 'FULLY_SPECIFIED', 1, 1, NOW(), UUID()),
@@ -629,7 +629,7 @@
             INSERT INTO concept (datatype_id, class_id, is_set, creator, date_created, uuid)
             VALUES ((SELECT concept_datatype_id FROM concept_datatype WHERE name = 'N/A'),
                     (SELECT concept_class_id FROM concept_class WHERE name = 'Misc'),
-                    0, 1, NOW(), UUID());
+                    0, 1, NOW(), '01c47c64-cccf-492c-97c7-99131fb155a5');
             SET @concept_id = LAST_INSERT_ID();
             INSERT INTO concept_name (concept_id, name, locale, concept_name_type, locale_preferred, creator, date_created, uuid)
             VALUES (@concept_id, 'Other (Please mention the reason in notes)', 'en', 'FULLY_SPECIFIED', 1, 1, NOW(), UUID()),
