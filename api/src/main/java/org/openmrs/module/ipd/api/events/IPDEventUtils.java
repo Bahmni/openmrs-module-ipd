@@ -19,7 +19,7 @@ public class IPDEventUtils {
         TaskRequest taskRequest = new TaskRequest();
         taskRequest.setName(name);
         taskRequest.setTaskType(taskType);
-        taskRequest.setInput(input != null ? input : new ArrayList<>());
+        taskRequest.setInput(input);
         taskRequest.setEncounterUuid(ipdEvent.getEncounterUuid());
         taskRequest.setPatientUuid(ipdEvent.getPatientUuid());
         taskRequest.setRequestedStartTime(new Date());
