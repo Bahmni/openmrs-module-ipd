@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Context.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.xml.*", "org.xml.sax.*", "org.w3c.dom.*", "com.sun.*", "sun.*", "org.slf4j.*", "ch.qos.*"})
 public class CareTeamServiceImplTest {
 
     @Mock
