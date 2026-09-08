@@ -4,7 +4,7 @@
 
 	<groupId>org.bahmni.module</groupId>
 	<artifactId>bahmni-ipd</artifactId>
-	<version>1.2.0-SNAPSHOT</version>
+	<version>1.2.0</version>
 	<packaging>pom</packaging>
 	<name>Bahmni IPD</name>
 	<description>Bahmni IPD module contains all backend APIs for IPD</description>
@@ -13,7 +13,7 @@
 	<licenses>
 		<license>
 			<name>Mozilla Public License 2.0 with Healthcare Disclaimer</name>
-			<url>https://openmrs.org/license</url>
+			<url>https://www.bahmni.org/license/mplv2hd</url>
 		</license>
 	</licenses>
 	<developers>
@@ -48,10 +48,10 @@
 		<jacocoVersion>0.7.9</jacocoVersion>
 		<lombokVersion>1.18.26</lombokVersion>
 		<openmrsFhir2Version>2.5.1</openmrsFhir2Version>
-		<fhir2ExtensionVersion>2.0.0-SNAPSHOT</fhir2ExtensionVersion>
-		<bahmniVersion>2.0.0-SNAPSHOT</bahmniVersion>
+		<fhir2ExtensionVersion>2.0.0</fhir2ExtensionVersion>
+		<bahmniVersion>2.1.0</bahmniVersion>
 		<emrapi-omod.version>2.3.0</emrapi-omod.version>
-		<medicationAdminstrationVersion>2.0.0-SNAPSHOT</medicationAdminstrationVersion>
+		<medicationAdminstrationVersion>2.0.0</medicationAdminstrationVersion>
 	</properties>
 
 	<build>
@@ -59,7 +59,7 @@
 			<plugin>
 				<groupId>org.sonatype.central</groupId>
 				<artifactId>central-publishing-maven-plugin</artifactId>
-				<version>0.7.0</version>
+				<version>0.8.0</version>
 				<extensions>true</extensions>
 				<configuration>
 					<publishingServerId>nexus-sonatype</publishingServerId>
