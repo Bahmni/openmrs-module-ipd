@@ -11,11 +11,11 @@
 	<url>https://demo.mybahmni.org/bahmni/home/index.html</url>
 
 	<licenses>
-		<license>
-			<name>Mozilla Public License 2.0 with Healthcare Disclaimer</name>
-			<url>https://openmrs.org/license</url>
-		</license>
-	</licenses>
+        <license>
+            <name>Mozilla Public License Version 2.0</name>
+            <url>https://www.bahmni.org/license/mplv2hd</url>
+        </license>
+    </licenses>
 	<developers>
 		<developer>
 			<name>Bahmnitw</name>

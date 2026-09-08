@@ -13,7 +13,14 @@
 	<name>Bahmni IPD API</name>
 	<description>Bahmni IPD API contains all backend APIs for IPD</description>
 
-	<build>
+	
+    <licenses>
+        <license>
+            <name>Mozilla Public License Version 2.0</name>
+            <url>https://www.bahmni.org/license/mplv2hd</url>
+        </license>
+    </licenses>
+    <build>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
