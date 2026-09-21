@@ -7,13 +7,13 @@ import org.openmrs.module.ipd.api.model.Reference;
 import org.openmrs.module.ipd.api.service.ReferenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Transactional
+@Service
 public class ReferenceServiceImpl extends BaseOpenmrsService implements ReferenceService {
 
 	private static final Logger log = LoggerFactory.getLogger(ReferenceServiceImpl.class);

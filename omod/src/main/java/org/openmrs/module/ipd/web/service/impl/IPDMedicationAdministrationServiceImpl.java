@@ -4,8 +4,14 @@ import org.apache.commons.lang.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
+import org.openmrs.User;
 import org.openmrs.Visit;
 import org.openmrs.api.APIException;
+import org.openmrs.api.AdministrationService;
+import org.openmrs.api.ConceptService;
+import org.openmrs.api.PatientService;
+import org.openmrs.api.ProviderService;
+import org.openmrs.api.VisitService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.apiext.FhirMedicationAdministrationService;
 import org.openmrs.module.fhir2.apiext.dao.FhirMedicationAdministrationDao;
@@ -42,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 
 @Transactional
@@ -66,6 +73,12 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     private ScheduleFactory scheduleFactory;
     private TaskService taskService;
     private AcknowledgementTaskMapper acknowledgementTaskMapper;
+    private PatientService patientService;
+    private VisitService visitService;
+    private ConceptService conceptService;
+    private ProviderService providerService;
+    private AdministrationService administrationService;
+    private Supplier<User> authenticatedUserSupplier = Context::getAuthenticatedUser;
 
     @Autowired
     public IPDMedicationAdministrationServiceImpl(FhirMedicationAdministrationService fhirMedicationAdministrationService,
@@ -76,7 +89,12 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
                                                   MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator,
                                                   ScheduleFactory scheduleFactory,
                                                   TaskService taskService,
-                                                  AcknowledgementTaskMapper acknowledgementTaskMapper) {
+                                                  AcknowledgementTaskMapper acknowledgementTaskMapper,
+                                                  PatientService patientService,
+                                                  VisitService visitService,
+                                                  ConceptService conceptService,
+                                                  ProviderService providerService,
+                                                  AdministrationService administrationService) {
         this.fhirMedicationAdministrationService = fhirMedicationAdministrationService;
         this.medicationAdministrationTranslator = medicationAdministrationTranslator;
         this.medicationAdministrationFactory = medicationAdministrationFactory;
@@ -88,6 +106,15 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         this.scheduleFactory = scheduleFactory;
         this.taskService = taskService;
         this.acknowledgementTaskMapper = acknowledgementTaskMapper;
+        this.patientService = patientService;
+        this.visitService = visitService;
+        this.conceptService = conceptService;
+        this.providerService = providerService;
+        this.administrationService = administrationService;
+    }
+
+    public void setAuthenticatedUserSupplier(Supplier<User> supplier) {
+        this.authenticatedUserSupplier = supplier;
     }
 
     private org.hl7.fhir.r4.model.MedicationAdministration createMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
@@ -124,8 +151,8 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
 
     @Override
     public org.hl7.fhir.r4.model.MedicationAdministration saveAdhocMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
-        Patient patient = Context.getPatientService().getPatientByUuid(medicationAdministrationRequest.getPatientUuid());
-        Visit visit = Context.getVisitService().getActiveVisitsByPatient(patient).get(0);
+        Patient patient = patientService.getPatientByUuid(medicationAdministrationRequest.getPatientUuid());
+        Visit visit = visitService.getActiveVisitsByPatient(patient).get(0);
         Schedule schedule = scheduleService.getScheduleByVisit(visit);
         if (schedule == null) {
             ScheduleMedicationRequest scheduleMedicationRequest = new ScheduleMedicationRequest();
@@ -162,7 +189,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
         newNote.setRecordedTime(noteRequest.getRecordedTimeAsLocaltime());
 
         if (noteRequest.getStatusReasonUuid() != null) {
-            Concept statusReasonConcept = Context.getConceptService().getConceptByUuid(noteRequest.getStatusReasonUuid());
+            Concept statusReasonConcept = conceptService.getConceptByUuid(noteRequest.getStatusReasonUuid());
             if (statusReasonConcept == null) {
                 throw new APIException("Amendment reason concept not found with UUID: " + noteRequest.getStatusReasonUuid());
             }
@@ -171,7 +198,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
 
         newNote.setPreviousNote(previousNote);
 
-        Provider provider = Context.getProviderService().getProviderByUuid(noteRequest.getAuthorUuid());
+        Provider provider = providerService.getProviderByUuid(noteRequest.getAuthorUuid());
         if (provider == null) {
             throw new APIException("Provider not found with UUID: " + noteRequest.getAuthorUuid());
         }
@@ -204,11 +231,11 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
                     throw new APIException("No notes found to acknowledge for this medication administration.");
                 }
 
-                String taskTypeUuid = Context.getAdministrationService().getGlobalProperty(ACKNOWLEDGEMENT_TASK_TYPE_PROPERTY);
+                String taskTypeUuid = administrationService.getGlobalProperty(ACKNOWLEDGEMENT_TASK_TYPE_PROPERTY);
                 if (taskTypeUuid == null || taskTypeUuid.isEmpty()) {
                     throw new APIException("Acknowledgement task type is not configured. Please set the global property: " + ACKNOWLEDGEMENT_TASK_TYPE_PROPERTY);
                 }
-                Concept taskTypeConcept = Context.getConceptService().getConceptByUuid(taskTypeUuid);
+                Concept taskTypeConcept = conceptService.getConceptByUuid(taskTypeUuid);
                 if (taskTypeConcept == null) {
                     throw new APIException("Could not find a concept for the configured acknowledgement task type UUID: " + taskTypeUuid);
                 }
@@ -237,8 +264,8 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     }
 
     private Provider getCurrentProvider() {
-        java.util.Collection<Provider> providers = Context.getProviderService()
-                .getProvidersByPerson(Context.getAuthenticatedUser().getPerson());
+        java.util.Collection<Provider> providers = providerService
+                .getProvidersByPerson(authenticatedUserSupplier.get().getPerson());
         if (providers == null || providers.isEmpty()) {
             throw new APIException("No provider account found for the authenticated user.");
         }

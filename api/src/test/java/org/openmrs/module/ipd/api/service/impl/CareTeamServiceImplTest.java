@@ -3,19 +3,14 @@ package org.openmrs.module.ipd.api.service.impl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.Provider;
 import org.openmrs.User;
-import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.CareTeamDAO;
 import org.openmrs.module.ipd.api.model.CareTeam;
 import org.openmrs.module.ipd.api.model.CareTeamParticipant;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,30 +27,24 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Context.class)
-@PowerMockIgnore({"javax.management.*", "javax.xml.*", "org.xml.sax.*", "org.w3c.dom.*", "com.sun.*", "sun.*", "org.slf4j.*", "ch.qos.*"})
+@RunWith(MockitoJUnitRunner.class)
 public class CareTeamServiceImplTest {
 
     @Mock
     private CareTeamDAO careTeamDAO;
 
-    @InjectMocks
     private CareTeamServiceImpl careTeamService;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        PowerMockito.mockStatic(Context.class);
+        careTeamService = new CareTeamServiceImpl(careTeamDAO);
         User mockUser = mock(User.class);
-        // FIX: Use when() instead of setId() which is a no-op on mocks
-        when(mockUser.getId()).thenReturn(1);
-        when(Context.getAuthenticatedUser()).thenReturn(mockUser);
+        careTeamService.setAuthenticatedUserSupplier(() -> mockUser);
     }
 
     @Test
     public void shouldUnbookmarkAllActivePatients() {
-        // FIX: Use getAllCareTeams() which is what the actual implementation calls
         CareTeam careTeam1 = createMockCareTeam(1);
         Set<CareTeamParticipant> participants = new HashSet<>();
         participants.add(createMockParticipant(1, false));
@@ -73,10 +62,8 @@ public class CareTeamServiceImplTest {
 
         assertEquals("Should unbookmark all 3 participants", 3, count);
         verify(careTeamDAO, times(1)).getAllCareTeams();
-        // FIX: voidCareTeamParticipant is called 3 times, each saves the careTeam
         verify(careTeamDAO, times(3)).saveCareTeam(any(CareTeam.class));
 
-        // FIX: Assert real post-conditions (voided + voidReason + auditBy)
         for (CareTeamParticipant participant : careTeam1.getParticipants()) {
             assertTrue("Participant " + participant.getId() + " should be voided", participant.getVoided());
             assertNotNull("Participant " + participant.getId() + " voidedBy must be set", participant.getVoidedBy());
@@ -88,7 +75,6 @@ public class CareTeamServiceImplTest {
 
     @Test
     public void shouldReturnZeroWhenNoCareTeams() {
-        // FIX: Test with empty getAllCareTeams() result
         when(careTeamDAO.getAllCareTeams()).thenReturn(new ArrayList<>());
 
         int count = careTeamService.unbookmarkAllActivePatients();
@@ -109,7 +95,6 @@ public class CareTeamServiceImplTest {
 
         careTeamService.unbookmarkAllActivePatients();
 
-        // FIX: Assert ALL audit fields including voidedBy
         assertTrue("Participant voided flag should be true", participant.getVoided());
         assertNotNull("VoidedBy audit field must be set", participant.getVoidedBy());
         assertNotNull("DateVoided audit field must be set", participant.getDateVoided());
@@ -119,7 +104,6 @@ public class CareTeamServiceImplTest {
 
     @Test
     public void shouldVoidMultipleParticipantsAcrossMultipleCareTeams() {
-        // FIX: Test with multiple care teams (not just one long list)
         CareTeam careTeam1 = createMockCareTeam(1);
         Set<CareTeamParticipant> team1Participants = new HashSet<>();
         team1Participants.add(createMockParticipant(1, false));
@@ -143,7 +127,6 @@ public class CareTeamServiceImplTest {
 
         assertEquals("Should unbookmark 4 participants from 2 care teams", 4, count);
 
-        // FIX: Assert voided state on all participants across all teams
         for (CareTeam team : allTeams) {
             for (CareTeamParticipant p : team.getParticipants()) {
                 assertTrue("Participant " + p.getId() + " should be voided", p.getVoided());

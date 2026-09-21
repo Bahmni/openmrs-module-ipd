@@ -14,7 +14,6 @@ import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.SlotService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @Transactional
+@Service
 public class SlotServiceImpl extends BaseOpenmrsService implements SlotService {
 
 	private static final Logger log = LoggerFactory.getLogger(SlotServiceImpl.class);

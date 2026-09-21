@@ -4,35 +4,23 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.Location;
 import org.openmrs.Provider;
 import org.openmrs.api.LocationService;
 import org.openmrs.api.ProviderService;
-import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.WardDAO;
 import org.openmrs.module.ipd.api.model.AdmittedPatient;
 import org.openmrs.module.ipd.api.model.WardPatientsSummary;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({Context.class})
-@SuppressStaticInitializationFor({"org.openmrs.api.context.Context", "org.openmrs.Provider"})
-@PowerMockIgnore({"javax.management.*", "javax.xml.*", "org.xml.sax.*", "org.w3c.dom.*", "com.sun.*", "sun.*"})
+@RunWith(MockitoJUnitRunner.class)
 public class WardServiceImplTest {
-
-    @InjectMocks
-    private WardServiceImpl wardService;
 
     @Mock
     private WardDAO wardDAO;
@@ -43,11 +31,11 @@ public class WardServiceImplTest {
     @Mock
     private ProviderService providerService;
 
+    private WardServiceImpl wardService;
+
     @Before
     public void setUp() {
-        PowerMockito.mockStatic(Context.class);
-        Mockito.when(Context.getService(LocationService.class)).thenReturn(locationService);
-        Mockito.when(Context.getProviderService()).thenReturn(providerService);
+        wardService = new WardServiceImpl(wardDAO, locationService, providerService);
     }
 
     @Test
