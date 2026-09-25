@@ -4,7 +4,7 @@
 
 	<groupId>org.bahmni.module</groupId>
 	<artifactId>bahmni-ipd</artifactId>
-	<version>1.3.0-SNAPSHOT</version>
+	<version>1.4.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Bahmni IPD</name>
 	<description>Bahmni IPD module contains all backend APIs for IPD</description>
@@ -42,7 +42,7 @@
 		<springVersion>5.3.30</springVersion>
 		<junitVersion>4.13</junitVersion>
 		<hamcrestVersion>1.3</hamcrestVersion>
-		<mockitoVersion>3.5.11</mockitoVersion>
+		<mockitoVersion>5.7.0</mockitoVersion>
 		<argLine>-Xmx1024m</argLine>
 		<jacocoVersion>0.7.9</jacocoVersion>
 		<lombokVersion>1.18.30</lombokVersion>

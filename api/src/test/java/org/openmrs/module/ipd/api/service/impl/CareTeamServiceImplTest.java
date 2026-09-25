@@ -1,14 +1,18 @@
 package org.openmrs.module.ipd.api.service.impl;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.Provider;
 import org.openmrs.User;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.CareTeamDAO;
+
+import static org.mockito.Mockito.mockStatic;
 import org.openmrs.module.ipd.api.model.CareTeam;
 import org.openmrs.module.ipd.api.model.CareTeamParticipant;
 
@@ -34,13 +38,19 @@ public class CareTeamServiceImplTest {
     private CareTeamDAO careTeamDAO;
 
     private CareTeamServiceImpl careTeamService;
+    private MockedStatic<Context> contextMock;
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
-        careTeamService = new CareTeamServiceImpl(careTeamDAO);
-        User mockUser = mock(User.class);
-        careTeamService.setAuthenticatedUserSupplier(() -> mockUser);
+        contextMock = mockStatic(Context.class);
+        contextMock.when(Context::getAuthenticatedUser).thenReturn(mock(User.class));
+        careTeamService = new CareTeamServiceImpl();
+        careTeamService.setCareTeamDAO(careTeamDAO);
+    }
+
+    @After
+    public void tearDown() {
+        contextMock.close();
     }
 
     @Test

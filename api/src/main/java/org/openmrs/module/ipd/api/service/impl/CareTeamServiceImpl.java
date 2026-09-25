@@ -1,8 +1,6 @@
 package org.openmrs.module.ipd.api.service.impl;
 
-import lombok.Setter;
 import org.openmrs.Visit;
-import org.openmrs.User;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
@@ -12,13 +10,11 @@ import org.openmrs.module.ipd.api.model.CareTeamParticipant;
 import org.openmrs.module.ipd.api.service.CareTeamService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.function.Supplier;
 
 @Transactional
 @Service
@@ -27,15 +23,6 @@ public class CareTeamServiceImpl extends BaseOpenmrsService implements CareTeamS
     private static final Logger log = LoggerFactory.getLogger(CareTeamServiceImpl.class);
 
     private CareTeamDAO careTeamDAO;
-
-    @Setter
-    private Supplier<User> authenticatedUserSupplier;
-
-    @Autowired
-    public CareTeamServiceImpl(CareTeamDAO careTeamDAO) {
-        this.careTeamDAO = careTeamDAO;
-        this.authenticatedUserSupplier = Context::getAuthenticatedUser;
-    }
 
     public void setCareTeamDAO(CareTeamDAO careTeamDAO) {
         this.careTeamDAO = careTeamDAO;
@@ -54,7 +41,7 @@ public class CareTeamServiceImpl extends BaseOpenmrsService implements CareTeamS
     @Override
     public void voidCareTeamParticipant(CareTeam careTeam, CareTeamParticipant participant, String voidReason) throws APIException {
         participant.setVoided(true);
-        participant.setVoidedBy(authenticatedUserSupplier.get());
+        participant.setVoidedBy(Context.getAuthenticatedUser());
         participant.setDateVoided(new Date());
         participant.setVoidReason(voidReason);
         careTeamDAO.saveCareTeam(careTeam);

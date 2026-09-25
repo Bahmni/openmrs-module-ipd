@@ -1,17 +1,22 @@
 package org.openmrs.module.ipd.api.service.impl;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.Location;
 import org.openmrs.Provider;
 import org.openmrs.api.LocationService;
 import org.openmrs.api.ProviderService;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.ipd.api.dao.WardDAO;
+
+import static org.mockito.Mockito.mockStatic;
 import org.openmrs.module.ipd.api.model.AdmittedPatient;
 import org.openmrs.module.ipd.api.model.WardPatientsSummary;
 
@@ -32,10 +37,20 @@ public class WardServiceImplTest {
     private ProviderService providerService;
 
     private WardServiceImpl wardService;
+    private MockedStatic<Context> contextMock;
 
     @Before
     public void setUp() {
-        wardService = new WardServiceImpl(wardDAO, locationService, providerService);
+        contextMock = mockStatic(Context.class);
+        contextMock.when(() -> Context.getService(LocationService.class)).thenReturn(locationService);
+        contextMock.when(Context::getProviderService).thenReturn(providerService);
+        wardService = new WardServiceImpl();
+        wardService.setWardDAO(wardDAO);
+    }
+
+    @After
+    public void tearDown() {
+        contextMock.close();
     }
 
     @Test

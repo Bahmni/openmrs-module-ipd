@@ -1,11 +1,15 @@
 package org.openmrs.module.ipd.web.service.impl;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.openmrs.api.context.Context;
+
+import static org.mockito.Mockito.mockStatic;
 import org.openmrs.Visit;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
@@ -16,9 +20,7 @@ import org.openmrs.User;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.APIException;
 import org.openmrs.api.ConceptService;
-import org.openmrs.api.PatientService;
 import org.openmrs.api.ProviderService;
-import org.openmrs.api.VisitService;
 import org.openmrs.module.fhir2.apiext.FhirMedicationAdministrationService;
 import org.openmrs.module.fhir2.apiext.dao.FhirMedicationAdministrationDao;
 import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
@@ -64,13 +66,12 @@ public class IPDMedicationAdministrationServiceImplTest {
     @Mock private ScheduleFactory scheduleFactory;
     @Mock private TaskService taskService;
     @Mock private AcknowledgementTaskMapper acknowledgementTaskMapper;
-    @Mock private PatientService patientService;
-    @Mock private VisitService visitService;
     @Mock private ConceptService conceptService;
     @Mock private ProviderService providerService;
     @Mock private AdministrationService administrationService;
 
     private IPDMedicationAdministrationServiceImpl service;
+    private MockedStatic<Context> contextMock;
 
     private String medicationAdminUuid;
     private String providerUuid;
@@ -84,17 +85,18 @@ public class IPDMedicationAdministrationServiceImplTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        contextMock = mockStatic(Context.class);
+        authenticatedUser = mock(User.class);
+        contextMock.when(Context::getAuthenticatedUser).thenReturn(authenticatedUser);
+        contextMock.when(Context::getConceptService).thenReturn(conceptService);
+        contextMock.when(Context::getProviderService).thenReturn(providerService);
+        contextMock.when(Context::getAdministrationService).thenReturn(administrationService);
 
         service = new IPDMedicationAdministrationServiceImpl(
                 fhirMedicationAdministrationService, medicationAdministrationTranslator,
                 medicationAdministrationFactory, slotFactory, slotService, scheduleService,
                 fhirMedicationAdministrationDao, medicationAdministrationToSlotStatusTranslator,
-                scheduleFactory, taskService, acknowledgementTaskMapper,
-                patientService, visitService, conceptService, providerService, administrationService);
-
-        authenticatedUser = mock(User.class);
-        service.setAuthenticatedUserSupplier(() -> authenticatedUser);
+                scheduleFactory, taskService, acknowledgementTaskMapper);
 
         medicationAdminUuid = "med-admin-uuid-123";
         providerUuid = "provider-uuid-456";
@@ -115,6 +117,11 @@ public class IPDMedicationAdministrationServiceImplTest {
         medicationAdministration.setUuid(medicationAdminUuid);
         medicationAdministration.setEncounter(encounter);
         medicationAdministration.setNotes(new HashSet<>());
+    }
+
+    @After
+    public void tearDown() {
+        contextMock.close();
     }
 
     @Test
