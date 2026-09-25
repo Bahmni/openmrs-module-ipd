@@ -10,14 +10,11 @@ import org.openmrs.module.ipd.api.model.CareTeamParticipant;
 import org.openmrs.module.ipd.api.service.CareTeamService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Date;
 import java.util.List;
 
 @Transactional
-@Service
 public class CareTeamServiceImpl extends BaseOpenmrsService implements CareTeamService {
 
     private static final Logger log = LoggerFactory.getLogger(CareTeamServiceImpl.class);
@@ -61,6 +58,7 @@ public class CareTeamServiceImpl extends BaseOpenmrsService implements CareTeamS
                 }
             }
         }
+
         log.info("Completed unbookmark all active patients. Total unbookmarked: {}", totalUnbookmarked);
         return totalUnbookmarked;
     }
