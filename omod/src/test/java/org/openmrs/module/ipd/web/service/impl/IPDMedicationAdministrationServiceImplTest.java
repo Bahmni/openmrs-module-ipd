@@ -1,15 +1,15 @@
 package org.openmrs.module.ipd.web.service.impl;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.openmrs.api.context.Context;
+
+import static org.mockito.Mockito.mockStatic;
 import org.openmrs.Visit;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
@@ -21,8 +21,9 @@ import org.openmrs.api.AdministrationService;
 import org.openmrs.api.APIException;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.ProviderService;
-import org.openmrs.api.context.Context;
+import org.openmrs.module.fhir2.apiext.FhirMedicationAdministrationService;
 import org.openmrs.module.fhir2.apiext.dao.FhirMedicationAdministrationDao;
+import org.openmrs.module.fhir2.apiext.translators.MedicationAdministrationTranslator;
 import org.openmrs.module.fhir2.model.FhirReference;
 import org.openmrs.module.fhir2.model.FhirTask;
 import org.openmrs.module.fhirExtension.model.Task;
@@ -30,8 +31,14 @@ import org.openmrs.module.fhirExtension.model.TaskSearchRequest;
 import org.openmrs.module.fhirExtension.service.TaskService;
 import org.openmrs.module.ipd.api.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
+import org.openmrs.module.ipd.api.service.ScheduleService;
+import org.openmrs.module.ipd.api.service.SlotService;
+import org.openmrs.module.ipd.api.translators.MedicationAdministrationToSlotStatusTranslator;
 import org.openmrs.module.ipd.web.contract.MedicationAdministrationAcknowledgementRequest;
 import org.openmrs.module.ipd.web.contract.MedicationAdministrationNoteRequest;
+import org.openmrs.module.ipd.web.factory.MedicationAdministrationFactory;
+import org.openmrs.module.ipd.web.factory.ScheduleFactory;
+import org.openmrs.module.ipd.web.factory.SlotFactory;
 import org.openmrs.module.ipd.web.mapper.AcknowledgementTaskMapper;
 
 import java.util.Arrays;
@@ -45,22 +52,26 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({Context.class})
-@PowerMockIgnore("javax.management.*")
+@RunWith(MockitoJUnitRunner.class)
 public class IPDMedicationAdministrationServiceImplTest {
 
-    @Mock
-    private FhirMedicationAdministrationDao fhirMedicationAdministrationDao;
+    @Mock private FhirMedicationAdministrationService fhirMedicationAdministrationService;
+    @Mock private MedicationAdministrationTranslator medicationAdministrationTranslator;
+    @Mock private MedicationAdministrationFactory medicationAdministrationFactory;
+    @Mock private SlotFactory slotFactory;
+    @Mock private SlotService slotService;
+    @Mock private ScheduleService scheduleService;
+    @Mock private FhirMedicationAdministrationDao fhirMedicationAdministrationDao;
+    @Mock private MedicationAdministrationToSlotStatusTranslator medicationAdministrationToSlotStatusTranslator;
+    @Mock private ScheduleFactory scheduleFactory;
+    @Mock private TaskService taskService;
+    @Mock private AcknowledgementTaskMapper acknowledgementTaskMapper;
+    @Mock private ConceptService conceptService;
+    @Mock private ProviderService providerService;
+    @Mock private AdministrationService administrationService;
 
-    @Mock
-    private TaskService taskService;
-
-    @Mock
-    private AcknowledgementTaskMapper acknowledgementTaskMapper;
-
-    @InjectMocks
     private IPDMedicationAdministrationServiceImpl service;
+    private MockedStatic<Context> contextMock;
 
     private String medicationAdminUuid;
     private String providerUuid;
@@ -70,10 +81,22 @@ public class IPDMedicationAdministrationServiceImplTest {
     private Provider provider;
     private Encounter encounter;
     private Visit visit;
+    private User authenticatedUser;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        contextMock = mockStatic(Context.class);
+        authenticatedUser = mock(User.class);
+        contextMock.when(Context::getAuthenticatedUser).thenReturn(authenticatedUser);
+        contextMock.when(Context::getConceptService).thenReturn(conceptService);
+        contextMock.when(Context::getProviderService).thenReturn(providerService);
+        contextMock.when(Context::getAdministrationService).thenReturn(administrationService);
+
+        service = new IPDMedicationAdministrationServiceImpl(
+                fhirMedicationAdministrationService, medicationAdministrationTranslator,
+                medicationAdministrationFactory, slotFactory, slotService, scheduleService,
+                fhirMedicationAdministrationDao, medicationAdministrationToSlotStatusTranslator,
+                scheduleFactory, taskService, acknowledgementTaskMapper);
 
         medicationAdminUuid = "med-admin-uuid-123";
         providerUuid = "provider-uuid-456";
@@ -96,9 +119,13 @@ public class IPDMedicationAdministrationServiceImplTest {
         medicationAdministration.setNotes(new HashSet<>());
     }
 
+    @After
+    public void tearDown() {
+        contextMock.close();
+    }
+
     @Test
     public void shouldAddAmendmentNoteSuccessfully() {
-        // Arrange
         MedicationAdministrationNoteRequest noteRequest = MedicationAdministrationNoteRequest.builder()
                 .authorUuid(providerUuid)
                 .text("Dosage corrected from 500mg to 250mg")
@@ -116,23 +143,13 @@ public class IPDMedicationAdministrationServiceImplTest {
         statusReasonConcept.setConceptId(123);
         statusReasonConcept.setUuid(statusReasonUuid);
 
-        PowerMockito.mockStatic(Context.class);
-        ProviderService providerService = mock(ProviderService.class);
-        ConceptService conceptService = mock(ConceptService.class);
-        when(Context.getProviderService()).thenReturn(providerService);
-        when(Context.getConceptService()).thenReturn(conceptService);
         when(providerService.getProviderByUuid(providerUuid)).thenReturn(provider);
         when(conceptService.getConceptByUuid(statusReasonUuid)).thenReturn(statusReasonConcept);
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Collections.emptyList());
 
-        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
-                .thenReturn(medicationAdministration);
-        when(taskService.searchTasks(any(TaskSearchRequest.class)))
-                .thenReturn(Collections.emptyList());
-
-        // Act
         MedicationAdministrationNote result = service.amendNote(medicationAdminUuid, noteRequest);
 
-        // Assert
         assertNotNull("Amendment note should be created", result);
         assertEquals("Note text should match request", noteRequest.getText(), result.getText());
         assertEquals("Author should be the provider", provider, result.getAuthor());
@@ -146,45 +163,32 @@ public class IPDMedicationAdministrationServiceImplTest {
 
     @Test(expected = APIException.class)
     public void shouldThrowException_WhenMedicationAdminNotFound_OnAmend() {
-        // Arrange
         MedicationAdministrationNoteRequest noteRequest = MedicationAdministrationNoteRequest.builder()
                 .authorUuid(providerUuid)
                 .text("Test note")
                 .build();
 
-        when(fhirMedicationAdministrationDao.get(anyString()))
-                .thenReturn(null);
+        when(fhirMedicationAdministrationDao.get(anyString())).thenReturn(null);
 
-        // Act & Assert (exception expected)
         service.amendNote(medicationAdminUuid, noteRequest);
     }
 
     @Test(expected = APIException.class)
     public void shouldThrowException_WhenAmendmentReasonNotFound() {
-        // Arrange
         MedicationAdministrationNoteRequest noteRequest = MedicationAdministrationNoteRequest.builder()
                 .authorUuid(providerUuid)
                 .text("Dosage corrected")
                 .statusReasonUuid("invalid-concept-uuid")
                 .build();
 
-        PowerMockito.mockStatic(Context.class);
-        ProviderService providerService = mock(ProviderService.class);
-        ConceptService conceptService = mock(ConceptService.class);
-        when(Context.getProviderService()).thenReturn(providerService);
-        when(Context.getConceptService()).thenReturn(conceptService);
         when(conceptService.getConceptByUuid("invalid-concept-uuid")).thenReturn(null);
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
 
-        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
-                .thenReturn(medicationAdministration);
-
-        // Act & Assert (exception expected)
         service.amendNote(medicationAdminUuid, noteRequest);
     }
 
     @Test(expected = APIException.class)
     public void shouldThrowException_WhenMedicationAdminIsLocked_OnAmend() {
-        // Arrange
         MedicationAdministrationNoteRequest noteRequest = MedicationAdministrationNoteRequest.builder()
                 .authorUuid(providerUuid)
                 .text("Attempted amendment")
@@ -205,18 +209,14 @@ public class IPDMedicationAdministrationServiceImplTest {
         fhirTask.setFocusReference(focusReference);
         acknowledgedTask.setFhirTask(fhirTask);
 
-        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
-                .thenReturn(medicationAdministration);
-        when(taskService.searchTasks(any(TaskSearchRequest.class)))
-                .thenReturn(Arrays.asList(acknowledgedTask));
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Arrays.asList(acknowledgedTask));
 
-        // Act & Assert (exception expected)
         service.amendNote(medicationAdminUuid, noteRequest);
     }
 
     @Test
     public void shouldAcknowledgeSuccessfully() {
-        // Arrange
         MedicationAdministrationNote noteToAcknowledge = new MedicationAdministrationNote();
         noteToAcknowledge.setUuid("note-uuid-for-ack");
         noteToAcknowledge.setText("Amendment to acknowledge");
@@ -235,42 +235,24 @@ public class IPDMedicationAdministrationServiceImplTest {
         fhirTask.setStatus(FhirTask.TaskStatus.COMPLETED);
         taskToReturn.setFhirTask(fhirTask);
 
-        PowerMockito.mockStatic(Context.class);
-        ProviderService providerService = mock(ProviderService.class);
-        AdministrationService administrationService = mock(AdministrationService.class);
-        User authenticatedUser = mock(User.class);
         Person authenticatedPerson = mock(Person.class);
-
-        ConceptService conceptService = mock(ConceptService.class);
         Concept taskTypeConcept = mock(Concept.class);
         ConceptName taskTypeConceptName = mock(ConceptName.class);
         when(taskTypeConceptName.getName()).thenReturn("acknowledge_amend_note");
         when(taskTypeConcept.getName()).thenReturn(taskTypeConceptName);
-
-        when(Context.getProviderService()).thenReturn(providerService);
-        when(Context.getAdministrationService()).thenReturn(administrationService);
-        when(Context.getConceptService()).thenReturn(conceptService);
-        when(Context.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(authenticatedUser.getPerson()).thenReturn(authenticatedPerson);
-        when(providerService.getProvidersByPerson(authenticatedPerson))
-                .thenReturn(Collections.singleton(provider));
-        when(administrationService.getGlobalProperty("ipd.acknowledgement_task_type"))
-                .thenReturn("task-type-uuid");
+        when(providerService.getProvidersByPerson(authenticatedPerson)).thenReturn(Collections.singleton(provider));
+        when(administrationService.getGlobalProperty("ipd.acknowledgement_task_type")).thenReturn("task-type-uuid");
         when(conceptService.getConceptByUuid("task-type-uuid")).thenReturn(taskTypeConcept);
-
-        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
-                .thenReturn(medicationAdministration);
-        when(taskService.searchTasks(any(TaskSearchRequest.class)))
-                .thenReturn(Collections.emptyList());
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Collections.emptyList());
         when(acknowledgementTaskMapper.createAcknowledgementTask(
                 eq("note-uuid-for-ack"), any(), eq("ACKNOWLEDGE_MEDICATION_NOTE"),
                 eq("acknowledge_amend_note"), eq("Acknowledged and approved"), any()))
                 .thenReturn(taskToReturn);
 
-        // Act
         Task result = service.acknowledge(medicationAdminUuid, ackRequest);
 
-        // Assert
         assertNotNull("Acknowledgement task should be created", result);
         assertEquals("Task status should be COMPLETED", FhirTask.TaskStatus.COMPLETED, result.getFhirTask().getStatus());
         verify(taskService, times(1)).saveTask(taskToReturn);
@@ -279,22 +261,18 @@ public class IPDMedicationAdministrationServiceImplTest {
 
     @Test(expected = APIException.class)
     public void shouldThrowException_WhenMedicationAdminNotFound_OnAcknowledge() {
-        // Arrange
         MedicationAdministrationAcknowledgementRequest ackRequest = MedicationAdministrationAcknowledgementRequest.builder()
                 .approvedByUuid(providerUuid)
                 .remarks("Test")
                 .build();
 
-        when(fhirMedicationAdministrationDao.get(anyString()))
-                .thenReturn(null);
+        when(fhirMedicationAdministrationDao.get(anyString())).thenReturn(null);
 
-        // Act & Assert (exception expected)
         service.acknowledge(medicationAdminUuid, ackRequest);
     }
 
     @Test(expected = APIException.class)
     public void shouldThrowException_WhenMedicationAdminIsAlreadyLocked_OnAcknowledge() {
-        // Arrange
         MedicationAdministrationNote noteToAcknowledge = new MedicationAdministrationNote();
         noteToAcknowledge.setUuid("note-uuid-for-ack");
         noteToAcknowledge.setVoided(false);
@@ -316,19 +294,14 @@ public class IPDMedicationAdministrationServiceImplTest {
                 .remarks("Should fail")
                 .build();
 
-        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
-                .thenReturn(medicationAdministration);
-        when(taskService.searchTasks(any(TaskSearchRequest.class)))
-                .thenReturn(Arrays.asList(existingAcknowledgementTask));
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Arrays.asList(existingAcknowledgementTask));
 
-        // Act & Assert (exception expected)
         service.acknowledge(medicationAdminUuid, ackRequest);
     }
 
     @Test
     public void shouldAmendSuccessfully_WhenExistingNoteHasNullVoided() {
-        // Arrange: a freshly-constructed note may have a null (unboxed) `voided` field
-        // before the interceptor sets it; getLatestNote must treat it as not-voided, not NPE.
         MedicationAdministrationNoteRequest noteRequest = MedicationAdministrationNoteRequest.builder()
                 .authorUuid(providerUuid)
                 .text("Amendment over a note with null voided")
@@ -338,23 +311,14 @@ public class IPDMedicationAdministrationServiceImplTest {
         existingNote.setUuid("note-uuid-null-voided");
         existingNote.setText("Existing note");
         existingNote.setDateCreated(new Date());
-        // existingNote.getVoided() is null here - not explicitly set.
         medicationAdministration.getNotes().add(existingNote);
 
-        PowerMockito.mockStatic(Context.class);
-        ProviderService providerService = mock(ProviderService.class);
-        when(Context.getProviderService()).thenReturn(providerService);
         when(providerService.getProviderByUuid(providerUuid)).thenReturn(provider);
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Collections.emptyList());
 
-        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
-                .thenReturn(medicationAdministration);
-        when(taskService.searchTasks(any(TaskSearchRequest.class)))
-                .thenReturn(Collections.emptyList());
-
-        // Act
         MedicationAdministrationNote result = service.amendNote(medicationAdminUuid, noteRequest);
 
-        // Assert
         assertNotNull("Amendment note should be created", result);
         assertNotNull("Previous note should be linked despite null voided on the existing note", result.getPreviousNote());
         assertEquals("Previous note should be the existing note", existingNote.getUuid(), result.getPreviousNote().getUuid());
@@ -362,8 +326,6 @@ public class IPDMedicationAdministrationServiceImplTest {
 
     @Test
     public void shouldSelectHeadOfPreviousNoteChain_AsLatestNote_AmongMultipleNonVoidedNotes() {
-        // Arrange: three notes chained via previousNote; dateCreated is intentionally out of
-        // chain order to prove selection follows the previousNote chain, not dateCreated.
         MedicationAdministrationNoteRequest noteRequest = MedicationAdministrationNoteRequest.builder()
                 .authorUuid(providerUuid)
                 .text("Fourth amendment")
@@ -390,20 +352,12 @@ public class IPDMedicationAdministrationServiceImplTest {
         medicationAdministration.getNotes().add(secondNote);
         medicationAdministration.getNotes().add(thirdNote);
 
-        PowerMockito.mockStatic(Context.class);
-        ProviderService providerService = mock(ProviderService.class);
-        when(Context.getProviderService()).thenReturn(providerService);
         when(providerService.getProviderByUuid(providerUuid)).thenReturn(provider);
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Collections.emptyList());
 
-        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
-                .thenReturn(medicationAdministration);
-        when(taskService.searchTasks(any(TaskSearchRequest.class)))
-                .thenReturn(Collections.emptyList());
-
-        // Act
         MedicationAdministrationNote result = service.amendNote(medicationAdminUuid, noteRequest);
 
-        // Assert
         assertNotNull("Latest note (head of chain) should be linked as previousNote", result.getPreviousNote());
         assertEquals("Head of the previousNote chain should be selected regardless of dateCreated ordering",
                 "note-3", result.getPreviousNote().getUuid());
@@ -411,7 +365,6 @@ public class IPDMedicationAdministrationServiceImplTest {
 
     @Test(expected = APIException.class)
     public void shouldThrowException_WhenNoNotesExist_OnAcknowledge() {
-        // Arrange
         medicationAdministration.setNotes(new HashSet<>());
 
         MedicationAdministrationAcknowledgementRequest ackRequest = MedicationAdministrationAcknowledgementRequest.builder()
@@ -419,12 +372,8 @@ public class IPDMedicationAdministrationServiceImplTest {
                 .remarks("No notes to acknowledge")
                 .build();
 
-        when(fhirMedicationAdministrationDao.get(medicationAdminUuid))
-                .thenReturn(medicationAdministration);
-        when(taskService.searchTasks(any(TaskSearchRequest.class)))
-                .thenReturn(Collections.emptyList());
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
 
-        // Act & Assert (exception expected)
         service.acknowledge(medicationAdminUuid, ackRequest);
     }
 }
