@@ -8,18 +8,22 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.Concept;
+import org.openmrs.DrugOrder;
 import org.openmrs.Patient;
 import org.openmrs.Visit;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.VisitService;
+import org.openmrs.module.ipd.api.model.MedicationAdministration;
 import org.openmrs.module.ipd.api.model.Reference;
+import org.openmrs.module.ipd.api.model.Schedule;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.api.service.ReferenceService;
 import org.openmrs.module.ipd.api.service.ScheduleService;
 import org.openmrs.module.ipd.api.service.SlotService;
+import org.openmrs.module.ipd.web.contract.ScheduleMedicationRequest;
 import org.openmrs.module.ipd.web.factory.ScheduleFactory;
 import org.openmrs.module.ipd.web.factory.SlotFactory;
 
@@ -246,5 +250,159 @@ public class IPDScheduleServiceImplTest {
                 .getSlotsBySubjectReferenceIdAndForTheGivenTimeFrame(reference, startTime, endTime, visit);
         Mockito.verify(slotService, Mockito.never())
                 .getSlotsBySubjectReferenceIncludingAdministeredTimeFrame(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    public void shouldNotCreatePlaceholderSlot_WhenScheduledPlaceholderWithNoAdminAlreadyExists() {
+        String patientUuid = "patient-uuid-1";
+        String orderUuid = "order-uuid-1";
+        Patient patient = new Patient();
+        Visit visit = new Visit(1);
+        Schedule schedule = new Schedule();
+        schedule.setId(1);
+        DrugOrder order = new DrugOrder();
+        order.setUuid(orderUuid);
+        Concept prnConcept = new Concept();
+        Reference reference = new Reference(Patient.class.getTypeName(), patientUuid);
+        Slot existingPlaceholder = new Slot();
+        existingPlaceholder.setStatus(Slot.SlotStatus.SCHEDULED);
+
+        Mockito.when(patientService.getPatientByUuid(patientUuid)).thenReturn(patient);
+        Mockito.when(visitService.getActiveVisitsByPatient(patient)).thenReturn(Arrays.asList(visit));
+        Mockito.when(scheduleService.getScheduleByVisit(visit)).thenReturn(schedule);
+        Mockito.when(orderService.getOrderByUuid(orderUuid)).thenReturn(order);
+        Mockito.when(conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName())).thenReturn(prnConcept);
+        Mockito.when(referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid))
+                .thenReturn(Optional.of(reference));
+        Mockito.when(slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(reference, prnConcept, Arrays.asList(orderUuid)))
+                .thenReturn(Arrays.asList(existingPlaceholder));
+
+        ScheduleMedicationRequest request = ScheduleMedicationRequest.builder()
+                .patientUuid(patientUuid)
+                .orderUuid(orderUuid)
+                .serviceType(ServiceType.AS_NEEDED_PLACEHOLDER)
+                .build();
+
+        ipdScheduleService.saveMedicationSchedule(request);
+
+        Mockito.verify(slotFactory, Mockito.never()).createAsNeededPlaceholderSlot(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(slotService, Mockito.never()).saveSlot(Mockito.any());
+    }
+
+    @Test
+    public void shouldCreatePlaceholderSlot_WhenNoExistingPlaceholderFound() {
+        String patientUuid = "patient-uuid-1";
+        String orderUuid = "order-uuid-1";
+        Patient patient = new Patient();
+        Visit visit = new Visit(1);
+        Schedule schedule = new Schedule();
+        schedule.setId(1);
+        DrugOrder order = new DrugOrder();
+        order.setUuid(orderUuid);
+        Concept prnConcept = new Concept();
+        Reference reference = new Reference(Patient.class.getTypeName(), patientUuid);
+        Slot newPlaceholder = new Slot();
+
+        Mockito.when(patientService.getPatientByUuid(patientUuid)).thenReturn(patient);
+        Mockito.when(visitService.getActiveVisitsByPatient(patient)).thenReturn(Arrays.asList(visit));
+        Mockito.when(scheduleService.getScheduleByVisit(visit)).thenReturn(schedule);
+        Mockito.when(orderService.getOrderByUuid(orderUuid)).thenReturn(order);
+        Mockito.when(conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName())).thenReturn(prnConcept);
+        Mockito.when(referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid))
+                .thenReturn(Optional.of(reference));
+        Mockito.when(slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(reference, prnConcept, Arrays.asList(orderUuid)))
+                .thenReturn(Collections.emptyList());
+        Mockito.when(slotFactory.createAsNeededPlaceholderSlot(schedule, order, null)).thenReturn(newPlaceholder);
+
+        ScheduleMedicationRequest request = ScheduleMedicationRequest.builder()
+                .patientUuid(patientUuid)
+                .orderUuid(orderUuid)
+                .serviceType(ServiceType.AS_NEEDED_PLACEHOLDER)
+                .build();
+
+        ipdScheduleService.saveMedicationSchedule(request);
+
+        Mockito.verify(slotFactory).createAsNeededPlaceholderSlot(schedule, order, null);
+        Mockito.verify(slotService).saveSlot(newPlaceholder);
+    }
+
+    @Test
+    public void shouldCreateNewPlaceholderSlot_WhenExistingPlaceholderHasBeenAdministered() {
+        String patientUuid = "patient-uuid-1";
+        String orderUuid = "order-uuid-1";
+        Patient patient = new Patient();
+        Visit visit = new Visit(1);
+        Schedule schedule = new Schedule();
+        schedule.setId(1);
+        DrugOrder order = new DrugOrder();
+        order.setUuid(orderUuid);
+        Concept prnConcept = new Concept();
+        Reference reference = new Reference(Patient.class.getTypeName(), patientUuid);
+        Slot administeredPlaceholder = new Slot();
+        administeredPlaceholder.setStatus(Slot.SlotStatus.COMPLETED);
+        administeredPlaceholder.setMedicationAdministration(new MedicationAdministration());
+        Slot newPlaceholder = new Slot();
+
+        Mockito.when(patientService.getPatientByUuid(patientUuid)).thenReturn(patient);
+        Mockito.when(visitService.getActiveVisitsByPatient(patient)).thenReturn(Arrays.asList(visit));
+        Mockito.when(scheduleService.getScheduleByVisit(visit)).thenReturn(schedule);
+        Mockito.when(orderService.getOrderByUuid(orderUuid)).thenReturn(order);
+        Mockito.when(conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName())).thenReturn(prnConcept);
+        Mockito.when(referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid))
+                .thenReturn(Optional.of(reference));
+        Mockito.when(slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(reference, prnConcept, Arrays.asList(orderUuid)))
+                .thenReturn(Arrays.asList(administeredPlaceholder));
+        Mockito.when(slotFactory.createAsNeededPlaceholderSlot(schedule, order, null)).thenReturn(newPlaceholder);
+
+        ScheduleMedicationRequest request = ScheduleMedicationRequest.builder()
+                .patientUuid(patientUuid)
+                .orderUuid(orderUuid)
+                .serviceType(ServiceType.AS_NEEDED_PLACEHOLDER)
+                .build();
+
+        ipdScheduleService.saveMedicationSchedule(request);
+
+        Mockito.verify(slotFactory).createAsNeededPlaceholderSlot(schedule, order, null);
+        Mockito.verify(slotService).saveSlot(newPlaceholder);
+    }
+
+    @Test
+    public void shouldNotCreatePlaceholderSlot_WhenScheduledPlaceholderExistsAlongsideAdministeredOnes() {
+        String patientUuid = "patient-uuid-1";
+        String orderUuid = "order-uuid-1";
+        Patient patient = new Patient();
+        Visit visit = new Visit(1);
+        Schedule schedule = new Schedule();
+        schedule.setId(1);
+        DrugOrder order = new DrugOrder();
+        order.setUuid(orderUuid);
+        Concept prnConcept = new Concept();
+        Reference reference = new Reference(Patient.class.getTypeName(), patientUuid);
+        Slot administeredPlaceholder = new Slot();
+        administeredPlaceholder.setStatus(Slot.SlotStatus.COMPLETED);
+        administeredPlaceholder.setMedicationAdministration(new MedicationAdministration());
+        Slot scheduledPlaceholder = new Slot();
+        scheduledPlaceholder.setStatus(Slot.SlotStatus.SCHEDULED);
+
+        Mockito.when(patientService.getPatientByUuid(patientUuid)).thenReturn(patient);
+        Mockito.when(visitService.getActiveVisitsByPatient(patient)).thenReturn(Arrays.asList(visit));
+        Mockito.when(scheduleService.getScheduleByVisit(visit)).thenReturn(schedule);
+        Mockito.when(orderService.getOrderByUuid(orderUuid)).thenReturn(order);
+        Mockito.when(conceptService.getConceptByName(ServiceType.AS_NEEDED_PLACEHOLDER.conceptName())).thenReturn(prnConcept);
+        Mockito.when(referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), patientUuid))
+                .thenReturn(Optional.of(reference));
+        Mockito.when(slotService.getSlotsBySubjectReferenceIdAndServiceTypeAndOrderUuids(reference, prnConcept, Arrays.asList(orderUuid)))
+                .thenReturn(Arrays.asList(administeredPlaceholder, scheduledPlaceholder));
+
+        ScheduleMedicationRequest request = ScheduleMedicationRequest.builder()
+                .patientUuid(patientUuid)
+                .orderUuid(orderUuid)
+                .serviceType(ServiceType.AS_NEEDED_PLACEHOLDER)
+                .build();
+
+        ipdScheduleService.saveMedicationSchedule(request);
+
+        Mockito.verify(slotFactory, Mockito.never()).createAsNeededPlaceholderSlot(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(slotService, Mockito.never()).saveSlot(Mockito.any());
     }
 }
