@@ -4,7 +4,7 @@
 
 	<groupId>org.bahmni.module</groupId>
 	<artifactId>bahmni-ipd</artifactId>
-	<version>1.4.0-SNAPSHOT</version>
+	<version>2.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Bahmni IPD</name>
 	<description>Bahmni IPD module contains all backend APIs for IPD</description>
@@ -50,7 +50,7 @@
 		<fhir2ExtensionVersion>2.2.0-SNAPSHOT</fhir2ExtensionVersion>
 	  <bahmniVersion>2.1.0</bahmniVersion>
 		<emrapi-omod.version>2.3.0</emrapi-omod.version>
-		<medicationAdminstrationVersion>2.2.0-SNAPSHOT</medicationAdminstrationVersion>
+		<medicationAdminstrationVersion>3.0.0-SNAPSHOT</medicationAdminstrationVersion>
 	</properties>
 
 	<build>
