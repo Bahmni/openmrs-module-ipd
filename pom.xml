@@ -48,7 +48,7 @@
 		<lombokVersion>1.18.30</lombokVersion>
 		<openmrsFhir2Version>2.5.1</openmrsFhir2Version>
 		<fhir2ExtensionVersion>2.2.0-SNAPSHOT</fhir2ExtensionVersion>
-	  <bahmniVersion>2.1.0</bahmniVersion>
+	    <bahmniVersion>2.1.0</bahmniVersion>
 		<emrapi-omod.version>2.3.0</emrapi-omod.version>
 		<medicationAdminstrationVersion>3.0.0-SNAPSHOT</medicationAdminstrationVersion>
 	</properties>
