@@ -50,7 +50,7 @@
 		<fhir2ExtensionVersion>2.2.0-SNAPSHOT</fhir2ExtensionVersion>
 	  <bahmniVersion>2.1.0</bahmniVersion>
 		<emrapi-omod.version>2.3.0</emrapi-omod.version>
-		<medicationAdminstrationVersion>2.0.0</medicationAdminstrationVersion>
+		<medicationAdminstrationVersion>2.2.0-SNAPSHOT</medicationAdminstrationVersion>
 	</properties>
 
 	<build>
