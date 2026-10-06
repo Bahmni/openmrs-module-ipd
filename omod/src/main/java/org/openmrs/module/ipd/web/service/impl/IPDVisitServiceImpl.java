@@ -162,6 +162,8 @@ public class IPDVisitServiceImpl implements IPDVisitService {
     @Override
     public List<Slot> getMedicationSlots(String visitUuid, ServiceType serviceType) {
         Visit visit = visitService.getVisitByUuid(visitUuid);
+        if (visit == null)
+            return Collections.emptyList();
         Concept concept = conceptService.getConceptByName(serviceType.conceptName());
         Optional<Reference> subjectReference = referenceService.getReferenceByTypeAndTargetUUID(Patient.class.getTypeName(), visit.getPatient().getUuid());
 

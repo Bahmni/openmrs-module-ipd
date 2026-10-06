@@ -20,6 +20,7 @@ import ca.uhn.fhir.rest.param.TokenOrListParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.SimpleBundleProvider;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import lombok.Setter;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -34,8 +35,6 @@ import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.fhir.IPDFhirConstants;
 import org.openmrs.module.ipd.web.service.IPDVisitService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,8 +42,6 @@ import org.springframework.stereotype.Component;
 @R4Provider
 @Setter(PACKAGE)
 public class MedicationAdministrationFhirResourceProvider implements IResourceProvider {
-
-    private static final Logger log = LoggerFactory.getLogger(MedicationAdministrationFhirResourceProvider.class);
 
     @Autowired
     private FhirMedicationAdministrationService service;
@@ -73,53 +70,35 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
             @OptionalParam(name = MedicationAdministration.SP_STATUS) TokenAndListParam status,
             @OptionalParam(name = IPDFhirConstants.SP_MEDICATION_ADMIN_CATEGORY) TokenAndListParam category) {
 
-        boolean emergencyOnly = false;
         if (category != null) {
-            outer:
-            for (TokenOrListParam orList : category.getValuesAsQueryTokens()) {
-                for (TokenParam token : orList.getValuesAsQueryTokens()) {
-                    if (IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY.equals(token.getValue())) {
-                        emergencyOnly = true;
-                        break outer;
-                    }
-                }
-            }
-        }
+            validateEmergencyCategory(category);
 
-        if (emergencyOnly && contextReference != null) {
             // visitUuid is passed via the 'context' search parameter — Bahmni convention where visit maps to Encounter identifier
-            String visitUuid = null;
-            List<ReferenceOrListParam> contextOrLists = contextReference.getValuesAsQueryTokens();
-            if (contextOrLists != null && !contextOrLists.isEmpty()) {
-                List<ReferenceParam> contextParams = contextOrLists.get(0).getValuesAsQueryTokens();
-                if (contextParams != null && !contextParams.isEmpty()) {
-                    visitUuid = contextParams.get(0).getIdPart();
-                }
-            }
-
+            String visitUuid = extractVisitUuid(contextReference);
             if (visitUuid == null || visitUuid.isEmpty()) {
-                log.warn("Emergency category search requested but no valid visitUuid found in context reference; falling through to unfiltered search");
-            } else {
-                List<Slot> slots = ipdVisitService.getMedicationSlots(visitUuid, ServiceType.EMERGENCY_MEDICATION_REQUEST);
-
-                List<String> maUuids = slots.stream()
-                        .map(Slot::getMedicationAdministration)
-                        .filter(Objects::nonNull)
-                        .map(org.openmrs.module.ipd.api.model.MedicationAdministration::getUuid)
-                        .collect(Collectors.toList());
-
-                if (maUuids.isEmpty()) {
-                    return new SimpleBundleProvider(Collections.emptyList());
-                }
-
-                List<MedicationAdministration> resources = service.get(maUuids);
-
-                List<MedicationAdministration> filtered = resources.stream()
-                        .filter(r -> r.getStatus() != null && matchesStatusFilter(r.getStatus().toCode(), status))
-                        .collect(Collectors.toList());
-
-                return new SimpleBundleProvider((List<IBaseResource>) (List<?>) filtered);
+                throw new InvalidRequestException("The 'context' parameter with a visit uuid is required when category=emergency");
             }
+
+            List<Slot> slots = ipdVisitService.getMedicationSlots(visitUuid, ServiceType.EMERGENCY_MEDICATION_REQUEST);
+
+            List<String> maUuids = slots.stream()
+                    .map(Slot::getMedicationAdministration)
+                    .filter(Objects::nonNull)
+                    .map(org.openmrs.module.ipd.api.model.MedicationAdministration::getUuid)
+                    .collect(Collectors.toList());
+
+            if (maUuids.isEmpty()) {
+                return new SimpleBundleProvider(Collections.emptyList());
+            }
+
+            List<MedicationAdministration> resources = service.get(maUuids);
+
+            List<MedicationAdministration> filtered = resources.stream()
+                    .filter(r -> r.getStatus() != null && matchesStatusFilter(r.getStatus().toCode(), status))
+                    .filter(r -> matchesPatientFilter(r, patientReference))
+                    .collect(Collectors.toList());
+
+            return new SimpleBundleProvider((List<IBaseResource>) (List<?>) filtered);
         }
 
         MedicationAdministrationSearchParams params = new MedicationAdministrationSearchParams();
@@ -129,17 +108,67 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
         return service.searchForMedicationAdministration(params);
     }
 
+    private void validateEmergencyCategory(TokenAndListParam category) {
+        for (TokenOrListParam orList : category.getValuesAsQueryTokens()) {
+            for (TokenParam token : orList.getValuesAsQueryTokens()) {
+                if (!IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY.equals(token.getValue())) {
+                    throw new InvalidRequestException("Unsupported category '" + token.getValue()
+                            + "'; only '" + IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY + "' is supported");
+                }
+            }
+        }
+    }
+
+    private String extractVisitUuid(ReferenceAndListParam contextReference) {
+        if (contextReference == null) {
+            return null;
+        }
+        List<ReferenceOrListParam> contextOrLists = contextReference.getValuesAsQueryTokens();
+        if (contextOrLists != null && !contextOrLists.isEmpty()) {
+            List<ReferenceParam> contextParams = contextOrLists.get(0).getValuesAsQueryTokens();
+            if (contextParams != null && !contextParams.isEmpty()) {
+                return contextParams.get(0).getIdPart();
+            }
+        }
+        return null;
+    }
+
     private boolean matchesStatusFilter(String code, TokenAndListParam filter) {
         if (filter == null) {
             return true;
         }
         for (TokenOrListParam orList : filter.getValuesAsQueryTokens()) {
+            boolean anyMatch = false;
             for (TokenParam token : orList.getValuesAsQueryTokens()) {
                 if (code.equals(token.getValue())) {
-                    return true;
+                    anyMatch = true;
+                    break;
                 }
             }
+            if (!anyMatch) {
+                return false;
+            }
         }
-        return false;
+        return true;
+    }
+
+    private boolean matchesPatientFilter(MedicationAdministration resource, ReferenceAndListParam filter) {
+        if (filter == null) {
+            return true;
+        }
+        String subjectId = resource.hasSubject() ? resource.getSubject().getReferenceElement().getIdPart() : null;
+        for (ReferenceOrListParam orList : filter.getValuesAsQueryTokens()) {
+            boolean anyMatch = false;
+            for (ReferenceParam param : orList.getValuesAsQueryTokens()) {
+                if (subjectId != null && subjectId.equals(param.getIdPart())) {
+                    anyMatch = true;
+                    break;
+                }
+            }
+            if (!anyMatch) {
+                return false;
+            }
+        }
+        return true;
     }
 }
