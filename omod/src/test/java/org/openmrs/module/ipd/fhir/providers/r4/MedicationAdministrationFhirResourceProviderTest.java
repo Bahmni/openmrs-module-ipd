@@ -22,6 +22,7 @@ import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenAndListParam;
 import ca.uhn.fhir.rest.param.TokenOrListParam;
 import ca.uhn.fhir.rest.param.TokenParam;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.IdType;
@@ -251,5 +252,87 @@ public class MedicationAdministrationFhirResourceProviderTest {
         assertThat(resources, notNullValue());
         // only in-progress resources should match; "in-progress" is the toCode() value for INPROGRESS
         assertThat(resources, hasSize(2));
+    }
+
+    private TokenAndListParam categoryOf(String value) {
+        return new TokenAndListParam().addAnd(new TokenOrListParam().add(new TokenParam(value)));
+    }
+
+    private ReferenceAndListParam referenceOf(String value) {
+        return new ReferenceAndListParam().addAnd(new ReferenceOrListParam().add(new ReferenceParam(value)));
+    }
+
+    private Slot slotWithMa(String maUuid) {
+        org.openmrs.module.ipd.api.model.MedicationAdministration domainMa =
+                mock(org.openmrs.module.ipd.api.model.MedicationAdministration.class);
+        when(domainMa.getUuid()).thenReturn(maUuid);
+        Slot slot = mock(Slot.class);
+        when(slot.getMedicationAdministration()).thenReturn(domainMa);
+        return slot;
+    }
+
+    @Test(expected = InvalidRequestException.class)
+    public void search_withEmergencyCategoryAndNoContext_throwsInvalidRequest() {
+        provider.searchMedicationAdministrations(null, null, null, categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
+    }
+
+    @Test(expected = InvalidRequestException.class)
+    public void search_withUnsupportedCategory_throwsInvalidRequest() {
+        provider.searchMedicationAdministrations(null, referenceOf(VISIT_UUID), null, categoryOf("routine"));
+    }
+
+    @Test
+    public void search_withEmergencyCategoryAndUnknownVisit_returnsEmptyBundle() {
+        when(ipdVisitService.getMedicationSlots(VISIT_UUID, ServiceType.EMERGENCY_MEDICATION_REQUEST))
+                .thenReturn(Collections.emptyList());
+
+        IBundleProvider results = provider.searchMedicationAdministrations(null, referenceOf(VISIT_UUID), null,
+                categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
+
+        assertThat(getResources(results), hasSize(0));
+    }
+
+    @Test
+    public void search_withEmergencyCategoryAndPatient_filtersByPatient() {
+        List<Slot> slots = Arrays.asList(slotWithMa("uuid-1"), slotWithMa("uuid-2"));
+        when(ipdVisitService.getMedicationSlots(VISIT_UUID, ServiceType.EMERGENCY_MEDICATION_REQUEST))
+                .thenReturn(slots);
+
+        MedicationAdministration ma1 = new MedicationAdministration();
+        ma1.setId("uuid-1");
+        ma1.setStatus(MedicationAdministration.MedicationAdministrationStatus.COMPLETED);
+        ma1.getSubject().setReference("Patient/patient-a");
+        MedicationAdministration ma2 = new MedicationAdministration();
+        ma2.setId("uuid-2");
+        ma2.setStatus(MedicationAdministration.MedicationAdministrationStatus.COMPLETED);
+        ma2.getSubject().setReference("Patient/patient-b");
+        when(service.get(Arrays.asList("uuid-1", "uuid-2"))).thenReturn(Arrays.asList(ma1, ma2));
+
+        IBundleProvider results = provider.searchMedicationAdministrations(referenceOf("patient-a"), referenceOf(VISIT_UUID),
+                null, categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
+
+        List<IBaseResource> resources = getResources(results);
+        assertThat(resources, hasSize(1));
+        assertThat(resources.get(0), equalTo((IBaseResource) ma1));
+    }
+
+    @Test
+    public void search_withEmergencyCategoryAndAndedStatuses_requiresEveryOrListToMatch() {
+        List<Slot> slots = Collections.singletonList(slotWithMa("uuid-1"));
+        when(ipdVisitService.getMedicationSlots(VISIT_UUID, ServiceType.EMERGENCY_MEDICATION_REQUEST))
+                .thenReturn(slots);
+        MedicationAdministration ma = new MedicationAdministration();
+        ma.setId("uuid-1");
+        ma.setStatus(MedicationAdministration.MedicationAdministrationStatus.COMPLETED);
+        when(service.get(Collections.singletonList("uuid-1"))).thenReturn(Collections.singletonList(ma));
+
+        TokenAndListParam status = new TokenAndListParam()
+                .addAnd(new TokenOrListParam().add(new TokenParam("in-progress")))
+                .addAnd(new TokenOrListParam().add(new TokenParam("completed")));
+
+        IBundleProvider results = provider.searchMedicationAdministrations(null, referenceOf(VISIT_UUID), status,
+                categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
+
+        assertThat(getResources(results), hasSize(0));
     }
 }
