@@ -10,4 +10,13 @@ public final class IPDFhirConstants {
 
 	/** Code used by the frontend to request only emergency/adhoc medication administrations. */
 	public static final String MEDICATION_ADMIN_CATEGORY_EMERGENCY = "emergency";
+
+	/** Extension on MedicationAdministration (scheduled only): valueString = uuid of the Slot being administered. */
+	public static final String EXT_MEDICATION_ADMIN_SLOT = "http://fhir.openmrs.org/ext/ipd/medication-administration/slot";
+
+	/** Extension on MedicationAdministration.note: valueString = uuid of the note being amended (validated, not trusted). */
+	public static final String EXT_NOTE_PREVIOUS_NOTE_ID = "http://fhir.openmrs.org/ext/ipd/note/previous-note-id";
+
+	/** Extension on MedicationAdministration.note: valueCodeableConcept whose coding code = concept uuid of the amendment reason. */
+	public static final String EXT_NOTE_AMENDMENT_REASON = "http://fhir.openmrs.org/ext/ipd/note/amendment-reason";
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Root (OpenMRS service context) beans of the omod.
+
+    FHIR resource providers are collected by the fhir2 servlet from the root application context
+    (FhirActivator.getApplicationContext()), NOT from the web (dispatcher) context that
+    webModuleApplicationContext.xml feeds. So everything under org.openmrs.module.ipd.fhir, plus the
+    web-layer service/factory/mapper beans those providers delegate to, must be registered here.
+    The web context keeps scanning org.openmrs.module.ipd.web for the REST controllers; the
+    service/factory/mapper beans are intentionally also visible there (same bean names, so the
+    web-context copies simply shadow these for the controllers).
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="org.openmrs.module.ipd.fhir"/>
+    <context:component-scan base-package="org.openmrs.module.ipd.web.service"/>
+    <context:component-scan base-package="org.openmrs.module.ipd.web.factory"/>
+    <context:component-scan base-package="org.openmrs.module.ipd.web.mapper"/>
+</beans>
