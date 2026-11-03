@@ -386,9 +386,6 @@ public class IPDMedicationAdministrationServiceImplTest {
     }
 
     private void stubAmendDependencies() {
-        PowerMockito.mockStatic(Context.class);
-        ProviderService providerService = mock(ProviderService.class);
-        when(Context.getProviderService()).thenReturn(providerService);
         when(providerService.getProviderByUuid(providerUuid)).thenReturn(provider);
         when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
         when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Collections.emptyList());
@@ -467,11 +464,10 @@ public class IPDMedicationAdministrationServiceImplTest {
 
     @Test
     public void shouldThrowApiException_WhenAdhocPatientHasNoActiveVisit() {
-        PowerMockito.mockStatic(Context.class);
         org.openmrs.api.PatientService patientService = mock(org.openmrs.api.PatientService.class);
         org.openmrs.api.VisitService visitService = mock(org.openmrs.api.VisitService.class);
-        when(Context.getPatientService()).thenReturn(patientService);
-        when(Context.getVisitService()).thenReturn(visitService);
+        contextMock.when(() -> Context.getPatientService()).thenReturn(patientService);
+        contextMock.when(() -> Context.getVisitService()).thenReturn(visitService);
         org.openmrs.Patient patient = new org.openmrs.Patient();
         when(patientService.getPatientByUuid("p1")).thenReturn(patient);
         when(visitService.getActiveVisitsByPatient(patient)).thenReturn(Collections.emptyList());

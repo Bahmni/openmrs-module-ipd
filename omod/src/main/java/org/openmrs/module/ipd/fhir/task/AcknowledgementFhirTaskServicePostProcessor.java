@@ -37,7 +37,11 @@ public class AcknowledgementFhirTaskServicePostProcessor implements BeanPostProc
             return bean;
         }
         ProxyFactory proxyFactory = new ProxyFactory(bean);
-        proxyFactory.setInterfaces(FhirTaskService.class);
+        // Use a CGLIB (class) proxy rather than setInterfaces(FhirTaskService.class): a JDK proxy
+        // restricted to FhirTaskService would drop sub-interfaces such as
+        // BahmniFhirTaskService (fhir2addlextension), breaking injection into beans that depend on
+        // the more specific type (BeanNotOfRequiredTypeException).
+        proxyFactory.setProxyTargetClass(true);
         proxyFactory.addAdvice(acknowledgementInterceptor());
         proxyFactory.addAdvice(new DecoratedMarker());
         return proxyFactory.getProxy(bean.getClass().getClassLoader());

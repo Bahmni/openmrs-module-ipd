@@ -1,6 +1,7 @@
 package org.openmrs.module.ipd.fhir.task;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -191,4 +192,20 @@ public class AcknowledgementFhirTaskTest {
         FhirTaskService once = decorate(mock(FhirTaskService.class));
         assertThat(processor.postProcessAfterInitialization(once, "y"), sameInstance((Object) once));
     }
+
+    @Test
+    public void decorator_preservesSubInterfaceType() {
+        // A bean implementing a sub-interface of FhirTaskService (like BahmniFhirTaskService) must
+        // keep that type after decoration, otherwise injection into dependents fails with
+        // BeanNotOfRequiredTypeException.
+        SubFhirTaskService delegate = mock(SubFhirTaskService.class);
+        AcknowledgementFhirTaskServicePostProcessor processor = new AcknowledgementFhirTaskServicePostProcessor();
+
+        Object decorated = processor.postProcessAfterInitialization(delegate, "bahmniFhirTaskServiceImpl");
+
+        assertThat(decorated, instanceOf(SubFhirTaskService.class));
+        assertThat(decorated, instanceOf(FhirTaskService.class));
+    }
+
+    private interface SubFhirTaskService extends FhirTaskService {}
 }
