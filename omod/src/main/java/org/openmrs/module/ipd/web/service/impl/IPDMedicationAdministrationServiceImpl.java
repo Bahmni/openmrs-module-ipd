@@ -108,8 +108,17 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
                 return fhirMedicationAdministrationService.get(medicationAdministrationRequest.getUuid());
             }
             org.hl7.fhir.r4.model.MedicationAdministration medicationAdministration = createMedicationAdministration(medicationAdministrationRequest);
+            MedicationAdministration openmrsAdministration = (MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId());
             slot.setStatus(medicationAdministrationToSlotStatusTranslator.toSlotStatus(medicationAdministration.getStatus()));
-            slot.setMedicationAdministration((MedicationAdministration) fhirMedicationAdministrationDao.get(medicationAdministration.getId()));
+            slot.setMedicationAdministration(openmrsAdministration);
+
+            if (ServiceType.AS_NEEDED_PLACEHOLDER.conceptName().equals(slot.getServiceType().getName().getName())) {
+                org.openmrs.Concept adminConcept = Context.getConceptService()
+                        .getConceptByName(ServiceType.AS_NEEDED_MEDICATION_REQUEST.conceptName());
+                slot.setServiceType(adminConcept);
+                slot.setStartDateTime(DateTimeUtil.convertEpocUTCToLocalTimeZone(medicationAdministrationRequest.getAdministeredDateTime()));
+            }
+
             slotService.saveSlot(slot);
             return medicationAdministration;
         }

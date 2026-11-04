@@ -26,6 +26,7 @@ public class MedicationSlotResponse {
     private Object medicationAdministration;
     private String notes;
     private Integer variableDosageSequence;
+    private Long lastAdministrationTime;
 
     public static MedicationSlotResponse createFrom(Slot slot) {
         return MedicationSlotResponse.builder()
@@ -38,6 +39,20 @@ public class MedicationSlotResponse {
                 .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
                 .notes(slot.getNotes())
                 .variableDosageSequence(slot.getVariableDosageSequence())
+                .build();
+    }
+
+    public static MedicationSlotResponse createFrom(Slot slot, Long lastAdministrationTime) {
+        return MedicationSlotResponse.builder()
+                .id(slot.getId())
+                .uuid(slot.getUuid())
+                .serviceType(slot.getServiceType().getName().getName())
+                .status(slot.getStatus().name())
+                .startTime(convertLocalDateTimeToUTCEpoc(slot.getStartDateTime()))
+                .order(ConversionUtil.convertToRepresentation(slot.getOrder(), Representation.FULL))
+                .medicationAdministration(MedicationAdministrationResponse.createFrom((slot.getMedicationAdministration())))
+                .notes(slot.getNotes())
+                .lastAdministrationTime(lastAdministrationTime)
                 .build();
     }
 
