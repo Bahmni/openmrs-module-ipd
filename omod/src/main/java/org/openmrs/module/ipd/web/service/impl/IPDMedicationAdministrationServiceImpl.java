@@ -124,6 +124,18 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     }
 
     @Override
+    public org.hl7.fhir.r4.model.MedicationAdministration replaceAdhocMedicationAdministration(String uuid, MedicationAdministrationRequest medicationAdministrationRequest) {
+        MedicationAdministration existing = (MedicationAdministration) fhirMedicationAdministrationDao.get(uuid);
+        if (existing == null) {
+            throw new APIException("MedicationAdministration not found with UUID: " + uuid);
+        }
+        MedicationAdministration replaced = medicationAdministrationFactory
+                .mapRequestToMedicationAdministrationForReplace(medicationAdministrationRequest, existing);
+        MedicationAdministration saved = (MedicationAdministration) fhirMedicationAdministrationDao.createOrUpdate(replaced);
+        return medicationAdministrationTranslator.toFhirResource(saved);
+    }
+
+    @Override
     public org.hl7.fhir.r4.model.MedicationAdministration saveAdhocMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
         Patient patient = Context.getPatientService().getPatientByUuid(medicationAdministrationRequest.getPatientUuid());
         if (patient == null) {

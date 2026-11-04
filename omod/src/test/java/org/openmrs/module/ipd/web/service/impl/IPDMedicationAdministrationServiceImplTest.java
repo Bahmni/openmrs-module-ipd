@@ -490,4 +490,38 @@ public class IPDMedicationAdministrationServiceImplTest {
         service.saveScheduledMedicationAdministration(
                 org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest.builder().slotUuid("nope").build());
     }
+
+    @Test(expected = APIException.class)
+    public void shouldThrowApiException_WhenReplacingUnknownMedicationAdministration() {
+        when(fhirMedicationAdministrationDao.get("missing")).thenReturn(null);
+
+        service.replaceAdhocMedicationAdministration("missing",
+                org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest.builder().build());
+    }
+
+    @Test
+    public void shouldReplaceAdhocMedicationAdministration() {
+        MedicationAdministration existing = new MedicationAdministration();
+        existing.setUuid(medicationAdminUuid);
+        MedicationAdministration replaced = new MedicationAdministration();
+        replaced.setUuid(medicationAdminUuid);
+        org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest request =
+                org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest.builder()
+                        .patientUuid("patient-uuid")
+                        .build();
+        org.hl7.fhir.r4.model.MedicationAdministration fhirResult = new org.hl7.fhir.r4.model.MedicationAdministration();
+
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(existing);
+        when(medicationAdministrationFactory.mapRequestToMedicationAdministrationForReplace(request, existing))
+                .thenReturn(replaced);
+        when(fhirMedicationAdministrationDao.createOrUpdate(replaced)).thenReturn(replaced);
+        when(medicationAdministrationTranslator.toFhirResource(replaced)).thenReturn(fhirResult);
+
+        org.hl7.fhir.r4.model.MedicationAdministration result =
+                service.replaceAdhocMedicationAdministration(medicationAdminUuid, request);
+
+        assertSame(fhirResult, result);
+        verify(fhirMedicationAdministrationDao).createOrUpdate(replaced);
+        verify(medicationAdministrationTranslator).toFhirResource(replaced);
+    }
 }

@@ -108,7 +108,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
         ReferenceAndListParam patientReference = new ReferenceAndListParam()
                 .addAnd(new ReferenceOrListParam().add(new ReferenceParam("patient-uuid")));
         ReferenceAndListParam contextReference = new ReferenceAndListParam()
-                .addAnd(new ReferenceOrListParam().add(new ReferenceParam(VISIT_UUID)));
+                .addAnd(new ReferenceOrListParam().add(new ReferenceParam("encounter-uuid")));
 
         MedicationAdministration ma = new MedicationAdministration();
         ma.setId(ADMINISTRATION_UUID);
@@ -116,7 +116,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
                 new ca.uhn.fhir.rest.server.SimpleBundleProvider(Collections.singletonList(ma)));
 
         //when
-        IBundleProvider results = provider.searchMedicationAdministrations(patientReference, contextReference, null, null);
+        IBundleProvider results = provider.searchMedicationAdministrations(patientReference, contextReference, null, null, null);
 
         //then
         ArgumentCaptor<MedicationAdministrationSearchParams> captor = ArgumentCaptor.forClass(MedicationAdministrationSearchParams.class);
@@ -125,6 +125,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
         MedicationAdministrationSearchParams captured = captor.getValue();
         assertThat(captured.getPatientReference(), equalTo(patientReference));
         assertThat(captured.getEncounterReference(), equalTo(contextReference));
+        assertThat(captured.getVisitReference(), equalTo(null));
 
         List<IBaseResource> resources = getResources(results);
         assertThat(resources, hasSize(1));
@@ -133,7 +134,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
     @Test
     public void search_withEmergencyCategory_filtersViaSlotService() {
         //given
-        ReferenceAndListParam contextReference = new ReferenceAndListParam()
+        ReferenceAndListParam visitReference = new ReferenceAndListParam()
                 .addAnd(new ReferenceOrListParam().add(new ReferenceParam(VISIT_UUID)));
         TokenAndListParam category = new TokenAndListParam()
                 .addAnd(new TokenOrListParam().add(new TokenParam(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY)));
@@ -167,7 +168,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
         when(service.get(Arrays.asList("uuid-1", "uuid-2"))).thenReturn(Arrays.asList(fhirMa1, fhirMa2));
 
         //when
-        IBundleProvider results = provider.searchMedicationAdministrations(null, contextReference, null, category);
+        IBundleProvider results = provider.searchMedicationAdministrations(null, null, visitReference, null, category);
 
         //then
         List<IBaseResource> resources = getResources(results);
@@ -178,7 +179,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
     @Test
     public void search_withEmergencyCategory_noMatchingSlots_returnsEmptyBundle() {
         //given
-        ReferenceAndListParam contextReference = new ReferenceAndListParam()
+        ReferenceAndListParam visitReference = new ReferenceAndListParam()
                 .addAnd(new ReferenceOrListParam().add(new ReferenceParam(VISIT_UUID)));
         TokenAndListParam category = new TokenAndListParam()
                 .addAnd(new TokenOrListParam().add(new TokenParam(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY)));
@@ -187,7 +188,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
                 .thenReturn(Collections.emptyList());
 
         //when
-        IBundleProvider results = provider.searchMedicationAdministrations(null, contextReference, null, category);
+        IBundleProvider results = provider.searchMedicationAdministrations(null, null, visitReference, null, category);
 
         //then
         List<IBaseResource> resources = getResources(results);
@@ -198,7 +199,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
     @Test
     public void search_withEmergencyCategoryAndStatusFilter_appliesStatusFilterClientSide() {
         //given
-        ReferenceAndListParam contextReference = new ReferenceAndListParam()
+        ReferenceAndListParam visitReference = new ReferenceAndListParam()
                 .addAnd(new ReferenceOrListParam().add(new ReferenceParam(VISIT_UUID)));
         TokenAndListParam category = new TokenAndListParam()
                 .addAnd(new TokenOrListParam().add(new TokenParam(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY)));
@@ -245,7 +246,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
                 .thenReturn(Arrays.asList(fhirMa1, fhirMa2, fhirMa3));
 
         //when
-        IBundleProvider results = provider.searchMedicationAdministrations(null, contextReference, status, category);
+        IBundleProvider results = provider.searchMedicationAdministrations(null, null, visitReference, status, category);
 
         //then
         List<IBaseResource> resources = getResources(results);
@@ -272,13 +273,14 @@ public class MedicationAdministrationFhirResourceProviderTest {
     }
 
     @Test(expected = InvalidRequestException.class)
-    public void search_withEmergencyCategoryAndNoContext_throwsInvalidRequest() {
-        provider.searchMedicationAdministrations(null, null, null, categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
+    public void search_withEmergencyCategoryAndNoVisit_throwsInvalidRequest() {
+        provider.searchMedicationAdministrations(null, null, null, null,
+                categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
     }
 
     @Test(expected = InvalidRequestException.class)
     public void search_withUnsupportedCategory_throwsInvalidRequest() {
-        provider.searchMedicationAdministrations(null, referenceOf(VISIT_UUID), null, categoryOf("routine"));
+        provider.searchMedicationAdministrations(null, null, referenceOf(VISIT_UUID), null, categoryOf("routine"));
     }
 
     @Test
@@ -286,7 +288,7 @@ public class MedicationAdministrationFhirResourceProviderTest {
         when(ipdVisitService.getMedicationSlots(VISIT_UUID, ServiceType.EMERGENCY_MEDICATION_REQUEST))
                 .thenReturn(Collections.emptyList());
 
-        IBundleProvider results = provider.searchMedicationAdministrations(null, referenceOf(VISIT_UUID), null,
+        IBundleProvider results = provider.searchMedicationAdministrations(null, null, referenceOf(VISIT_UUID), null,
                 categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
 
         assertThat(getResources(results), hasSize(0));
@@ -308,8 +310,8 @@ public class MedicationAdministrationFhirResourceProviderTest {
         ma2.getSubject().setReference("Patient/patient-b");
         when(service.get(Arrays.asList("uuid-1", "uuid-2"))).thenReturn(Arrays.asList(ma1, ma2));
 
-        IBundleProvider results = provider.searchMedicationAdministrations(referenceOf("patient-a"), referenceOf(VISIT_UUID),
-                null, categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
+        IBundleProvider results = provider.searchMedicationAdministrations(referenceOf("patient-a"), null,
+                referenceOf(VISIT_UUID), null, categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
 
         List<IBaseResource> resources = getResources(results);
         assertThat(resources, hasSize(1));
@@ -330,9 +332,23 @@ public class MedicationAdministrationFhirResourceProviderTest {
                 .addAnd(new TokenOrListParam().add(new TokenParam("in-progress")))
                 .addAnd(new TokenOrListParam().add(new TokenParam("completed")));
 
-        IBundleProvider results = provider.searchMedicationAdministrations(null, referenceOf(VISIT_UUID), status,
+        IBundleProvider results = provider.searchMedicationAdministrations(null, null, referenceOf(VISIT_UUID), status,
                 categoryOf(IPDFhirConstants.MEDICATION_ADMIN_CATEGORY_EMERGENCY));
 
         assertThat(getResources(results), hasSize(0));
+    }
+
+    @Test
+    public void search_withVisit_passesVisitReferenceToSearchParams() {
+        ReferenceAndListParam visitReference = referenceOf(VISIT_UUID);
+        when(service.searchForMedicationAdministration(any()))
+                .thenReturn(new ca.uhn.fhir.rest.server.SimpleBundleProvider(Collections.emptyList()));
+
+        provider.searchMedicationAdministrations(null, null, visitReference, null, null);
+
+        ArgumentCaptor<MedicationAdministrationSearchParams> captor = ArgumentCaptor
+                .forClass(MedicationAdministrationSearchParams.class);
+        verify(service).searchForMedicationAdministration(captor.capture());
+        assertThat(captor.getValue().getVisitReference(), equalTo(visitReference));
     }
 }
