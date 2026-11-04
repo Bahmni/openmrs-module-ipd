@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -33,6 +34,7 @@ import org.hl7.fhir.r4.model.MedicationAdministration;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.SimpleQuantity;
 import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Task;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,9 +43,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openmrs.api.APIException;
 import org.openmrs.module.fhir2.apiext.FhirMedicationAdministrationService;
+import org.openmrs.module.fhir2.model.FhirReference;
+import org.openmrs.module.fhir2.model.FhirTask;
 import org.openmrs.module.ipd.api.model.MedicationAdministrationNote;
 import org.openmrs.module.ipd.fhir.IPDFhirConstants;
 import org.openmrs.module.ipd.fhir.mapper.MedicationAdministrationFhirRequestMapper;
+import org.openmrs.module.ipd.web.contract.MedicationAdministrationAcknowledgementRequest;
 import org.openmrs.module.ipd.web.contract.MedicationAdministrationNoteRequest;
 import org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest;
 import org.openmrs.module.ipd.web.service.AmendmentConflictException;
@@ -96,6 +101,7 @@ public class MedicationAdministrationFhirResourceProviderWriteTest {
         ma.setSubject(new Reference("Patient/" + PATIENT_UUID));
         ma.setCategory(new CodeableConcept().addCoding(new org.hl7.fhir.r4.model.Coding().setCode("emergency")));
         ma.setMedication(new Reference("Medication/" + DRUG_UUID));
+        ma.setEffective(new DateTimeType(new Date(1700000000000L)));
         ma.addPerformer().setActor(new Reference("Practitioner/" + PRACTITIONER_UUID));
         SimpleQuantity dose = new SimpleQuantity();
         dose.setValue(2.5);
@@ -227,13 +233,17 @@ public class MedicationAdministrationFhirResourceProviderWriteTest {
     // ---- update ----
 
     @Test
-    public void update_adhoc_delegatesToService() {
+    public void update_adhoc_delegatesToReplaceService() {
         when(service.get(MA_UUID)).thenReturn(stored(false));
-        when(ipdService.updateAdhocMedicationAdministration(eq(MA_UUID), any())).thenReturn(stored(false));
+        when(ipdService.replaceAdhocMedicationAdministration(eq(MA_UUID), any())).thenReturn(stored(false));
 
         MethodOutcome outcome = provider.updateMedicationAdministration(new IdType(MA_UUID), emergency());
 
-        verify(ipdService).updateAdhocMedicationAdministration(eq(MA_UUID), any(MedicationAdministrationRequest.class));
+        ArgumentCaptor<MedicationAdministrationRequest> captor = ArgumentCaptor.forClass(MedicationAdministrationRequest.class);
+        verify(ipdService).replaceAdhocMedicationAdministration(eq(MA_UUID), captor.capture());
+        verify(ipdService, never()).updateAdhocMedicationAdministration(anyString(), any());
+        assertThat(captor.getValue().getAdministeredDateTime(), equalTo(1700000000L));
+        assertThat(captor.getValue().getDrugUuid(), equalTo(DRUG_UUID));
         verify(provider).hasPrivilege(PrivilegeConstants.EDIT_ADHOC_MEDICATION_TASKS);
         assertThat(((MedicationAdministration) outcome.getResource()).getCategory().getCodingFirstRep().getCode(),
                 equalTo("emergency"));
@@ -248,7 +258,7 @@ public class MedicationAdministrationFhirResourceProviderWriteTest {
             throw new AssertionError("expected InvalidRequestException");
         }
         catch (InvalidRequestException expected) {
-            verify(ipdService, never()).updateAdhocMedicationAdministration(anyString(), any());
+            verify(ipdService, never()).replaceAdhocMedicationAdministration(anyString(), any());
         }
     }
 
@@ -267,11 +277,126 @@ public class MedicationAdministrationFhirResourceProviderWriteTest {
         provider.updateMedicationAdministration(new IdType(MA_UUID), body);
     }
 
+    @Test(expected = InvalidRequestException.class)
+    public void update_withoutStatus_isRejected() {
+        MedicationAdministration body = emergency();
+        body.setStatus((MedicationAdministration.MedicationAdministrationStatus) null);
+
+        provider.updateMedicationAdministration(new IdType(MA_UUID), body);
+    }
+
+    @Test(expected = InvalidRequestException.class)
+    public void update_withoutSubject_isRejected() {
+        MedicationAdministration body = emergency();
+        body.setSubject(null);
+
+        provider.updateMedicationAdministration(new IdType(MA_UUID), body);
+    }
+
+    @Test(expected = InvalidRequestException.class)
+    public void update_withoutMedication_isRejected() {
+        MedicationAdministration body = emergency();
+        body.setMedication(null);
+
+        provider.updateMedicationAdministration(new IdType(MA_UUID), body);
+    }
+
+    @Test(expected = InvalidRequestException.class)
+    public void update_withoutPerformer_isRejected() {
+        when(service.get(MA_UUID)).thenReturn(stored(false));
+        MedicationAdministration body = emergency();
+        body.setPerformer(Collections.emptyList());
+
+        provider.updateMedicationAdministration(new IdType(MA_UUID), body);
+    }
+
+    @Test(expected = InvalidRequestException.class)
+    public void update_bodyWithRequest_isRejected() {
+        MedicationAdministration body = emergency();
+        body.setRequest(new Reference("MedicationRequest/" + ORDER_UUID));
+
+        provider.updateMedicationAdministration(new IdType(MA_UUID), body);
+    }
+
     @Test(expected = ForbiddenOperationException.class)
     public void update_withoutPrivilege_isForbidden() {
         doReturn(false).when(provider).hasPrivilege(anyString());
 
         provider.updateMedicationAdministration(new IdType(MA_UUID), emergency());
+    }
+
+    // ---- $acknowledge operation ----
+
+    private org.openmrs.module.fhirExtension.model.Task storedTask() {
+        FhirTask fhirTask = new FhirTask();
+        fhirTask.setUuid("task-uuid");
+        fhirTask.setStatus(FhirTask.TaskStatus.COMPLETED);
+        fhirTask.setIntent(FhirTask.TaskIntent.ORDER);
+        fhirTask.setComment("looks fine");
+        fhirTask.setDateCreated(new Date(1700000000000L));
+        fhirTask.setForReference(reference("Patient", PATIENT_UUID));
+        fhirTask.setOwnerReference(reference("Practitioner", PRACTITIONER_UUID));
+        org.openmrs.module.fhirExtension.model.Task task = new org.openmrs.module.fhirExtension.model.Task();
+        task.setFhirTask(fhirTask);
+        return task;
+    }
+
+    private FhirReference reference(String type, String targetUuid) {
+        FhirReference reference = new FhirReference();
+        reference.setType(type);
+        reference.setTargetUuid(targetUuid);
+        return reference;
+    }
+
+    @Test
+    public void acknowledge_delegatesToServiceAndReturnsStoredTaskAsFhirTask() {
+        when(service.get(MA_UUID)).thenReturn(stored(false));
+        when(ipdService.acknowledge(eq(MA_UUID), any())).thenReturn(storedTask());
+
+        Task result = provider.acknowledgeMedicationAdministration(new IdType(MA_UUID), new StringType("looks fine"));
+
+        ArgumentCaptor<MedicationAdministrationAcknowledgementRequest> captor =
+                ArgumentCaptor.forClass(MedicationAdministrationAcknowledgementRequest.class);
+        verify(ipdService).acknowledge(eq(MA_UUID), captor.capture());
+        assertThat(captor.getValue().getRemarks(), equalTo("looks fine"));
+        assertThat(result.getId(), equalTo("task-uuid"));
+        assertThat(result.getStatus(), equalTo(Task.TaskStatus.COMPLETED));
+        assertThat(result.getIntent(), equalTo(Task.TaskIntent.ORDER));
+        assertThat(result.getFocus().getReference(), equalTo("MedicationAdministration/" + MA_UUID));
+        assertThat(result.getFor().getReference(), equalTo("Patient/" + PATIENT_UUID));
+        assertThat(result.getOwner().getReference(), equalTo("Practitioner/" + PRACTITIONER_UUID));
+        assertThat(result.getNoteFirstRep().getText(), equalTo("looks fine"));
+        verify(provider).hasPrivilege(PrivilegeConstants.APPROVE_AMEND_NOTE);
+    }
+
+    @Test(expected = ForbiddenOperationException.class)
+    public void acknowledge_withoutPrivilege_isForbidden() {
+        doReturn(false).when(provider).hasPrivilege(anyString());
+
+        provider.acknowledgeMedicationAdministration(new IdType(MA_UUID), new StringType("ok"));
+    }
+
+    @Test(expected = ResourceNotFoundException.class)
+    public void acknowledge_unknownMedicationAdministration_isNotFound() {
+        when(service.get(MA_UUID)).thenReturn(null);
+
+        provider.acknowledgeMedicationAdministration(new IdType(MA_UUID), new StringType("ok"));
+    }
+
+    @Test(expected = InvalidRequestException.class)
+    public void acknowledge_businessRuleFailure_isBadRequest() {
+        when(service.get(MA_UUID)).thenReturn(stored(false));
+        when(ipdService.acknowledge(eq(MA_UUID), any())).thenThrow(new APIException("No notes found to acknowledge"));
+
+        provider.acknowledgeMedicationAdministration(new IdType(MA_UUID), new StringType("ok"));
+    }
+
+    @Test(expected = ResourceVersionConflictException.class)
+    public void acknowledge_conflict_isConflict() {
+        when(service.get(MA_UUID)).thenReturn(stored(false));
+        when(ipdService.acknowledge(eq(MA_UUID), any())).thenThrow(new AmendmentConflictException("locked"));
+
+        provider.acknowledgeMedicationAdministration(new IdType(MA_UUID), new StringType("ok"));
     }
 
     // ---- patch ----
@@ -416,7 +541,7 @@ public class MedicationAdministrationFhirResourceProviderWriteTest {
         IBundleProvider upstream = new SimpleBundleProvider(java.util.Arrays.<org.hl7.fhir.instance.model.api.IBaseResource>asList(stored(false), stored(true)));
         when(service.searchForMedicationAdministration(any())).thenReturn(upstream);
 
-        IBundleProvider results = provider.searchMedicationAdministrations(null, null, null, null);
+        IBundleProvider results = provider.searchMedicationAdministrations(null, null, null, null, null);
 
         java.util.List<org.hl7.fhir.instance.model.api.IBaseResource> resources = results.getResources(0, 10);
         assertThat(((MedicationAdministration) resources.get(0)).hasCategory(), is(true));

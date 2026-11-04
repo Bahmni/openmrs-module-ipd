@@ -8,6 +8,13 @@ public final class IPDFhirConstants {
 	/** Search parameter name for MedicationAdministration category filter (e.g. ?category=emergency). */
 	public static final String SP_MEDICATION_ADMIN_CATEGORY = "category";
 
+	/**
+	 * Custom search parameter for a visit uuid. MedicationAdministration has no native visit
+	 * parameter, so this is exposed as a Bahmni extension; the standard {@code context} parameter
+	 * remains an Encounter reference.
+	 */
+	public static final String SP_MEDICATION_ADMIN_VISIT = "visit";
+
 	/** Code used by the frontend to request only emergency/adhoc medication administrations. */
 	public static final String MEDICATION_ADMIN_CATEGORY_EMERGENCY = "emergency";
 

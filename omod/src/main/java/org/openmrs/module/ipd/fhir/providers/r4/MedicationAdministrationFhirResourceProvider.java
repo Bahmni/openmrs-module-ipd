@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import ca.uhn.fhir.rest.annotation.Create;
 import ca.uhn.fhir.rest.annotation.IdParam;
+import ca.uhn.fhir.rest.annotation.Operation;
+import ca.uhn.fhir.rest.annotation.OperationParam;
 import ca.uhn.fhir.rest.annotation.OptionalParam;
 import ca.uhn.fhir.rest.annotation.Patch;
 import ca.uhn.fhir.rest.annotation.Read;
@@ -36,6 +38,7 @@ import ca.uhn.fhir.rest.server.exceptions.ResourceVersionConflictException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Annotation;
 import org.hl7.fhir.r4.model.CodeableConcept;
@@ -43,16 +46,21 @@ import org.hl7.fhir.r4.model.Encounter;
 import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.MedicationAdministration;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Task;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.api.annotations.R4Provider;
 import org.openmrs.module.fhir2.apiext.FhirMedicationAdministrationService;
+import org.openmrs.module.fhir2.model.FhirTask;
 import org.openmrs.module.fhir2.apiext.search.param.MedicationAdministrationSearchParams;
 import org.openmrs.module.ipd.api.model.ServiceType;
 import org.openmrs.module.ipd.api.model.Slot;
 import org.openmrs.module.ipd.fhir.IPDFhirConstants;
 import org.openmrs.module.fhir2.providers.util.FhirProviderUtils;
 import org.openmrs.module.ipd.fhir.mapper.MedicationAdministrationFhirRequestMapper;
+import org.openmrs.module.ipd.web.contract.MedicationAdministrationAcknowledgementRequest;
 import org.openmrs.module.ipd.web.contract.MedicationAdministrationNoteRequest;
 import org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest;
 import org.openmrs.module.ipd.web.service.AmendmentConflictException;
@@ -131,9 +139,10 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
     }
 
     /**
-     * PUT is restricted to adhoc (category=emergency) administrations and keeps the legacy
-     * semantics of {@code PUT /ipd/adhocMedicationAdministrations/{uuid}}: performers and notes in the
-     * body are appended to the stored administration; other fields are not modified.
+     * PUT is restricted to adhoc (category=emergency) administrations and follows FHIR replace
+     * semantics: the scalar fields and the performer list are replaced by the body. Notes are an
+     * audit trail and are appended rather than replaced. The legacy REST endpoint
+     * ({@code PUT /ipd/adhocMedicationAdministrations/{uuid}}) keeps its append-only behaviour.
      * Deliberate difference from the REST endpoint: that one has no privilege check; this one requires
      * the same privilege as adhoc create (EDIT_ADHOC_MEDICATION_TASKS) so access is not widened.
      */
@@ -149,6 +158,18 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
                 && !id.getIdPart().equals(resource.getIdElement().getIdPart())) {
             throw new InvalidRequestException("Resource id in the body does not match the id in the URL");
         }
+        if (!resource.hasStatus()) {
+            throw new InvalidRequestException("MedicationAdministration.status is required");
+        }
+        if (!resource.hasSubject() || !resource.getSubject().hasReference()) {
+            throw new InvalidRequestException("MedicationAdministration.subject (Patient/<uuid>) is required");
+        }
+        if (!resource.hasMedicationReference()) {
+            throw new InvalidRequestException("MedicationAdministration.medicationReference (Medication/<drugUuid>) is required for category=emergency");
+        }
+        if (resource.hasRequest()) {
+            throw new InvalidRequestException("Only adhoc (category=emergency) medication administrations can be updated");
+        }
         requirePrivilege(PrivilegeConstants.EDIT_ADHOC_MEDICATION_TASKS);
         MedicationAdministration existing = service.get(id.getIdPart());
         if (existing == null) {
@@ -158,8 +179,12 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
             throw new InvalidRequestException("Only adhoc (category=emergency) medication administrations can be updated");
         }
         MedicationAdministrationRequest request = requestMapper.toRequest(resource);
+        if (request.getProviders() == null || request.getProviders().isEmpty()
+                || request.getProviders().get(0).getProviderUuid() == null) {
+            throw new InvalidRequestException("MedicationAdministration.performer.actor (Practitioner/<uuid>) is required for category=emergency");
+        }
         MedicationAdministration updated = callService(
-                () -> ipdMedicationAdministrationService.updateAdhocMedicationAdministration(id.getIdPart(), request));
+                () -> ipdMedicationAdministrationService.replaceAdhocMedicationAdministration(id.getIdPart(), request));
         return FhirProviderUtils.buildUpdate(applyCategory(updated));
     }
 
@@ -195,6 +220,77 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
         }
         MedicationAdministration updated = service.get(id.getIdPart());
         return FhirProviderUtils.buildPatch(applyCategory(updated));
+    }
+
+    /**
+     * Acknowledge the latest amendment note of a MedicationAdministration. This is the FHIR
+     * equivalent of {@code POST /ipd/medicationAdministration/{uuid}/acknowledgement} and replaces
+     * the previous overloaded {@code POST /Task} interception.
+     * <p>
+     * The stored acknowledgement is translated here rather than through the injected
+     * {@code TaskTranslator}: the deployed Bahmni override ({@code BahmniTaskTranslatorImpl}) passes
+     * the OpenMRS target type ({@code org.openmrs.Provider}) as the FHIR reference type and throws
+     * {@code IllegalArgumentException} for every stored Task. Building the Task from the stored
+     * references' target UUIDs also keeps {@code focus}/{@code for}/{@code owner} valid FHIR
+     * references instead of leaking OpenMRS class names.
+     */
+    @Operation(name = "$acknowledge", idempotent = false)
+    public Task acknowledgeMedicationAdministration(@IdParam IdType id,
+            @OperationParam(name = "remarks") StringType remarks) {
+        if (id == null || id.getIdPart() == null) {
+            throw new InvalidRequestException("id must be specified to acknowledge a MedicationAdministration");
+        }
+        requirePrivilege(PrivilegeConstants.APPROVE_AMEND_NOTE);
+        if (service.get(id.getIdPart()) == null) {
+            throw new ResourceNotFoundException("Could not find MedicationAdministration with Id " + id.getIdPart());
+        }
+        String remarksText = remarks != null ? StringUtils.trimToNull(remarks.getValue()) : null;
+        org.openmrs.module.fhirExtension.model.Task stored;
+        try {
+            stored = ipdMedicationAdministrationService.acknowledge(id.getIdPart(),
+                    MedicationAdministrationAcknowledgementRequest.builder().remarks(remarksText).build());
+        }
+        catch (AmendmentConflictException e) {
+            throw new ResourceVersionConflictException(e.getMessage());
+        }
+        catch (APIException e) {
+            throw new InvalidRequestException(e.getMessage());
+        }
+        return toFhirTask(stored, id.getIdPart());
+    }
+
+    /**
+     * Builds the acknowledgement Task returned by {@code $acknowledge}. {@code focus} is the
+     * administration being acknowledged (the acknowledged note is part of that resource, not a FHIR
+     * resource of its own); {@code for} and {@code owner} are derived from the stored references'
+     * target UUIDs.
+     */
+    private Task toFhirTask(org.openmrs.module.fhirExtension.model.Task stored, String medicationAdministrationUuid) {
+        FhirTask fhirTask = stored.getFhirTask();
+        Task result = new Task();
+        result.setId(fhirTask.getUuid());
+        if (fhirTask.getStatus() != null) {
+            result.setStatus(Task.TaskStatus.valueOf(fhirTask.getStatus().name()));
+        }
+        if (fhirTask.getIntent() != null) {
+            result.setIntent(Task.TaskIntent.valueOf(fhirTask.getIntent().name()));
+        }
+        result.setFocus(new Reference("MedicationAdministration/" + medicationAdministrationUuid));
+        if (fhirTask.getForReference() != null && fhirTask.getForReference().getTargetUuid() != null) {
+            result.setFor(new Reference("Patient/" + fhirTask.getForReference().getTargetUuid()));
+        }
+        if (fhirTask.getOwnerReference() != null && fhirTask.getOwnerReference().getTargetUuid() != null) {
+            result.setOwner(new Reference("Practitioner/" + fhirTask.getOwnerReference().getTargetUuid()));
+        }
+        if (StringUtils.isNotBlank(fhirTask.getComment())) {
+            result.addNote().setText(fhirTask.getComment());
+        }
+        if (fhirTask.getDateCreated() != null) {
+            result.setAuthoredOn(fhirTask.getDateCreated());
+            result.getMeta().setLastUpdated(
+                    fhirTask.getDateChanged() != null ? fhirTask.getDateChanged() : fhirTask.getDateCreated());
+        }
+        return result;
     }
 
     private List<MedicationAdministrationNoteRequest> parseNoteAppendOperations(String body) {
@@ -304,16 +400,18 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
     public IBundleProvider searchMedicationAdministrations(
             @OptionalParam(name = MedicationAdministration.SP_PATIENT, chainWhitelist = { "" }, targetTypes = Patient.class) ReferenceAndListParam patientReference,
             @OptionalParam(name = MedicationAdministration.SP_CONTEXT, chainWhitelist = { "" }, targetTypes = Encounter.class) ReferenceAndListParam contextReference,
+            @OptionalParam(name = IPDFhirConstants.SP_MEDICATION_ADMIN_VISIT) ReferenceAndListParam visitReference,
             @OptionalParam(name = MedicationAdministration.SP_STATUS) TokenAndListParam status,
             @OptionalParam(name = IPDFhirConstants.SP_MEDICATION_ADMIN_CATEGORY) TokenAndListParam category) {
 
         if (category != null) {
             validateEmergencyCategory(category);
 
-            // visitUuid is passed via the 'context' search parameter — Bahmni convention where visit maps to Encounter identifier
-            String visitUuid = extractVisitUuid(contextReference);
+            // 'visit' is the Bahmni extension used to find adhoc administrations through their slots;
+            // 'context' remains the standard Encounter reference and is applied as a filter.
+            String visitUuid = extractReferenceId(visitReference);
             if (visitUuid == null || visitUuid.isEmpty()) {
-                throw new InvalidRequestException("The 'context' parameter with a visit uuid is required when category=emergency");
+                throw new InvalidRequestException("The 'visit' parameter with a visit uuid is required when category=emergency");
             }
 
             List<Slot> slots = ipdVisitService.getMedicationSlots(visitUuid, ServiceType.EMERGENCY_MEDICATION_REQUEST);
@@ -333,6 +431,7 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
             List<MedicationAdministration> filtered = resources.stream()
                     .filter(r -> r.getStatus() != null && matchesStatusFilter(r.getStatus().toCode(), status))
                     .filter(r -> matchesPatientFilter(r, patientReference))
+                    .filter(r -> matchesContextFilter(r, contextReference))
                     .map(this::applyCategory)
                     .collect(Collectors.toList());
 
@@ -342,6 +441,7 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
         MedicationAdministrationSearchParams params = new MedicationAdministrationSearchParams();
         params.setPatientReference(patientReference);
         params.setEncounterReference(contextReference);
+        params.setVisitReference(visitReference);
         params.setStatus(status);
         return new CategoryDecoratingBundleProvider(service.searchForMedicationAdministration(params), this::applyCategory);
     }
@@ -357,15 +457,15 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
         }
     }
 
-    private String extractVisitUuid(ReferenceAndListParam contextReference) {
-        if (contextReference == null) {
+    private String extractReferenceId(ReferenceAndListParam reference) {
+        if (reference == null) {
             return null;
         }
-        List<ReferenceOrListParam> contextOrLists = contextReference.getValuesAsQueryTokens();
-        if (contextOrLists != null && !contextOrLists.isEmpty()) {
-            List<ReferenceParam> contextParams = contextOrLists.get(0).getValuesAsQueryTokens();
-            if (contextParams != null && !contextParams.isEmpty()) {
-                return contextParams.get(0).getIdPart();
+        List<ReferenceOrListParam> orLists = reference.getValuesAsQueryTokens();
+        if (orLists != null && !orLists.isEmpty()) {
+            List<ReferenceParam> params = orLists.get(0).getValuesAsQueryTokens();
+            if (params != null && !params.isEmpty()) {
+                return params.get(0).getIdPart();
             }
         }
         return null;
@@ -399,6 +499,26 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
             boolean anyMatch = false;
             for (ReferenceParam param : orList.getValuesAsQueryTokens()) {
                 if (subjectId != null && subjectId.equals(param.getIdPart())) {
+                    anyMatch = true;
+                    break;
+                }
+            }
+            if (!anyMatch) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean matchesContextFilter(MedicationAdministration resource, ReferenceAndListParam filter) {
+        if (filter == null) {
+            return true;
+        }
+        String contextId = resource.hasContext() ? resource.getContext().getReferenceElement().getIdPart() : null;
+        for (ReferenceOrListParam orList : filter.getValuesAsQueryTokens()) {
+            boolean anyMatch = false;
+            for (ReferenceParam param : orList.getValuesAsQueryTokens()) {
+                if (contextId != null && contextId.equals(param.getIdPart())) {
                     anyMatch = true;
                     break;
                 }

@@ -21,8 +21,6 @@ public class ModuleContextRegistrationTest {
 
         assertTrue(context.containsBeanDefinition("medicationAdministrationFhirR4ResourceProvider"));
         assertTrue(context.containsBeanDefinition("medicationAdministrationFhirRequestMapper"));
-        assertTrue(context.containsBeanDefinition("medicationAdministrationAcknowledgementTaskHandler"));
-        assertTrue(context.containsBeanDefinition("acknowledgementFhirTaskServicePostProcessor"));
         assertTrue(context.containsBeanDefinition("IPDMedicationAdministrationServiceImpl")
                 || context.containsBeanDefinition("iPDMedicationAdministrationServiceImpl"));
         assertTrue(context.containsBeanDefinition("IPDVisitServiceImpl")
