@@ -13,6 +13,13 @@ public interface IPDMedicationAdministrationService {
 
     MedicationAdministration updateAdhocMedicationAdministration(String uuid,MedicationAdministrationRequest medicationAdministrationRequest);
 
+    /**
+     * FHIR PUT semantics for an adhoc administration: replace scalar fields and performers, append
+     * notes. Kept separate from {@link #updateAdhocMedicationAdministration(String,
+     * MedicationAdministrationRequest)} so the legacy REST endpoint keeps its append-only behaviour.
+     */
+    MedicationAdministration replaceAdhocMedicationAdministration(String uuid, MedicationAdministrationRequest medicationAdministrationRequest);
+
     MedicationAdministration saveAdhocMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest);
 
     MedicationAdministrationNote amendNote(String medicationAdministrationUuid, MedicationAdministrationNoteRequest noteRequest);
