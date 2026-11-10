@@ -76,10 +76,10 @@ public class MedicationAdministrationFactory {
     }
 
     /**
-     * FHIR PUT semantics: replace the scalar fields and the performer list, while notes are an
-     * audit trail and are therefore appended rather than replaced. The legacy REST update keeps
-     * using {@link #mapRequestToMedicationAdministration(MedicationAdministrationRequest,
-     * MedicationAdministration)}, which appends performers and notes.
+     * FHIR PUT semantics: replace the scalar fields and the performer list. Notes are an audit trail
+     * and are not modified by PUT; they are appended only through the PATCH amend-note flow. The
+     * legacy REST update keeps using {@link #mapRequestToMedicationAdministration(
+     * MedicationAdministrationRequest, MedicationAdministration)}, which appends performers and notes.
      */
     public MedicationAdministration mapRequestToMedicationAdministrationForReplace(MedicationAdministrationRequest request,
                                                                                    MedicationAdministration existingMedicationAdministration) {
@@ -105,14 +105,6 @@ public class MedicationAdministrationFactory {
         } else {
             existingMedicationAdministration.getPerformers().clear();
             existingMedicationAdministration.getPerformers().addAll(performers);
-        }
-
-        // Notes are never replaced: they form the amendment/acknowledgement audit trail.
-        List<MedicationAdministrationNote> notes = buildNotes(request.getNotes(), false);
-        if (existingMedicationAdministration.getNotes() == null) {
-            existingMedicationAdministration.setNotes(new HashSet<>(notes));
-        } else {
-            existingMedicationAdministration.getNotes().addAll(notes);
         }
 
         return existingMedicationAdministration;
