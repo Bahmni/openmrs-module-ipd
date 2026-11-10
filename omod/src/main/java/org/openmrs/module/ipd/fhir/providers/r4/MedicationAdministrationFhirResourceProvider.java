@@ -141,7 +141,8 @@ public class MedicationAdministrationFhirResourceProvider implements IResourcePr
     /**
      * PUT is restricted to adhoc (category=emergency) administrations and follows FHIR replace
      * semantics: the scalar fields and the performer list are replaced by the body. Notes are an
-     * audit trail and are appended rather than replaced. The legacy REST endpoint
+     * audit trail and are not modified by PUT; they are appended only through the PATCH amend-note
+     * flow, so a GET/edit/PUT round trip does not duplicate them. The legacy REST endpoint
      * ({@code PUT /ipd/adhocMedicationAdministrations/{uuid}}) keeps its append-only behaviour.
      * Deliberate difference from the REST endpoint: that one has no privilege check; this one requires
      * the same privilege as adhoc create (EDIT_ADHOC_MEDICATION_TASKS) so access is not widened.
