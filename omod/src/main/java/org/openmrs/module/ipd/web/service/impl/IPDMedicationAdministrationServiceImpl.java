@@ -30,6 +30,7 @@ import org.openmrs.module.ipd.web.factory.MedicationAdministrationFactory;
 import org.openmrs.module.ipd.web.factory.ScheduleFactory;
 import org.openmrs.module.ipd.web.factory.SlotFactory;
 import org.openmrs.module.ipd.web.mapper.AcknowledgementTaskMapper;
+import org.openmrs.module.ipd.web.service.AmendmentConflictException;
 import org.openmrs.module.ipd.web.service.IPDMedicationAdministrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -99,7 +100,7 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     public org.hl7.fhir.r4.model.MedicationAdministration saveScheduledMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
         Slot slot = slotService.getSlotByUUID(medicationAdministrationRequest.getSlotUuid());
         if (slot == null) {
-            throw new RuntimeException("Slot not found");
+            throw new APIException("Slot not found");
         } else {
             if (slot.getMedicationAdministration() != null) {
                 return fhirMedicationAdministrationService.get(slot.getMedicationAdministration().getUuid());
@@ -123,9 +124,28 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
     }
 
     @Override
+    public org.hl7.fhir.r4.model.MedicationAdministration replaceAdhocMedicationAdministration(String uuid, MedicationAdministrationRequest medicationAdministrationRequest) {
+        MedicationAdministration existing = (MedicationAdministration) fhirMedicationAdministrationDao.get(uuid);
+        if (existing == null) {
+            throw new APIException("MedicationAdministration not found with UUID: " + uuid);
+        }
+        MedicationAdministration replaced = medicationAdministrationFactory
+                .mapRequestToMedicationAdministrationForReplace(medicationAdministrationRequest, existing);
+        MedicationAdministration saved = (MedicationAdministration) fhirMedicationAdministrationDao.createOrUpdate(replaced);
+        return medicationAdministrationTranslator.toFhirResource(saved);
+    }
+
+    @Override
     public org.hl7.fhir.r4.model.MedicationAdministration saveAdhocMedicationAdministration(MedicationAdministrationRequest medicationAdministrationRequest) {
         Patient patient = Context.getPatientService().getPatientByUuid(medicationAdministrationRequest.getPatientUuid());
-        Visit visit = Context.getVisitService().getActiveVisitsByPatient(patient).get(0);
+        if (patient == null) {
+            throw new APIException("Patient not found with UUID: " + medicationAdministrationRequest.getPatientUuid());
+        }
+        List<Visit> activeVisits = Context.getVisitService().getActiveVisitsByPatient(patient);
+        if (activeVisits == null || activeVisits.isEmpty()) {
+            throw new APIException("No active visit found for patient: " + medicationAdministrationRequest.getPatientUuid());
+        }
+        Visit visit = activeVisits.get(0);
         Schedule schedule = scheduleService.getScheduleByVisit(visit);
         if (schedule == null) {
             ScheduleMedicationRequest scheduleMedicationRequest = new ScheduleMedicationRequest();
@@ -152,10 +172,17 @@ public class IPDMedicationAdministrationServiceImpl implements IPDMedicationAdmi
             throw new APIException("MedicationAdministration not found with UUID: " + medicationAdministrationUuid);
         }
         if (isLocked(medicationAdministration)) {
-            throw new APIException("Cannot amend note: Medication administration is acknowledged and locked.");
+            throw new AmendmentConflictException("Cannot amend note: Medication administration is acknowledged and locked.");
         }
 
         MedicationAdministrationNote previousNote = getLatestNote(medicationAdministration);
+        if (noteRequest.getPreviousNoteUuid() != null) {
+            String latestNoteUuid = previousNote != null ? previousNote.getUuid() : null;
+            if (!noteRequest.getPreviousNoteUuid().equals(latestNoteUuid)) {
+                throw new AmendmentConflictException("Stale amendment: the latest note is " + latestNoteUuid
+                        + " but the request amends " + noteRequest.getPreviousNoteUuid());
+            }
+        }
         MedicationAdministrationNote newNote = new MedicationAdministrationNote();
         newNote.setUuid(UUID.randomUUID().toString());
         newNote.setText(noteRequest.getText());

@@ -376,4 +376,152 @@ public class IPDMedicationAdministrationServiceImplTest {
 
         service.acknowledge(medicationAdminUuid, ackRequest);
     }
+
+    private MedicationAdministrationNote existingNote(String uuid) {
+        MedicationAdministrationNote note = new MedicationAdministrationNote();
+        note.setUuid(uuid);
+        note.setVoided(false);
+        note.setDateCreated(new Date());
+        return note;
+    }
+
+    private void stubAmendDependencies() {
+        when(providerService.getProviderByUuid(providerUuid)).thenReturn(provider);
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(medicationAdministration);
+        when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Collections.emptyList());
+    }
+
+    @Test
+    public void shouldAmend_WhenClientPreviousNoteMatchesLatest() {
+        medicationAdministration.getNotes().add(existingNote("latest-note"));
+        stubAmendDependencies();
+
+        MedicationAdministrationNote result = service.amendNote(medicationAdminUuid, MedicationAdministrationNoteRequest.builder()
+                .authorUuid(providerUuid).text("fix").previousNoteUuid("latest-note").build());
+
+        assertEquals("latest-note", result.getPreviousNote().getUuid());
+    }
+
+    @Test
+    public void shouldRejectAsConflict_WhenClientPreviousNoteIsStale() {
+        medicationAdministration.getNotes().add(existingNote("latest-note"));
+        stubAmendDependencies();
+
+        try {
+            service.amendNote(medicationAdminUuid, MedicationAdministrationNoteRequest.builder()
+                    .authorUuid(providerUuid).text("fix").previousNoteUuid("older-note").build());
+            fail("expected AmendmentConflictException");
+        } catch (org.openmrs.module.ipd.web.service.AmendmentConflictException expected) {
+            verify(fhirMedicationAdministrationDao, never()).createOrUpdate(any());
+        }
+    }
+
+    @Test
+    public void shouldRejectAsConflict_WhenClientSendsPreviousNoteButServerHasNone() {
+        stubAmendDependencies();
+
+        try {
+            service.amendNote(medicationAdminUuid, MedicationAdministrationNoteRequest.builder()
+                    .authorUuid(providerUuid).text("fix").previousNoteUuid("ghost").build());
+            fail("expected AmendmentConflictException");
+        } catch (org.openmrs.module.ipd.web.service.AmendmentConflictException expected) {
+            // 409 in the FHIR provider
+        }
+    }
+
+    @Test
+    public void shouldIgnorePreviousNoteCheck_WhenClientDoesNotSendOne_LegacyBehaviour() {
+        medicationAdministration.getNotes().add(existingNote("latest-note"));
+        stubAmendDependencies();
+
+        MedicationAdministrationNote result = service.amendNote(medicationAdminUuid,
+                MedicationAdministrationNoteRequest.builder().authorUuid(providerUuid).text("fix").build());
+
+        assertEquals("latest-note", result.getPreviousNote().getUuid());
+    }
+
+    @Test
+    public void shouldRaiseConflictSubtype_WhenLocked_ButStillAnApiException() {
+        MedicationAdministrationNote note = existingNote("note-uuid-001");
+        medicationAdministration.getNotes().add(note);
+        Task acknowledgedTask = new Task();
+        FhirTask fhirTask = new FhirTask();
+        FhirReference focus = new FhirReference();
+        focus.setTargetUuid("note-uuid-001");
+        fhirTask.setFocusReference(focus);
+        acknowledgedTask.setFhirTask(fhirTask);
+        stubAmendDependencies();
+        when(taskService.searchTasks(any(TaskSearchRequest.class))).thenReturn(Collections.singletonList(acknowledgedTask));
+
+        try {
+            service.amendNote(medicationAdminUuid, MedicationAdministrationNoteRequest.builder()
+                    .authorUuid(providerUuid).text("x").build());
+            fail("expected conflict");
+        } catch (org.openmrs.module.ipd.web.service.AmendmentConflictException e) {
+            assertTrue(e instanceof APIException);
+        }
+    }
+
+    @Test
+    public void shouldThrowApiException_WhenAdhocPatientHasNoActiveVisit() {
+        org.openmrs.api.PatientService patientService = mock(org.openmrs.api.PatientService.class);
+        org.openmrs.api.VisitService visitService = mock(org.openmrs.api.VisitService.class);
+        contextMock.when(() -> Context.getPatientService()).thenReturn(patientService);
+        contextMock.when(() -> Context.getVisitService()).thenReturn(visitService);
+        org.openmrs.Patient patient = new org.openmrs.Patient();
+        when(patientService.getPatientByUuid("p1")).thenReturn(patient);
+        when(visitService.getActiveVisitsByPatient(patient)).thenReturn(Collections.emptyList());
+
+        try {
+            service.saveAdhocMedicationAdministration(
+                    org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest.builder().patientUuid("p1").build());
+            fail("expected APIException");
+        } catch (APIException e) {
+            assertTrue(e.getMessage().contains("No active visit"));
+        }
+    }
+
+    @Test(expected = APIException.class)
+    public void shouldThrowApiException_WhenScheduledSlotNotFound() {
+        org.openmrs.module.ipd.api.service.SlotService slotService = mock(org.openmrs.module.ipd.api.service.SlotService.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "slotService", slotService);
+        when(slotService.getSlotByUUID("nope")).thenReturn(null);
+
+        service.saveScheduledMedicationAdministration(
+                org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest.builder().slotUuid("nope").build());
+    }
+
+    @Test(expected = APIException.class)
+    public void shouldThrowApiException_WhenReplacingUnknownMedicationAdministration() {
+        when(fhirMedicationAdministrationDao.get("missing")).thenReturn(null);
+
+        service.replaceAdhocMedicationAdministration("missing",
+                org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest.builder().build());
+    }
+
+    @Test
+    public void shouldReplaceAdhocMedicationAdministration() {
+        MedicationAdministration existing = new MedicationAdministration();
+        existing.setUuid(medicationAdminUuid);
+        MedicationAdministration replaced = new MedicationAdministration();
+        replaced.setUuid(medicationAdminUuid);
+        org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest request =
+                org.openmrs.module.ipd.web.contract.MedicationAdministrationRequest.builder()
+                        .patientUuid("patient-uuid")
+                        .build();
+        org.hl7.fhir.r4.model.MedicationAdministration fhirResult = new org.hl7.fhir.r4.model.MedicationAdministration();
+
+        when(fhirMedicationAdministrationDao.get(medicationAdminUuid)).thenReturn(existing);
+        when(medicationAdministrationFactory.mapRequestToMedicationAdministrationForReplace(request, existing))
+                .thenReturn(replaced);
+        when(fhirMedicationAdministrationDao.createOrUpdate(replaced)).thenReturn(replaced);
+        when(medicationAdministrationTranslator.toFhirResource(replaced)).thenReturn(fhirResult);
+
+        org.hl7.fhir.r4.model.MedicationAdministration result =
+                service.replaceAdhocMedicationAdministration(medicationAdminUuid, request);
+
+        assertSame(fhirResult, result);
+        verify(fhirMedicationAdministrationDao).createOrUpdate(replaced);
+        verify(medicationAdministrationTranslator).toFhirResource(replaced);
+    }
 }
