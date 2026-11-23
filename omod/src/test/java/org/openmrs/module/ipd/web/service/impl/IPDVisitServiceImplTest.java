@@ -1,0 +1,223 @@
+package org.openmrs.module.ipd.web.service.impl;
+
+import org.bahmni.module.bahmnicore.service.BahmniDrugOrderService;
+import org.bahmni.module.bahmnicore.service.BahmniObsService;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.openmrs.DrugOrder;
+import org.openmrs.Patient;
+import org.openmrs.Visit;
+import org.openmrs.VisitType;
+import org.openmrs.api.ConceptService;
+import org.openmrs.api.VisitService;
+import org.openmrs.module.ipd.api.service.ReferenceService;
+import org.openmrs.module.ipd.api.service.SlotService;
+import org.openmrs.module.ipd.web.service.IPDScheduleService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+@RunWith(MockitoJUnitRunner.Silent.class)
+public class IPDVisitServiceImplTest {
+
+    private static final long DAY = 24L * 60 * 60 * 1000;
+    private static final String IPD_VISIT_UUID = "ipd-visit";
+    private static final String PATIENT_UUID = "patient-uuid";
+
+    @Mock
+    private BahmniDrugOrderService drugOrderService;
+    @Mock
+    private IPDScheduleService ipdScheduleService;
+    @Mock
+    private SlotTimeCreationService slotTimeCreationService;
+    @Mock
+    private BahmniObsService bahmniObsService;
+    @Mock
+    private ConceptService conceptService;
+    @Mock
+    private ReferenceService referenceService;
+    @Mock
+    private VisitService visitService;
+    @Mock
+    private SlotService slotService;
+
+    private IPDVisitServiceImpl ipdVisitService;
+    private Patient patient;
+    private Date now;
+    private Visit ipdVisit;
+    private List<Visit> patientVisits;
+
+    @Before
+    public void setUp() {
+        ipdVisitService = new IPDVisitServiceImpl(drugOrderService, ipdScheduleService, slotTimeCreationService,
+                bahmniObsService, conceptService, referenceService, visitService, slotService);
+        patient = new Patient();
+        patient.setUuid(PATIENT_UUID);
+        now = new Date();
+
+        ipdVisit = visit(IPD_VISIT_UUID, "IPD", daysFromNow(-2));
+        patientVisits = new ArrayList<>(Collections.singletonList(ipdVisit));
+        Mockito.when(visitService.getVisitByUuid(IPD_VISIT_UUID)).thenReturn(ipdVisit);
+        Mockito.when(visitService.getVisitsByPatient(patient)).thenAnswer(invocation -> patientVisits);
+
+        givenVisitOrders();
+        givenActiveOrders();
+        Mockito.when(ipdScheduleService.getMedicationSlots(Mockito.anyString(), Mockito.any(), Mockito.anyList()))
+                .thenAnswer(invocation -> new ArrayList<>());
+    }
+
+    @Test
+    public void shouldReturnOrdersPlacedInTheIPDVisit() {
+        givenVisitOrders(drugOrder("ipd-order", null));
+
+        assertEquals(Collections.singletonList("ipd-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldAskForOrdersOfTheIPDVisitAndTheImmediatelyPrecedingOPDVisit() {
+        patientVisits.add(visit("opd-visit", "OPD", daysFromNow(-3)));
+        patientVisits.add(visit("older-opd-visit", "OPD", daysFromNow(-10)));
+
+        prescribedOrderUuids();
+
+        assertEquals(Arrays.asList(IPD_VISIT_UUID, "opd-visit"), requestedVisitUuids());
+    }
+
+    @Test
+    public void shouldNotAskForOrdersOfAPrecedingVisitThatIsNotOPD() {
+        patientVisits.add(visit("emergency-visit", "EMERGENCY", daysFromNow(-3)));
+
+        prescribedOrderUuids();
+
+        assertEquals(Collections.singletonList(IPD_VISIT_UUID), requestedVisitUuids());
+    }
+
+    @Test
+    public void shouldAddActiveOrderFromAVisitOlderThanThePrecedingOne() {
+        givenVisitOrders(drugOrder("ipd-order", null));
+        givenActiveOrders(drugOrder("older-visit-order", null));
+
+        assertEquals(Arrays.asList("ipd-order", "older-visit-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldAddActiveOrderFromAVisitThatIsNotOPD() {
+        patientVisits.add(visit("emergency-visit", "EMERGENCY", daysFromNow(-3)));
+        givenActiveOrders(drugOrder("emergency-order", null));
+
+        assertEquals(Collections.singletonList("emergency-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldAddActiveOrderScheduledToStartInTheFuture() {
+        DrugOrder scheduledOrder = drugOrder("scheduled-order", daysFromNow(10));
+        scheduledOrder.setScheduledDate(daysFromNow(5));
+        givenActiveOrders(scheduledOrder);
+
+        assertEquals(Collections.singletonList("scheduled-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldListAnOrderOnlyOnceWhenFoundByBothQueries() {
+        givenVisitOrders(drugOrder("shared-order", null));
+        givenActiveOrders(drugOrder("shared-order", null));
+
+        assertEquals(Collections.singletonList("shared-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldKeepOrdersFromTheVisitQueryThatAreNoLongerActive() {
+        DrugOrder stoppedDuringVisit = drugOrder("stopped-during-visit", null);
+        stoppedDuringVisit.setDateStopped(daysFromNow(-1));
+        givenVisitOrders(stoppedDuringVisit);
+
+        assertEquals(Collections.singletonList("stopped-during-visit"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldReturnNothingWhenThePatientHasNoOrders() {
+        assertTrue(prescribedOrderUuids().isEmpty());
+    }
+
+    @Test
+    public void shouldPassTheCallersFiltersToTheVisitQueryAndLookUpActiveOrdersByPatient() {
+        Date startDate = daysFromNow(-30);
+        Date endDate = daysFromNow(30);
+
+        ipdVisitService.getVisitAndActiveDrugOrders(ipdVisit, false, 3, startDate, endDate, true);
+
+        Mockito.verify(drugOrderService).getPrescribedDrugOrders(Collections.singletonList(IPD_VISIT_UUID),
+                PATIENT_UUID, false, 3, startDate, endDate, true);
+        Mockito.verify(drugOrderService).getActiveDrugOrders(PATIENT_UUID);
+    }
+
+    @Test
+    public void shouldFilterOutOrdersThatEndedBeforeTheVisitStarted() {
+        DrugOrder expired = drugOrder("expired", daysFromNow(-5));
+        DrugOrder stopped = drugOrder("stopped", null);
+        stopped.setDateStopped(daysFromNow(-3));
+        DrugOrder endsAfterAdmission = drugOrder("ends-after-admission", daysFromNow(1));
+        DrugOrder noEnd = drugOrder("no-end", null);
+
+        List<DrugOrder> filtered = ipdVisitService.filterOrdersEndedBeforeVisit(
+                Arrays.asList(expired, stopped, endsAfterAdmission, noEnd), ipdVisit);
+
+        assertEquals(Arrays.asList("ends-after-admission", "no-end"), uuidsOf(filtered));
+    }
+
+    private List<String> prescribedOrderUuids() {
+        return uuidsOf(ipdVisitService.getVisitAndActiveDrugOrders(ipdVisit, true, null, null, null, false));
+    }
+
+    private List<String> uuidsOf(List<DrugOrder> drugOrders) {
+        return drugOrders.stream().map(DrugOrder::getUuid).collect(Collectors.toList());
+    }
+
+    private List<String> requestedVisitUuids() {
+        ArgumentCaptor<List<String>> visitUuids = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(drugOrderService).getPrescribedDrugOrders(visitUuids.capture(), Mockito.eq(PATIENT_UUID),
+                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        return visitUuids.getValue();
+    }
+
+    private void givenVisitOrders(DrugOrder... drugOrders) {
+        Mockito.when(drugOrderService.getPrescribedDrugOrders(Mockito.anyList(), Mockito.eq(PATIENT_UUID), Mockito.any(),
+                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(new ArrayList<>(Arrays.asList(drugOrders)));
+    }
+
+    private void givenActiveOrders(DrugOrder... drugOrders) {
+        Mockito.when(drugOrderService.getActiveDrugOrders(PATIENT_UUID)).thenReturn(new ArrayList<>(Arrays.asList(drugOrders)));
+    }
+
+    private Date daysFromNow(int days) {
+        return new Date(now.getTime() + days * DAY);
+    }
+
+    private DrugOrder drugOrder(String uuid, Date autoExpireDate) {
+        DrugOrder drugOrder = new DrugOrder();
+        drugOrder.setUuid(uuid);
+        drugOrder.setAutoExpireDate(autoExpireDate);
+        return drugOrder;
+    }
+
+    private Visit visit(String uuid, String visitTypeName, Date startDatetime) {
+        Visit visit = new Visit();
+        visit.setUuid(uuid);
+        visit.setPatient(patient);
+        visit.setVisitType(new VisitType(visitTypeName, visitTypeName));
+        visit.setStartDatetime(startDatetime);
+        return visit;
+    }
+}

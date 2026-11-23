@@ -68,24 +68,46 @@ public class IPDVisitServiceImpl implements IPDVisitService {
 
     @Override
     public List<IPDDrugOrder> getPrescribedOrders(String visitUuid, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
-        List<String> visitUuidsList = new ArrayList<>();
-        visitUuidsList.add(visitUuid);
         Visit visit = visitService.getVisitByUuid(visitUuid);
+        List<DrugOrder> drugOrders = getVisitAndActiveDrugOrders(visit, includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
+        return getIPDDrugOrders(visit.getPatient().getUuid(), drugOrders, visit);
+    }
+
+    List<DrugOrder> getVisitAndActiveDrugOrders(Visit visit, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
+        String patientUuid = visit.getPatient().getUuid();
+        List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(getVisitUuidsToFetchOrdersFrom(visit), patientUuid, includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
+        // Active or scheduled orders placed in any earlier visit must show up as well, otherwise they can never be added to the drug chart.
+        return mergeDistinctByUuid(prescribedDrugOrders, drugOrderService.getActiveDrugOrders(patientUuid));
+    }
+
+    private List<String> getVisitUuidsToFetchOrdersFrom(Visit visit) {
+        List<String> visitUuids = new ArrayList<>();
+        visitUuids.add(visit.getUuid());
         // Logic to fetch immediate preceded OPD Visit's drug orders as well as doctors tend to convert OPD to IPD immediately on emergency situations.
-        String precededVisitUuid= getImmediatePrecededOPDVisit(visit.getPatient(),visitUuid);
-        if (precededVisitUuid!=null){
-            visitUuidsList.add(precededVisitUuid);
+        String precededVisitUuid = getImmediatePrecededOPDVisit(visit.getPatient(), visit.getUuid());
+        if (precededVisitUuid != null) {
+            visitUuids.add(precededVisitUuid);
         }
-        List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(visitUuidsList, visit.getPatient().getUuid(), includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
-        return getIPDDrugOrders(visit.getPatient().getUuid(), prescribedDrugOrders,visit);
+        return visitUuids;
+    }
+
+    private List<DrugOrder> mergeDistinctByUuid(List<DrugOrder> drugOrders, List<DrugOrder> otherDrugOrders) {
+        Map<String, DrugOrder> drugOrdersByUuid = new LinkedHashMap<>();
+        drugOrders.forEach(drugOrder -> drugOrdersByUuid.putIfAbsent(drugOrder.getUuid(), drugOrder));
+        otherDrugOrders.forEach(drugOrder -> drugOrdersByUuid.putIfAbsent(drugOrder.getUuid(), drugOrder));
+        return new ArrayList<>(drugOrdersByUuid.values());
+    }
+
+    List<DrugOrder> filterOrdersEndedBeforeVisit(List<DrugOrder> drugOrders, Visit currentVisit) {
+        return drugOrders.stream()
+                .filter(drugOrder -> drugOrder.getEffectiveStopDate() == null || drugOrder.getEffectiveStopDate().after(currentVisit.getStartDatetime()))
+                .collect(Collectors.toList());
     }
 
     private List<IPDDrugOrder> getIPDDrugOrders(String patientUuid, List<DrugOrder> drugOrders,Visit currentVisit) {
         Map<String, DrugOrder> drugOrderMap = drugOrderService.getDiscontinuedDrugOrders(drugOrders);
         // filter drug orders where its stop date is after current visit start Date
-        List<DrugOrder> drugOrdersFiltered = drugOrders.stream()
-                .filter(drugOrder -> drugOrder.getEffectiveStopDate() == null || drugOrder.getEffectiveStopDate().after(currentVisit.getStartDatetime()))
-                .collect(Collectors.toList());
+        List<DrugOrder> drugOrdersFiltered = filterOrdersEndedBeforeVisit(drugOrders, currentVisit);
 
         try {
             Collection<BahmniObservation> orderAttributeObs = bahmniObsService.observationsFor(patientUuid, getOrdAttributeConcepts(), null, null, false, null, null, null);
