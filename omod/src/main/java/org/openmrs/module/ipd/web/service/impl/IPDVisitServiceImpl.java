@@ -77,7 +77,10 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         String patientUuid = visit.getPatient().getUuid();
         List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(getVisitUuidsToFetchOrdersFrom(visit), patientUuid, includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
         // Active or scheduled orders placed in any earlier visit must show up as well, otherwise they can never be added to the drug chart.
-        return mergeDistinctByUuid(prescribedDrugOrders, drugOrderService.getActiveDrugOrders(patientUuid));
+        // The active orders are looked up by patient and, like the visit query, ignore the caller's date and visit-count filters.
+        List<DrugOrder> mergedDrugOrders = mergeDistinctByUuid(prescribedDrugOrders, drugOrderService.getActiveDrugOrders(patientUuid));
+        mergedDrugOrders.sort(Comparator.comparing(DrugOrder::getDateActivated, Comparator.nullsLast(Comparator.reverseOrder())));
+        return mergedDrugOrders;
     }
 
     private List<String> getVisitUuidsToFetchOrdersFrom(Visit visit) {
@@ -98,7 +101,7 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         return new ArrayList<>(drugOrdersByUuid.values());
     }
 
-    List<DrugOrder> filterOrdersEndedBeforeVisit(List<DrugOrder> drugOrders, Visit currentVisit) {
+    List<DrugOrder> excludeOrdersEndedBeforeVisit(List<DrugOrder> drugOrders, Visit currentVisit) {
         return drugOrders.stream()
                 .filter(drugOrder -> drugOrder.getEffectiveStopDate() == null || drugOrder.getEffectiveStopDate().after(currentVisit.getStartDatetime()))
                 .collect(Collectors.toList());
@@ -106,8 +109,8 @@ public class IPDVisitServiceImpl implements IPDVisitService {
 
     private List<IPDDrugOrder> getIPDDrugOrders(String patientUuid, List<DrugOrder> drugOrders,Visit currentVisit) {
         Map<String, DrugOrder> drugOrderMap = drugOrderService.getDiscontinuedDrugOrders(drugOrders);
-        // filter drug orders where its stop date is after current visit start Date
-        List<DrugOrder> drugOrdersFiltered = filterOrdersEndedBeforeVisit(drugOrders, currentVisit);
+        // exclude drug orders that ended before the current visit started
+        List<DrugOrder> drugOrdersFiltered = excludeOrdersEndedBeforeVisit(drugOrders, currentVisit);
 
         try {
             Collection<BahmniObservation> orderAttributeObs = bahmniObsService.observationsFor(patientUuid, getOrdAttributeConcepts(), null, null, false, null, null, null);
