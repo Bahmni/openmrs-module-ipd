@@ -73,7 +73,7 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         return getIPDDrugOrders(visit.getPatient().getUuid(), drugOrders, visit);
     }
 
-    List<DrugOrder> getVisitAndActiveDrugOrders(Visit visit, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
+    private List<DrugOrder> getVisitAndActiveDrugOrders(Visit visit, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
         String patientUuid = visit.getPatient().getUuid();
         List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(getVisitUuidsToFetchOrdersFrom(visit), patientUuid, includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
         // Orders placed in any earlier visit must show up as well, otherwise active ones can never be added to the drug chart
@@ -104,7 +104,7 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         return new ArrayList<>(drugOrdersByUuid.values());
     }
 
-    List<DrugOrder> excludeOrdersEndedBeforeVisit(List<DrugOrder> drugOrders, Visit currentVisit) {
+    private List<DrugOrder> excludeOrdersEndedBeforeVisit(List<DrugOrder> drugOrders, Visit currentVisit) {
         return drugOrders.stream()
                 .filter(drugOrder -> drugOrder.getEffectiveStopDate() == null || drugOrder.getEffectiveStopDate().after(currentVisit.getStartDatetime()))
                 .collect(Collectors.toList());
