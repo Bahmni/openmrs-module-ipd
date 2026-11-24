@@ -81,7 +81,7 @@ public class IPDVisitServiceImpl implements IPDVisitService {
         // like the visit query, ignore the caller's date and visit-count filters. Null filters: an empty concept set would match nothing.
         List<DrugOrder> patientDrugOrders = new ArrayList<>(drugOrderService.getActiveDrugOrders(patientUuid));
         patientDrugOrders.addAll(drugOrderService.getInactiveDrugOrders(patientUuid, null, null, null));
-        List<DrugOrder> mergedDrugOrders = mergeDistinctByUuid(prescribedDrugOrders, patientDrugOrders);
+        List<DrugOrder> mergedDrugOrders = mergeDistinctByUuid(prescribedDrugOrders, excludeOrdersActivatedAfterVisit(patientDrugOrders, visit));
         mergedDrugOrders.sort(Comparator.comparing(DrugOrder::getDateActivated, Comparator.nullsLast(Comparator.reverseOrder())));
         return mergedDrugOrders;
     }
@@ -98,10 +98,19 @@ public class IPDVisitServiceImpl implements IPDVisitService {
     }
 
     private List<DrugOrder> mergeDistinctByUuid(List<DrugOrder> drugOrders, List<DrugOrder> otherDrugOrders) {
+        // LinkedHashMap + putIfAbsent: for an order found by both queries the first list wins, deterministically. The caller re-sorts the result.
         Map<String, DrugOrder> drugOrdersByUuid = new LinkedHashMap<>();
         drugOrders.forEach(drugOrder -> drugOrdersByUuid.putIfAbsent(drugOrder.getUuid(), drugOrder));
         otherDrugOrders.forEach(drugOrder -> drugOrdersByUuid.putIfAbsent(drugOrder.getUuid(), drugOrder));
         return new ArrayList<>(drugOrdersByUuid.values());
+    }
+
+    // Orders placed after a closed visit ended belong to a later visit. An open visit has no end, so nothing is excluded.
+    private List<DrugOrder> excludeOrdersActivatedAfterVisit(List<DrugOrder> drugOrders, Visit visit) {
+        Date visitEnd = visit.getStopDatetime();
+        return drugOrders.stream()
+                .filter(drugOrder -> visitEnd == null || drugOrder.getDateActivated() == null || !drugOrder.getDateActivated().after(visitEnd))
+                .collect(Collectors.toList());
     }
 
     private List<DrugOrder> excludeOrdersEndedBeforeVisit(List<DrugOrder> drugOrders, Visit currentVisit) {

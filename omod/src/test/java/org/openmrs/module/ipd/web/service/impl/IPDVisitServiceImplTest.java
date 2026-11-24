@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -146,11 +147,33 @@ public class IPDVisitServiceImplTest {
     }
 
     @Test
+    public void shouldPreferTheVisitQueryInstanceWhenAnOrderIsFoundByBothQueries() {
+        DrugOrder fromVisitQuery = activatedDrugOrder("shared-order", daysFromNow(-1));
+        DrugOrder fromActiveQuery = activatedDrugOrder("shared-order", daysFromNow(-3));
+        givenVisitOrders(fromVisitQuery);
+        givenActiveOrders(fromActiveQuery);
+
+        prescribedOrderUuids();
+
+        Mockito.verify(drugOrderService).getDiscontinuedDrugOrders(drugOrdersCaptor.capture());
+        assertEquals(1, drugOrdersCaptor.getValue().size());
+        assertSame(fromVisitQuery, drugOrdersCaptor.getValue().get(0));
+    }
+
+    @Test
     public void shouldListOrdersFromBothQueriesNewestFirst() {
         givenVisitOrders(activatedDrugOrder("visit-order", daysFromNow(-3)));
         givenActiveOrders(activatedDrugOrder("older-visit-order", daysFromNow(-20)), activatedDrugOrder("newer-active-order", daysFromNow(-1)));
 
         assertEquals(Arrays.asList("newer-active-order", "visit-order", "older-visit-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldListOrdersWithoutAnActivationDateAfterTheDatedOnes() {
+        givenVisitOrders(drugOrder("undated-order", null), activatedDrugOrder("older-order", daysFromNow(-3)));
+        givenActiveOrders(activatedDrugOrder("newer-order", daysFromNow(-1)));
+
+        assertEquals(Arrays.asList("newer-order", "older-order", "undated-order"), prescribedOrderUuids());
     }
 
     @Test
@@ -207,6 +230,18 @@ public class IPDVisitServiceImplTest {
     }
 
     @Test
+    public void shouldNotNarrowTheOrdersFoundByPatientWithTheCallersDateFilter() {
+        Date narrowWindowInThePast = daysFromNow(-30);
+        givenActiveOrders(drugOrder("older-visit-order", null));
+        givenInactiveOrders(drugOrder("expired-during-stay", daysFromNow(-1)));
+
+        List<String> uuids = ipdVisitService.getPrescribedOrders(IPD_VISIT_UUID, true, 1, narrowWindowInThePast, narrowWindowInThePast, true).stream()
+                .map(prescribedOrder -> prescribedOrder.getBahmniDrugOrder().getUuid()).collect(Collectors.toList());
+
+        assertEquals(Arrays.asList("older-visit-order", "expired-during-stay"), uuids);
+    }
+
+    @Test
     public void shouldExcludeOrdersThatEndedBeforeTheVisitStarted() {
         DrugOrder expired = drugOrder("expired", daysFromNow(-5));
         DrugOrder stopped = drugOrder("stopped", null);
@@ -216,6 +251,47 @@ public class IPDVisitServiceImplTest {
         givenVisitOrders(expired, stopped, endsAfterAdmission, noEnd);
 
         assertEquals(Arrays.asList("ends-after-admission", "no-end"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldExcludeAnOrderThatEndedExactlyWhenTheVisitStartedButKeepOneThatEndedAfterwards() {
+        Date visitStart = ipdVisit.getStartDatetime();
+        givenVisitOrders(drugOrder("ended-at-visit-start", new Date(visitStart.getTime())),
+                drugOrder("ended-just-after-visit-start", new Date(visitStart.getTime() + 1)));
+
+        assertEquals(Collections.singletonList("ended-just-after-visit-start"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldNotListOrdersFoundByPatientThatWereActivatedAfterAClosedVisitEnded() {
+        ipdVisit.setStopDatetime(daysFromNow(-1));
+        givenActiveOrders(activatedDrugOrder("later-visit-active-order", daysFromNow(0)), activatedDrugOrder("during-visit-order", daysFromNow(-1)));
+        givenInactiveOrders(activatedDrugOrder("later-visit-stopped-order", daysFromNow(0)));
+
+        assertEquals(Collections.singletonList("during-visit-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldListAnOrderActivatedBeforeAClosedVisitEndedThatKeptRunningAfterwards() {
+        ipdVisit.setStopDatetime(daysFromNow(-1));
+        givenActiveOrders(activatedDrugOrder("still-running-order", daysFromNow(-5)));
+
+        assertEquals(Collections.singletonList("still-running-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldKeepOrdersFromTheVisitQueryEvenIfTheyWereActivatedAfterAClosedVisitEnded() {
+        ipdVisit.setStopDatetime(daysFromNow(-1));
+        givenVisitOrders(activatedDrugOrder("visit-order", daysFromNow(0)));
+
+        assertEquals(Collections.singletonList("visit-order"), prescribedOrderUuids());
+    }
+
+    @Test
+    public void shouldListOrdersFoundByPatientThatWereActivatedAfterTheStartOfAnOpenVisit() {
+        givenActiveOrders(activatedDrugOrder("concurrent-visit-order", daysFromNow(-1)));
+
+        assertEquals(Collections.singletonList("concurrent-visit-order"), prescribedOrderUuids());
     }
 
     @Test
