@@ -76,9 +76,12 @@ public class IPDVisitServiceImpl implements IPDVisitService {
     List<DrugOrder> getVisitAndActiveDrugOrders(Visit visit, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
         String patientUuid = visit.getPatient().getUuid();
         List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(getVisitUuidsToFetchOrdersFrom(visit), patientUuid, includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
-        // Active or scheduled orders placed in any earlier visit must show up as well, otherwise they can never be added to the drug chart.
-        // The active orders are looked up by patient and, like the visit query, ignore the caller's date and visit-count filters.
-        List<DrugOrder> mergedDrugOrders = mergeDistinctByUuid(prescribedDrugOrders, drugOrderService.getActiveDrugOrders(patientUuid));
+        // Orders placed in any earlier visit must show up as well, otherwise active ones can never be added to the drug chart
+        // and ones that stopped during the stay would disappear from it. Active and inactive orders are looked up by patient and,
+        // like the visit query, ignore the caller's date and visit-count filters. Null filters: an empty concept set would match nothing.
+        List<DrugOrder> patientDrugOrders = new ArrayList<>(drugOrderService.getActiveDrugOrders(patientUuid));
+        patientDrugOrders.addAll(drugOrderService.getInactiveDrugOrders(patientUuid, null, null, null));
+        List<DrugOrder> mergedDrugOrders = mergeDistinctByUuid(prescribedDrugOrders, patientDrugOrders);
         mergedDrugOrders.sort(Comparator.comparing(DrugOrder::getDateActivated, Comparator.nullsLast(Comparator.reverseOrder())));
         return mergedDrugOrders;
     }
@@ -108,9 +111,9 @@ public class IPDVisitServiceImpl implements IPDVisitService {
     }
 
     private List<IPDDrugOrder> getIPDDrugOrders(String patientUuid, List<DrugOrder> drugOrders,Visit currentVisit) {
-        Map<String, DrugOrder> drugOrderMap = drugOrderService.getDiscontinuedDrugOrders(drugOrders);
         // exclude drug orders that ended before the current visit started
         List<DrugOrder> drugOrdersFiltered = excludeOrdersEndedBeforeVisit(drugOrders, currentVisit);
+        Map<String, DrugOrder> drugOrderMap = drugOrderService.getDiscontinuedDrugOrders(drugOrdersFiltered);
 
         try {
             Collection<BahmniObservation> orderAttributeObs = bahmniObsService.observationsFor(patientUuid, getOrdAttributeConcepts(), null, null, false, null, null, null);
