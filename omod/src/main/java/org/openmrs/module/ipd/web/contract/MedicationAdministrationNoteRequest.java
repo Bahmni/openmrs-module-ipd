@@ -20,6 +20,8 @@ public class MedicationAdministrationNoteRequest {
     private Long recordedTime;
     private String text;
     private String statusReasonUuid;
+    /** Optional (FHIR PATCH only): uuid the client believes is the latest note; amendNote rejects the amendment if stale. */
+    private String previousNoteUuid;
 
     public Date getRecordedTimeAsLocaltime() {
         return this.recordedTime != null ? new Date(TimeUnit.SECONDS.toMillis(this.recordedTime)): new Date();
