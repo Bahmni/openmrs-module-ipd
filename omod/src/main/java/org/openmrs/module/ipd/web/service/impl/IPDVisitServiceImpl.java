@@ -68,24 +68,61 @@ public class IPDVisitServiceImpl implements IPDVisitService {
 
     @Override
     public List<IPDDrugOrder> getPrescribedOrders(String visitUuid, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
-        List<String> visitUuidsList = new ArrayList<>();
-        visitUuidsList.add(visitUuid);
         Visit visit = visitService.getVisitByUuid(visitUuid);
+        List<DrugOrder> drugOrders = getVisitAndActiveDrugOrders(visit, includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
+        return getIPDDrugOrders(visit.getPatient().getUuid(), drugOrders, visit);
+    }
+
+    private List<DrugOrder> getVisitAndActiveDrugOrders(Visit visit, Boolean includeActiveVisit, Integer numberOfVisits, Date startDate, Date endDate, Boolean getEffectiveOrdersOnly) {
+        String patientUuid = visit.getPatient().getUuid();
+        List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(getVisitUuidsToFetchOrdersFrom(visit), patientUuid, includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
+        // Orders placed in any earlier visit must show up as well, otherwise active ones can never be added to the drug chart
+        // and ones that stopped during the stay would disappear from it. Active and inactive orders are looked up by patient and,
+        // like the visit query, ignore the caller's date and visit-count filters. Null filters: an empty concept set would match nothing.
+        List<DrugOrder> patientDrugOrders = new ArrayList<>(drugOrderService.getActiveDrugOrders(patientUuid));
+        patientDrugOrders.addAll(drugOrderService.getInactiveDrugOrders(patientUuid, null, null, null));
+        List<DrugOrder> mergedDrugOrders = mergeDistinctByUuid(prescribedDrugOrders, excludeOrdersActivatedAfterVisit(patientDrugOrders, visit));
+        mergedDrugOrders.sort(Comparator.comparing(DrugOrder::getDateActivated, Comparator.nullsLast(Comparator.reverseOrder())));
+        return mergedDrugOrders;
+    }
+
+    private List<String> getVisitUuidsToFetchOrdersFrom(Visit visit) {
+        List<String> visitUuids = new ArrayList<>();
+        visitUuids.add(visit.getUuid());
         // Logic to fetch immediate preceded OPD Visit's drug orders as well as doctors tend to convert OPD to IPD immediately on emergency situations.
-        String precededVisitUuid= getImmediatePrecededOPDVisit(visit.getPatient(),visitUuid);
-        if (precededVisitUuid!=null){
-            visitUuidsList.add(precededVisitUuid);
+        String precededVisitUuid = getImmediatePrecededOPDVisit(visit.getPatient(), visit.getUuid());
+        if (precededVisitUuid != null) {
+            visitUuids.add(precededVisitUuid);
         }
-        List<DrugOrder> prescribedDrugOrders = drugOrderService.getPrescribedDrugOrders(visitUuidsList, visit.getPatient().getUuid(), includeActiveVisit, numberOfVisits, startDate, endDate, getEffectiveOrdersOnly);
-        return getIPDDrugOrders(visit.getPatient().getUuid(), prescribedDrugOrders,visit);
+        return visitUuids;
+    }
+
+    private List<DrugOrder> mergeDistinctByUuid(List<DrugOrder> drugOrders, List<DrugOrder> otherDrugOrders) {
+        // LinkedHashMap + putIfAbsent: for an order found by both queries the first list wins, deterministically. The caller re-sorts the result.
+        Map<String, DrugOrder> drugOrdersByUuid = new LinkedHashMap<>();
+        drugOrders.forEach(drugOrder -> drugOrdersByUuid.putIfAbsent(drugOrder.getUuid(), drugOrder));
+        otherDrugOrders.forEach(drugOrder -> drugOrdersByUuid.putIfAbsent(drugOrder.getUuid(), drugOrder));
+        return new ArrayList<>(drugOrdersByUuid.values());
+    }
+
+    // Orders placed after a closed visit ended belong to a later visit. An open visit has no end, so nothing is excluded.
+    private List<DrugOrder> excludeOrdersActivatedAfterVisit(List<DrugOrder> drugOrders, Visit visit) {
+        Date visitEnd = visit.getStopDatetime();
+        return drugOrders.stream()
+                .filter(drugOrder -> visitEnd == null || drugOrder.getDateActivated() == null || !drugOrder.getDateActivated().after(visitEnd))
+                .collect(Collectors.toList());
+    }
+
+    private List<DrugOrder> excludeOrdersEndedBeforeVisit(List<DrugOrder> drugOrders, Visit currentVisit) {
+        return drugOrders.stream()
+                .filter(drugOrder -> drugOrder.getEffectiveStopDate() == null || drugOrder.getEffectiveStopDate().after(currentVisit.getStartDatetime()))
+                .collect(Collectors.toList());
     }
 
     private List<IPDDrugOrder> getIPDDrugOrders(String patientUuid, List<DrugOrder> drugOrders,Visit currentVisit) {
-        Map<String, DrugOrder> drugOrderMap = drugOrderService.getDiscontinuedDrugOrders(drugOrders);
-        // filter drug orders where its stop date is after current visit start Date
-        List<DrugOrder> drugOrdersFiltered = drugOrders.stream()
-                .filter(drugOrder -> drugOrder.getEffectiveStopDate() == null || drugOrder.getEffectiveStopDate().after(currentVisit.getStartDatetime()))
-                .collect(Collectors.toList());
+        // exclude drug orders that ended before the current visit started
+        List<DrugOrder> drugOrdersFiltered = excludeOrdersEndedBeforeVisit(drugOrders, currentVisit);
+        Map<String, DrugOrder> drugOrderMap = drugOrderService.getDiscontinuedDrugOrders(drugOrdersFiltered);
 
         try {
             Collection<BahmniObservation> orderAttributeObs = bahmniObsService.observationsFor(patientUuid, getOrdAttributeConcepts(), null, null, false, null, null, null);
