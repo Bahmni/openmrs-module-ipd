@@ -117,6 +117,21 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>emrapi-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.bahmni.module</groupId>
+			<artifactId>bahmnicore-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.bahmni.module</groupId>
+			<artifactId>bahmni-emr-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.openmrs.web</groupId>
 			<artifactId>openmrs-web</artifactId>
 			<scope>provided</scope>
@@ -184,6 +199,11 @@
 			<groupId>org.openmrs.api</groupId>
 			<artifactId>openmrs-api</artifactId>
 			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>metadatamapping-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
