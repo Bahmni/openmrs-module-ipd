@@ -31,6 +31,8 @@
          when both adminService (proxy) and adminServiceTarget (impl) are in context -->
     <bean class="org.openmrs.module.ipd.api.AdminServicePrimaryPostProcessor"/>
 
+    <bean class="org.openmrs.module.ipd.api.IntegrationTestBeanExcluder"/>
+
     <bean id="sessionFactory" class="org.openmrs.api.db.hibernate.HibernateSessionFactoryBean">
         <property name="configLocations">
             <list>

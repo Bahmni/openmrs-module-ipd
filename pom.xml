@@ -50,6 +50,7 @@
 		<fhir2ExtensionVersion>2.2.0-SNAPSHOT</fhir2ExtensionVersion>
 	    <bahmniVersion>2.1.0</bahmniVersion>
 		<emrapi-omod.version>2.3.0</emrapi-omod.version>
+		<metadatamappingVersion>1.6.0</metadatamappingVersion>
 		<medicationAdminstrationVersion>3.0.0-SNAPSHOT</medicationAdminstrationVersion>
 	</properties>
 
@@ -215,6 +216,13 @@
 			</dependency>
 
 			<dependency>
+				<groupId>org.bahmni.module</groupId>
+				<artifactId>bahmni-emr-api</artifactId>
+				<version>${bahmniVersion}</version>
+				<scope>provided</scope>
+			</dependency>
+
+			<dependency>
 				<groupId>org.openmrs.module</groupId>
 				<artifactId>bedmanagement-api</artifactId>
 				<version>${bedManagementVersion}</version>
@@ -292,6 +300,12 @@
 				<artifactId>openmrs-test</artifactId>
 				<version>${openmrsPlatformVersion}</version>
 				<type>pom</type>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.openmrs.module</groupId>
+				<artifactId>metadatamapping-api</artifactId>
+				<version>${metadatamappingVersion}</version>
 				<scope>test</scope>
 			</dependency>
 

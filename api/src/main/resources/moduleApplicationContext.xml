@@ -10,6 +10,11 @@
 
     <context:component-scan base-package="org.openmrs.module.ipd.api.events"/>
     <context:component-scan base-package="org.openmrs.module.ipd.api.translators"/>
+    <context:component-scan base-package="org.openmrs.module.ipd.web.service"/>
+    <context:component-scan base-package="org.openmrs.module.ipd.web.factory"/>
+    <context:component-scan base-package="org.openmrs.module.ipd.web.mapper"/>
+    <context:component-scan base-package="org.openmrs.module.ipd.web.postprocessor"/>
+    <context:component-scan base-package="org.openmrs.module.ipd.fhir"/>
     <context:property-placeholder location="classpath:application.properties"/>
 
     <!-- DAO Beans -->
