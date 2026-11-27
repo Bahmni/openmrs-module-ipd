@@ -150,6 +150,9 @@ public class IPDScheduleController extends BaseRestController {
                                                              @RequestParam(value = "includePreviousSlot",required = false) Boolean includePreviousSlot,
                                                              @RequestParam(value = "includeSlotDuration",required = false) Boolean includeSlotDuration) {
         try {
+            if (!Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_ADMINISTRATIONS) || !Context.getUserContext().hasPrivilege(PrivilegeConstants.GET_MEDICATION_TASKS)) {
+                return new ResponseEntity<>(RestUtil.wrapErrorResponse(new Exception(), "User doesn't have the following privilege(s) " + PrivilegeConstants.GET_MEDICATION_ADMINISTRATIONS + ", " + PrivilegeConstants.GET_MEDICATION_TASKS), FORBIDDEN);
+            }
             if (startTime != null && endTime != null) {
                 LocalDateTime localStartDate = convertEpocUTCToLocalTimeZone(startTime);
                 LocalDateTime localEndDate = convertEpocUTCToLocalTimeZone(endTime);
